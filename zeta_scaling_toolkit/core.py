@@ -384,11 +384,13 @@ def calibrate_gain(
     cpu_rng = torch.random.get_rng_state()
     cuda_rng = torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None
     activation_types = (nn.ReLU, nn.LeakyReLU, nn.GELU, nn.SiLU, nn.Tanh, nn.Sigmoid)
+    worst_deviation = 0.0
     try:
         for layer in layers:
             layer.eval()
         with torch.no_grad():
             for _ in range(iters):
+                worst_deviation = 0.0
                 values = sample_input
                 index = 0
                 while index < len(layers):
@@ -433,6 +435,10 @@ def calibrate_gain(
                     if following_activation is not None:
                         values = following_activation(values)
                         index += 1
+                    achieved = torch.linalg.vector_norm(values.double()) / input_norm
+                    worst_deviation = max(
+                        worst_deviation, abs(float(achieved) / float(target_ratio) - 1.0)
+                    )
                     index += 1
     finally:
         for module, training in zip(modules, training_flags):
@@ -440,6 +446,14 @@ def calibrate_gain(
         torch.random.set_rng_state(cpu_rng)
         if cuda_rng is not None:
             torch.cuda.set_rng_state_all(cuda_rng)
+    if worst_deviation > 0.02:
+        warnings.warn(
+            f"calibrate_gain did not reach target_ratio={target_ratio} within 2% "
+            f"(worst layer off by {worst_deviation:.1%}); the target may be unreachable "
+            "for this activation and input scale.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
     return model_or_layer_stack
 
 

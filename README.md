@@ -111,6 +111,13 @@ component is described as beneficial unless the interval excludes zero.
 - For rectangular orthogonal matrices with fewer output than input features,
   norm shrinkage of roughly `sqrt(out_features / in_features)` is structurally
   expected. See [initialization properties](./tests/test_properties.py).
+- `calibrate_gain` equalises the whole-batch norm, not each sample's norm. For
+  GELU/SiLU in deep stacks without normalisation layers the batch norm can be
+  preserved while the median sample's signal collapses (the fixed-seed
+  30-layer SiLU characterization test checks for a median per-row ratio below
+  0.5). See `test_known_limitation_silu_calibration_*`.
+- `calibrate_gain` emits a `RuntimeWarning` when its target ratio is not reached
+  within 2% (for example, bounded activations such as tanh cannot reach 1.0).
 - Nothing here has been validated on large-scale training runs.
 
 ## License and support
