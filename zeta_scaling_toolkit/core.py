@@ -277,13 +277,21 @@ class NonCollapsingAttention(nn.Module):
         selects only the union of sink keys and recent keys for each query
         chunk. Query/key tensors use the same shapes as :meth:`forward`; for
         rank-4 inputs the third-from-last dimension is interpreted as heads
-        when ``alibi=True``. Query positions are aligned to the final ``q_len``
-        key positions, matching ``streaming_mask`` and ``alibi_bias``.
+        when ``alibi=True``. If singleton head dimensions are broadcast, ALiBi
+        uses the effective head count from the broadcast batch shape. Query
+        positions are aligned to the final ``q_len`` key positions, matching
+        ``streaming_mask`` and ``alibi_bias``.
 
-        The result is exact (no approximation). Intermediate attention state is
-        bounded by ``chunk_size * (sink_tokens + window + chunk_size)`` rather
-        than the full Q-by-K matrix. Gradients are supported through Q/K/V and
-        the learnable temperature.
+        The result is exact (no approximation). During the forward pass, the
+        temporary attention work for each query chunk is bounded by
+        ``chunk_size * (sink_tokens + window + chunk_size)`` rather than the
+        full Q-by-K matrix. With autograd enabled, saved tensors from every
+        chunk remain live until backward, so training activation memory grows
+        with query length, roughly as
+        ``q_len * (sink_tokens + window + chunk_size)``, in addition to
+        full-sequence normalized inputs and output storage. This is not a
+        sequence-length-independent training-memory bound. Gradients are
+        supported through Q/K/V and the learnable temperature.
         """
         for name, tensor in (("q", q), ("k", k), ("v", v)):
             if not isinstance(tensor, torch.Tensor):
@@ -336,8 +344,9 @@ class NonCollapsingAttention(nn.Module):
         sink_end = min(sink_tokens, key_length)
         all_sink_positions = torch.arange(sink_end, device=q.device)
 
+        has_head_axis = len(batch_shape) >= 2
         if alibi:
-            head_count = q.shape[-3] if q.ndim >= 4 else 1
+            head_count = batch_shape[-1] if has_head_axis else 1
             head_ids = torch.arange(1, head_count + 1, dtype=dtype, device=q.device)
             slopes = torch.exp2(-8.0 * head_ids / head_count)
         else:
@@ -379,7 +388,7 @@ class NonCollapsingAttention(nn.Module):
                 if alibi:
                     assert slopes is not None
                     distances = (query_positions[:, None] - key_positions[None, :]).abs().to(dtype)
-                    if q.ndim >= 4:
+                    if has_head_axis:
                         slope_shape = (*([1] * (len(batch_shape) - 1)), head_count, 1, 1)
                         slope_values: Union[torch.Tensor, float] = slopes.reshape(*slope_shape)
                     else:
@@ -394,7 +403,7 @@ class NonCollapsingAttention(nn.Module):
                 if alibi:
                     assert slopes is not None
                     distances = (query_positions[:, None] - key_positions[None, :]).abs().to(dtype)
-                    if q.ndim >= 4:
+                    if has_head_axis:
                         slope_shape = (*([1] * (len(batch_shape) - 1)), head_count, 1, 1)
                         slope_values = slopes.reshape(*slope_shape)
                     else:

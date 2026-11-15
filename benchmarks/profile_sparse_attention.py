@@ -15,6 +15,7 @@ import torch
 from zeta_scaling_toolkit import NonCollapsingAttention, alibi_bias, streaming_mask
 
 DEFAULT_LENGTHS = (128, 256, 512, 1024, 2048, 4096, 8192, 16384)
+BATCH_SIZE = 2
 WINDOW = 64
 SINK_TOKENS = 4
 HEADS = 4
@@ -63,9 +64,17 @@ def run_worker(args: argparse.Namespace) -> None:
     attention: Optional[NonCollapsingAttention] = None
     query = key = value = None
     if args.operation in ("attention", "compare"):
-        query = torch.randn(1, HEADS, args.seq_len, HEAD_SIZE, dtype=dtype, device=device)
-        key = torch.randn_like(query)
-        value = torch.randn_like(query)
+        query = torch.randn(
+            args.batch_size,
+            HEADS,
+            args.seq_len,
+            HEAD_SIZE,
+            dtype=dtype,
+            device=device,
+            requires_grad=True,
+        )
+        key = torch.randn_like(query, requires_grad=True)
+        value = torch.randn_like(query, requires_grad=True)
         attention = NonCollapsingAttention(HEAD_SIZE, length_scaling="log", train_length=64).to(
             device
         )
@@ -198,6 +207,9 @@ def run_worker(args: argparse.Namespace) -> None:
         if args.operation == "attention":
             assert attention is not None
             attention.zero_grad(set_to_none=True)
+            for tensor in (query, key, value):
+                assert tensor is not None
+                tensor.grad = None
             result.square().mean().backward()
     if device.type == "cuda":
         torch.cuda.synchronize(device)
@@ -210,6 +222,9 @@ def run_worker(args: argparse.Namespace) -> None:
         if args.operation == "attention":
             assert attention is not None
             attention.zero_grad(set_to_none=True)
+            for tensor in (query, key, value):
+                assert tensor is not None
+                tensor.grad = None
             if device.type == "cuda":
                 torch.cuda.synchronize(device)
             start = time.perf_counter()
@@ -222,6 +237,8 @@ def run_worker(args: argparse.Namespace) -> None:
             if device.type == "cuda":
                 torch.cuda.synchronize(device)
             backward_elapsed += time.perf_counter() - start
+            if any(tensor.grad is None for tensor in (query, key, value)):
+                raise RuntimeError("attention backward did not produce Q/K/V gradients")
         else:
             if device.type == "cuda":
                 torch.cuda.synchronize(device)
@@ -239,6 +256,8 @@ def run_worker(args: argparse.Namespace) -> None:
         "peak_memory_mb": peak_memory_mb(device),
     }
     if args.operation == "attention":
+        result_json["batch_size"] = args.batch_size
+        result_json["input_gradients"] = True
         result_json["forward_ms"] = 1000 * forward_elapsed / args.iterations
         result_json["backward_ms"] = 1000 * backward_elapsed / args.iterations
     else:
@@ -268,6 +287,8 @@ def run_case(
         args.dtype,
         "--iterations",
         str(args.iterations),
+        "--batch-size",
+        str(args.batch_size),
     ]
     completed = subprocess.run(command, check=True, capture_output=True, text=True)
     return json.loads(completed.stdout.strip().splitlines()[-1])
@@ -277,6 +298,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seq-lengths", type=int, nargs="+", default=list(DEFAULT_LENGTHS))
     parser.add_argument("--iterations", type=int, default=3)
+    parser.add_argument("--batch-size", type=int, default=BATCH_SIZE)
     parser.add_argument("--dense-attention-max", type=int, default=2048)
     parser.add_argument("--dense-alibi-max", type=int, default=4096)
     parser.add_argument("--dense-mask-compare-max", type=int, default=8192)
@@ -300,6 +322,8 @@ def main() -> None:
         parser.error("sequence lengths must be positive")
     if args.iterations < 1:
         parser.error("iterations must be positive")
+    if args.batch_size < 1:
+        parser.error("batch size must be positive")
     if args.device == "cuda" and not torch.cuda.is_available():
         parser.error("CUDA was requested but is unavailable")
     args.device = (
@@ -328,7 +352,8 @@ def main() -> None:
     print(
         f"Environment: Python {__import__('platform').python_version()}, PyTorch {torch.__version__}, "
         f"{platform.platform()}, device={args.device}, dtype={args.dtype}, "
-        f"window={WINDOW}, sinks={SINK_TOKENS}, chunk={CHUNK_SIZE}, iterations={args.iterations}"
+        f"batch={args.batch_size}, window={WINDOW}, sinks={SINK_TOKENS}, "
+        f"chunk={CHUNK_SIZE}, iterations={args.iterations}"
     )
     print("\nRaw per-case JSON:")
     for result in results:
