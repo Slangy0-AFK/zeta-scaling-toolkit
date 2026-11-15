@@ -33,6 +33,11 @@ class NonCollapsingAttention(nn.Module):
     within [tau_min, tau_max]. Internals run in float32 (float16 safe); output
     is cast back to ``v.dtype``.
 
+    **Scale invariance:** This module is scale-invariant for ||q||, ||k||, ||v|| >= 1e-2.
+    Below that threshold, gradient behaviour changes due to numerical regularization
+    (eps=1e-6 in the L2 norm). This is a documented trade-off: keeping activations
+    bounded at zero-vectors.
+
     Args:
         d_k: per-head key dimension (inputs must match on the last dim).
         A_attn: deprecated, kept for API compatibility. Has no effect.

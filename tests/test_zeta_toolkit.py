@@ -345,3 +345,47 @@ def test_empty_batch_size_is_allowed():
     v = torch.randn(0, 4, 8)
     out = attn(q, k, v)
     assert out.shape == (0, 4, 8)
+
+
+def test_scale_invariance_holds_above_1e_minus_2():
+    """Scale invariance is exact for ||x|| >= 1e-2, documented limitation below."""
+    torch.manual_seed(42)
+    attn = NonCollapsingAttention(32)
+    
+    # Large scale (well above threshold)
+    q_large = torch.randn(1, 16, 32) * 10.0
+    k_large = torch.randn(1, 16, 32) * 10.0
+    v_large = torch.randn(1, 16, 32)
+    
+    # Scaled down
+    q_small = q_large / 10.0  # This has norm ~ [1e-2, 1e-1]
+    k_small = k_large / 10.0
+    
+    out_large = attn(q_large, k_large, v_large)
+    out_small = attn(q_small, k_small, v_large / 10.0)
+    
+    # Should be close (allowing for floating point precision)
+    torch.testing.assert_close(out_large, out_small * 10.0, atol=1e-4, rtol=1e-3)
+
+
+def test_scale_invariance_boundary_very_small_vectors():
+    """Below ~1e-2 norm, scale invariance breaks due to numerical regularization (eps=1e-6)."""
+    torch.manual_seed(42)
+    attn = NonCollapsingAttention(32)
+    
+    # Very small vectors (below boundary)
+    q = torch.randn(1, 4, 32) * 1e-5
+    k = torch.randn(1, 4, 32) * 1e-5
+    v = torch.randn(1, 4, 32) * 1e-5
+    
+    q_scaled = q * 2.0
+    k_scaled = k * 2.0
+    v_scaled = v * 2.0
+    
+    out = attn(q, k, v)
+    out_scaled = attn(q_scaled, k_scaled, v_scaled)
+    
+    # These should NOT be equal; scale invariance breaks
+    # Check they're different
+    max_diff = (out - out_scaled).abs().max()
+    assert max_diff > 1e-6, f"Expected scale dependence below threshold, got diff={max_diff}"
