@@ -6,8 +6,10 @@ from torch.optim import SGD, Adam
 from zeta_scaling_toolkit import (
     AsymptoticLRScheduler,
     NonCollapsingAttention,
+    alibi_bias,
     calibrate_gain,
     make_corrected_linear,
+    streaming_mask,
 )
 from zeta_scaling_toolkit.core import _unit
 
@@ -139,3 +141,92 @@ def test_scheduler_rejects_nonfinite_floor_ratio(floor_ratio):
 def test_initialization_rejects_unknown_gain_with_clear_error():
     with pytest.raises(ValueError, match="nonlinearity"):
         make_corrected_linear(8, 8, nonlinearity="not-an-activation")
+
+
+def test_log_scaling_with_additive_bias_and_explicit_visibility():
+    torch.manual_seed(7)
+    attention = NonCollapsingAttention(4, length_scaling="log", train_length=2).double()
+    q = torch.randn(1, 3, 4, dtype=torch.float64, requires_grad=True)
+    k = torch.randn(1, 6, 4, dtype=torch.float64, requires_grad=True)
+    v = torch.randn(1, 6, 3, dtype=torch.float64, requires_grad=True)
+    bias = torch.randn(3, 6, dtype=torch.float64, requires_grad=True)
+    visible = torch.tensor(
+        [[True, True, False, False, False, False],
+         [True, True, True, True, True, True],
+         [False, False, False, False, False, False]]
+    )
+    actual = attention(q, k, v, bias, visibility_mask=visible)
+    expected = attention(q, k, v, bias.masked_fill(~visible, float("-inf")))
+    torch.testing.assert_close(actual, expected)
+    assert torch.equal(actual[0, 2], torch.zeros(3, dtype=torch.float64))
+    for actual_grad, expected_grad in zip(
+        torch.autograd.grad(actual.sum(), (q, k, v, bias, attention.raw_tau)),
+        torch.autograd.grad(expected.sum(), (q, k, v, bias, attention.raw_tau)),
+    ):
+        torch.testing.assert_close(actual_grad, expected_grad)
+        assert torch.isfinite(actual_grad).all()
+
+
+def test_visibility_mask_intersects_boolean_mask_and_is_validated():
+    attention = NonCollapsingAttention(4, length_scaling="log", train_length=2)
+    q, k, v = torch.randn(1, 2, 4), torch.randn(1, 4, 4), torch.randn(1, 4, 3)
+    mask = torch.tensor([[True, True, False, False], [True, True, True, True]])
+    visible = torch.tensor([True, False, True, False])
+    torch.testing.assert_close(
+        attention(q, k, v, mask, visibility_mask=visible), attention(q, k, v, mask & visible)
+    )
+    with pytest.raises(TypeError, match="visibility_mask"):
+        attention(q, k, v, visibility_mask=visible.float())
+    with pytest.raises(ValueError, match="broadcastable"):
+        attention(q, k, v, visibility_mask=torch.ones(5, dtype=torch.bool))
+    with pytest.raises(ValueError, match="same device"):
+        attention(q, k, v, visibility_mask=torch.ones(4, dtype=torch.bool, device="meta"))
+
+
+@pytest.mark.parametrize("streaming", [False, True])
+def test_attention_reports_module_device_mismatch(streaming):
+    attention = NonCollapsingAttention(4)
+    q = torch.empty(1, 2, 4, device="meta")
+    with pytest.raises(ValueError, match=r"attention\.to\(q\.device\)"):
+        if streaming:
+            attention.forward_streaming(q, q, q, window=2)
+        else:
+            attention(q, q, q)
+
+
+@pytest.mark.parametrize("length_scaling", ["none", "log"])
+@pytest.mark.parametrize("batch_shape,head_axis", [((3,), 0), ((3, 2), 0), ((2, 3), -1)])
+def test_streaming_alibi_explicit_head_axis_matches_dense(length_scaling, batch_shape, head_axis):
+    torch.manual_seed(8)
+    q = torch.randn(*batch_shape, 4, 4, dtype=torch.float64)
+    k = torch.randn(*batch_shape, 6, 4, dtype=torch.float64)
+    v = torch.randn(*batch_shape, 6, 2, dtype=torch.float64)
+    attention = NonCollapsingAttention(4, length_scaling=length_scaling, train_length=2).double()
+    axis = head_axis % len(batch_shape)
+    bias = alibi_bias(batch_shape[axis], 4, 6, dtype=torch.float64)[0]
+    shape = [1] * (len(batch_shape) + 2)
+    shape[axis], shape[-2], shape[-1] = batch_shape[axis], 4, 6
+    mask = streaming_mask(4, 6, window=2, sink_tokens=1)
+    dense = bias.reshape(shape).masked_fill(~mask, float("-inf"))
+    expected = attention(q, k, v, dense)
+    actual = attention.forward_streaming(
+        q, k, v, window=2, sink_tokens=1, alibi=True, head_axis=head_axis, chunk_size=2
+    )
+    torch.testing.assert_close(actual, expected, atol=1e-10, rtol=1e-10)
+
+
+def test_streaming_head_axis_validation():
+    attention = NonCollapsingAttention(4)
+    q = torch.randn(2, 3, 4)
+    with pytest.raises(ValueError, match="requires alibi"):
+        attention.forward_streaming(q, q, q, window=2, head_axis=0)
+    with pytest.raises(ValueError, match="batch dimension"):
+        attention.forward_streaming(q, q, q, window=2, alibi=True, head_axis=1)
+    with pytest.raises(TypeError, match="head_axis"):
+        attention.forward_streaming(q, q, q, window=2, alibi=True, head_axis=True)
+
+
+def test_scheduler_resume_explains_missing_initial_lr():
+    optimizer = SGD([nn.Parameter(torch.zeros(1))], lr=0.1)
+    with pytest.raises(KeyError, match="restore optimizer state"):
+        AsymptoticLRScheduler(optimizer, last_epoch=1)

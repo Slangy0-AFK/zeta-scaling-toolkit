@@ -144,7 +144,16 @@ class NonCollapsingAttention(nn.Module):
         k: torch.Tensor,
         v: torch.Tensor,
         attn_mask: Optional[torch.Tensor] = None,
+        *,
+        visibility_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
+        """Attend with an optional additive/bool mask and explicit boolean visibility.
+
+        ``visibility_mask`` is broadcastable to the logits and intersects
+        ``attn_mask``. Use it with finite additive biases or finite padding
+        sentinels when log-length scaling must count only visible keys. Without
+        it, every finite additive mask value is treated as visible.
+        """
         for name, tensor in (("q", q), ("k", k), ("v", v)):
             if not isinstance(tensor, torch.Tensor):
                 raise TypeError(f"{name} must be a torch.Tensor")
@@ -162,6 +171,11 @@ class NonCollapsingAttention(nn.Module):
             raise ValueError("key and value sequence lengths must match")
         if q.device != k.device or q.device != v.device:
             raise ValueError("q, k, and v must be on the same device")
+        if self.raw_tau.device != q.device:
+            raise ValueError(
+                "attention parameters and inputs must be on the same device; "
+                "move the module with attention.to(q.device)"
+            )
         if _broadcast_shape(q.shape[:-2], k.shape[:-2], v.shape[:-2]) is None:
             raise ValueError("q, k, and v batch dimensions must be broadcastable")
         if self.check_finite and not all(torch.isfinite(tensor).all() for tensor in (q, k, v)):
@@ -196,6 +210,21 @@ class NonCollapsingAttention(nn.Module):
             ):
                 raise ValueError("floating attn_mask values must not contain NaN or +inf")
             expanded_mask = attn_mask.expand(logits_shape)
+        if visibility_mask is not None:
+            if not isinstance(visibility_mask, torch.Tensor) or visibility_mask.dtype != torch.bool:
+                raise TypeError("visibility_mask must be a boolean torch.Tensor")
+            if visibility_mask.device != q.device:
+                raise ValueError("visibility_mask must be on the same device as q, k, and v")
+            visibility_shape = _broadcast_shape(visibility_mask.shape, torch.Size(logits_shape))
+            if visibility_shape is None or tuple(visibility_shape) != tuple(logits_shape):
+                raise ValueError("visibility_mask must be broadcastable to the attention logits")
+            visible = visibility_mask.expand(logits_shape)
+            if expanded_mask is None:
+                expanded_mask = visible
+            elif expanded_mask.dtype == torch.bool:
+                expanded_mask = expanded_mask & visible
+            else:
+                expanded_mask = expanded_mask.masked_fill(~visible, float("-inf"))
         if query_length == 0 or any(dimension == 0 for dimension in batch_shape):
             logits = (q_unit @ k_unit.transpose(-2, -1)) * self.tau.to(dtype)
             return (logits @ values).to(v.dtype)
@@ -278,6 +307,7 @@ class NonCollapsingAttention(nn.Module):
         *,
         alibi: bool = False,
         chunk_size: int = 128,
+        head_axis: Optional[int] = None,
     ) -> torch.Tensor:
         """Attend exactly to sink keys and each query's recent causal window.
 
@@ -289,6 +319,10 @@ class NonCollapsingAttention(nn.Module):
         uses the effective head count from the broadcast batch shape. Query
         positions are aligned to the final ``q_len`` key positions, matching
         ``streaming_mask`` and ``alibi_bias``.
+
+        Set ``head_axis`` to the head dimension's index in the broadcast batch
+        shape (excluding sequence and feature dimensions) for other layouts.
+        Without it, fewer than two batch dimensions are treated as headless.
 
         The result is exact (no approximation). During the forward pass, the
         temporary attention work for each query chunk is bounded by
@@ -320,6 +354,11 @@ class NonCollapsingAttention(nn.Module):
             raise ValueError("key and value sequence lengths must match")
         if q.device != k.device or q.device != v.device:
             raise ValueError("q, k, and v must be on the same device")
+        if self.raw_tau.device != q.device:
+            raise ValueError(
+                "attention parameters and inputs must be on the same device; "
+                "move the module with attention.to(q.device)"
+            )
         if _broadcast_shape(q.shape[:-2], k.shape[:-2], v.shape[:-2]) is None:
             raise ValueError("q, k, and v batch dimensions must be broadcastable")
         if self.check_finite and not all(torch.isfinite(tensor).all() for tensor in (q, k, v)):
@@ -335,6 +374,16 @@ class NonCollapsingAttention(nn.Module):
 
         batch_shape = _broadcast_shape(q.shape[:-2], k.shape[:-2], v.shape[:-2])
         assert batch_shape is not None
+        if head_axis is not None:
+            if isinstance(head_axis, bool) or not isinstance(head_axis, int):
+                raise TypeError("head_axis must be an integer")
+            if not alibi:
+                raise ValueError("head_axis requires alibi=True")
+            if not -len(batch_shape) <= head_axis < len(batch_shape):
+                raise ValueError("head_axis must index a broadcast batch dimension")
+            head_axis %= len(batch_shape)
+        elif len(batch_shape) >= 2:
+            head_axis = len(batch_shape) - 1
         query_length, key_length = q.shape[-2], k.shape[-2]
         value_length = v.shape[-1]
         if query_length == 0 or any(dimension == 0 for dimension in batch_shape):
@@ -352,9 +401,8 @@ class NonCollapsingAttention(nn.Module):
         sink_end = min(sink_tokens, key_length)
         all_sink_positions = torch.arange(sink_end, device=q.device)
 
-        has_head_axis = len(batch_shape) >= 2
         if alibi:
-            head_count = batch_shape[-1] if has_head_axis else 1
+            head_count = batch_shape[head_axis] if head_axis is not None else 1
             head_ids = torch.arange(1, head_count + 1, dtype=dtype, device=q.device)
             slopes = torch.exp2(-8.0 * head_ids / head_count)
         else:
@@ -396,8 +444,9 @@ class NonCollapsingAttention(nn.Module):
                 if alibi:
                     assert slopes is not None
                     distances = (query_positions[:, None] - key_positions[None, :]).abs().to(dtype)
-                    if has_head_axis:
-                        slope_shape = (*([1] * (len(batch_shape) - 1)), head_count, 1, 1)
+                    if head_axis is not None:
+                        slope_shape = [1] * (len(batch_shape) + 2)
+                        slope_shape[head_axis] = head_count
                         slope_values: Union[torch.Tensor, float] = slopes.reshape(*slope_shape)
                     else:
                         slope_values = slopes[0]
@@ -411,8 +460,9 @@ class NonCollapsingAttention(nn.Module):
                 if alibi:
                     assert slopes is not None
                     distances = (query_positions[:, None] - key_positions[None, :]).abs().to(dtype)
-                    if has_head_axis:
-                        slope_shape = (*([1] * (len(batch_shape) - 1)), head_count, 1, 1)
+                    if head_axis is not None:
+                        slope_shape = [1] * (len(batch_shape) + 2)
+                        slope_shape[head_axis] = head_count
                         slope_values = slopes.reshape(*slope_shape)
                     else:
                         slope_values = slopes[0]
@@ -462,6 +512,8 @@ class AsymptoticLRScheduler(LambdaLR):
 
     This schedule reaches a fixed minimum LR; it does not decay indefinitely.
     Call ``step()`` after each optimizer update.
+    For ``last_epoch >= 0``, restore the optimizer's original ``initial_lr``
+    values first; loading both optimizer and scheduler state dicts is preferred.
 
     Args:
         floor_ratio: final LR as a fraction of base LR, in [0, 1].
@@ -493,6 +545,11 @@ class AsymptoticLRScheduler(LambdaLR):
             or not (0 <= warmup_steps < total_steps)
         ):
             raise ValueError(f"need 0 <= warmup_steps < total_steps, got {warmup_steps}")
+        if last_epoch >= 0 and any("initial_lr" not in group for group in optimizer.param_groups):
+            raise KeyError(
+                "resuming with last_epoch >= 0 requires initial_lr in every optimizer "
+                "param group; restore optimizer state or supply the original base learning rates"
+            )
         self.floor_ratio: float = float(floor_ratio)
         self.total_steps: int = total_steps
         self.warmup_steps: int = warmup_steps
@@ -615,11 +672,14 @@ def calibrate_gain(
     """Calibrate a sequential layer stack's activation norm using sample data.
 
     The stack must be an ``nn.Sequential``, ``nn.ModuleList``, or a sequence of
-    modules. Each layer's output norm is adjusted toward ``target_ratio`` times
-    its input norm. Calibration runs without gradients, preserves module
+    modules. Each layer's whole-batch output norm is adjusted toward
+    ``target_ratio`` times its whole-batch input norm, not each sample's norm.
+    Measure per-sample ratios separately, especially for deep smooth-activation
+    stacks. Calibration runs without gradients, preserves module
     training flags and CPU/CUDA RNG state, and mutates linear layer weights.
 
     Calibration is transactional: if any validation fails, no parameters are modified.
+    A warning on failure to converge leaves the best-effort parameters in place.
     """
     if not isinstance(sample_input, torch.Tensor) or not sample_input.is_floating_point():
         raise TypeError("sample_input must be a floating-point torch.Tensor")

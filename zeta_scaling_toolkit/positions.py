@@ -20,14 +20,19 @@ def rotary_embedding(
     rotated tensor is cast back to the input dtype. ``linear`` divides positions
     by ``scale_factor``. ``ntk`` scales the frequency base using the common NTK
     interpolation rule in log space to avoid intermediate overflow. Extremely
-    large scale factors can still limit positional precision.
+    large scale factors can still limit positional precision. Create positions
+    directly as int64 (for example with ``torch.arange``); converting from a
+    low-precision floating tensor cannot recover already-lost position bits.
     """
     if not isinstance(x, torch.Tensor) or not x.is_floating_point():
         raise TypeError("x must be a floating-point torch.Tensor")
     if x.ndim < 2 or x.shape[-1] < 2 or x.shape[-1] % 2:
         raise ValueError("x must have rank >= 2 and an even last dimension >= 2")
     if not isinstance(positions, torch.Tensor) or positions.dtype != torch.int64:
-        raise TypeError("positions must be an int64 torch.Tensor")
+        raise TypeError(
+            "positions must be an int64 torch.Tensor; create them as integers before "
+            "any floating-point conversion"
+        )
     if positions.device != x.device:
         raise ValueError("positions and x must be on the same device")
     try:

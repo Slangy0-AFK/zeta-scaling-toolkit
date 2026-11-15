@@ -71,6 +71,7 @@ from zeta_scaling_toolkit import (
 
 attention = NonCollapsingAttention(d_k=64)
 q, k, v = (torch.randn(2, 128, 64) for _ in range(3))
+# On another device, move the module too: attention = attention.to(q.device)
 output = attention(q, k, v)
 
 linear = make_corrected_linear(1024, 4096, nonlinearity="relu")
@@ -119,7 +120,10 @@ included zero. These results apply to the measured model and dataset only.
   unmasked key count grows. The synthetic measurement and approximation are
   recorded in [benchmarks/RESULTS.md](./benchmarks/RESULTS.md) and tested in
   [test_properties.py](./tests/test_properties.py). This does not establish a
-  language-model training benefit.
+  language-model training benefit. For floating masks, every finite bias counts
+  as visible, including large negative padding sentinels. Pass a boolean
+  `visibility_mask` alongside the additive `attn_mask` to exclude padding while
+  retaining finite biases; the two masks are intersected.
 - RoPE and ALiBi do not require a learned absolute-position table. Their
   relative-position and numerical properties are covered in
   [test_properties.py](./tests/test_properties.py); extrapolation quality is
@@ -134,11 +138,16 @@ included zero. These results apply to the measured model and dataset only.
 - Attention uses SDPA when one scale applies to every row and chunks query rows
   for row-specific scales or fully masked rows. Dense masks and ALiBi biases
   still use quadratic memory when constructed for a full sequence. None of
-  these mechanisms provide unbounded recall.
+  these mechanisms provide unbounded recall. `forward_streaming` bounds
+  per-chunk forward work, not total autograd memory: saved activations grow
+  with query length. For ALiBi, its default assumes the last broadcast batch
+  dimension is heads when there are at least two batch dimensions; set
+  `head_axis` explicitly for other layouts, e.g. `head_axis=0` for `(H, Q, D)`.
 - RoPE angles are computed in float64 from int64 positions before casting back
   to the input type. Large positions should not be converted directly to
   float16 or bfloat16; the precision behavior is tested in
-  [test_properties.py](./tests/test_properties.py).
+  [test_properties.py](./tests/test_properties.py). Create position tensors as
+  int64 from the start; casting already-rounded floats back cannot restore them.
 - Language-model measurements use one 32-wide model and one small dataset; the
   synthetic vision task used 500 steps and is deliberately simple. Validated
   on a 1,000-step character-level LM and a separate 500-step synthetic vision
@@ -150,6 +159,11 @@ included zero. These results apply to the measured model and dataset only.
 
 - The epsilon in normalization makes scale invariance approximate near zero;
   its relative effect becomes small for vector norms around `1e-2` and larger.
+  Without additive biases, zero queries produce uniform weights over visible
+  keys, not necessarily zero output; small query/key norms can make attention
+  much less selective.
+- Move attention modules and inputs to the same device with `.to(device)`;
+  the learnable temperature is a module parameter and is not moved automatically.
 - Attention temperature is bounded to `[tau_min, tau_max]` via a logit-sigmoid
   parameterization; at extreme raw_tau values, sigmoid saturation may produce zero
   gradients, but the parameter can recover for finite perturbations.
@@ -168,10 +182,16 @@ included zero. These results apply to the measured model and dataset only.
   preserved while the median sample's signal collapses (the fixed-seed
   30-layer SiLU characterization test checks for a median per-row ratio below
   0.5). See `test_known_limitation_silu_calibration_*`.
+  Check per-sample output-to-input norm ratios on representative held-out data,
+  and consider normalization layers if individual signals collapse.
 - `calibrate_gain` emits a `RuntimeWarning` when its target ratio is not reached
-  within 2% (for example, bounded activations such as tanh cannot reach 1.0).
+  within 2% (for example, bounded activations such as tanh may not reach 1.0);
+  it retains the best-effort parameters when emitting this warning.
 - `calibrate_gain` is now transactional: if validation fails on any layer, all
   parameters revert to their original values.
+- To resume the scheduler, restore optimizer and scheduler state dicts. If using
+  `last_epoch >= 0` directly, each optimizer group must contain its original
+  `initial_lr`; the current (possibly decayed) LR is not a safe substitute.
 - Nothing here has been validated on large-scale training runs.
 
 ## License and support
