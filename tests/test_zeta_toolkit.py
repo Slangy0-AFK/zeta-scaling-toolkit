@@ -389,3 +389,40 @@ def test_scale_invariance_boundary_very_small_vectors():
     # Check they're different
     max_diff = (out - out_scaled).abs().max()
     assert max_diff > 1e-6, f"Expected scale dependence below threshold, got diff={max_diff}"
+
+
+def test_input_type_validation():
+    """Non-Tensor inputs should raise TypeError."""
+    attn = NonCollapsingAttention(8)
+    k = torch.randn(1, 4, 8)
+    v = torch.randn(1, 4, 8)
+    for bad_q in ([1, 2, 3], {"shape": (1, 4, 8)}, 1.0):
+        with pytest.raises(TypeError, match="q must be a Tensor"):
+            attn(bad_q, k, v)
+
+
+def test_input_rank_validation():
+    """Inputs must be at least 2D."""
+    attn = NonCollapsingAttention(8)
+    for bad_shape in [torch.randn(8), torch.randn(1)]:
+        with pytest.raises(ValueError, match="must be at least 2D"):
+            attn(bad_shape, torch.randn(1, 4, 8), torch.randn(1, 4, 8))
+
+
+def test_batch_dims_must_match():
+    """q and k must have same batch dims; k and v must match."""
+    attn = NonCollapsingAttention(8)
+    # Mismatched batch dim
+    with pytest.raises(ValueError, match="same batch dims"):
+        attn(torch.randn(2, 4, 8), torch.randn(1, 4, 8), torch.randn(1, 4, 8))
+    # Mismatched k and v sequence
+    with pytest.raises(ValueError, match="same sequence length"):
+        attn(torch.randn(1, 4, 8), torch.randn(1, 4, 8), torch.randn(1, 5, 8))
+
+
+def test_mask_type_validation():
+    """attn_mask must be a Tensor."""
+    attn = NonCollapsingAttention(8)
+    q, k, v = torch.randn(1, 4, 8), torch.randn(1, 4, 8), torch.randn(1, 4, 8)
+    with pytest.raises(TypeError, match="attn_mask must be a Tensor"):
+        attn(q, k, v, attn_mask=[True, False, True, False])

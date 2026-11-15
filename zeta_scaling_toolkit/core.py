@@ -67,13 +67,44 @@ class NonCollapsingAttention(nn.Module):
         return F.softplus(self.raw_tau).clamp(min=self.tau_min, max=self.tau_max)
 
     def forward(self, q, k, v, attn_mask: Optional[torch.Tensor] = None):
+        # Input type validation
+        if not isinstance(q, torch.Tensor):
+            raise TypeError(f"q must be a Tensor, got {type(q).__name__}")
+        if not isinstance(k, torch.Tensor):
+            raise TypeError(f"k must be a Tensor, got {type(k).__name__}")
+        if not isinstance(v, torch.Tensor):
+            raise TypeError(f"v must be a Tensor, got {type(v).__name__}")
+
+        # Input rank validation
+        if q.ndim < 2:
+            raise ValueError(f"q must be at least 2D, got shape {q.shape}")
+        if k.ndim < 2:
+            raise ValueError(f"k must be at least 2D, got shape {k.shape}")
+        if v.ndim < 2:
+            raise ValueError(f"v must be at least 2D, got shape {v.shape}")
+
+        # Dimension validation
         if q.shape[-1] != self.d_k or k.shape[-1] != self.d_k:
             raise ValueError(f"expected last dim d_k={self.d_k}, got q={q.shape[-1]}, k={k.shape[-1]}")
+        # Batch dims must match; k and v must match
+        if q.shape[:-2] != k.shape[:-2]:
+            raise ValueError(f"q and k must have same batch dims, got q.shape[:-2]={q.shape[:-2]}, k.shape[:-2]={k.shape[:-2]}")
+        if k.shape[:-2] != v.shape[:-2]:
+            raise ValueError(f"k and v must have same batch dims, got k.shape[:-2]={k.shape[:-2]}, v.shape[:-2]={v.shape[:-2]}")
+        if k.shape[-2] != v.shape[-2]:
+            raise ValueError(f"k and v must have same sequence length, got k.shape[-2]={k.shape[-2]}, v.shape[-2]={v.shape[-2]}")
+
         # Validate key/query sequence lengths
         if k.shape[-2] == 0:
             raise ValueError(f"key sequence length must be >= 1, got {k.shape[-2]}")
         if q.shape[-2] == 0:
             raise ValueError(f"query sequence length must be >= 1, got {q.shape[-2]}")
+
+        # Validate mask type if provided
+        if attn_mask is not None:
+            if not isinstance(attn_mask, torch.Tensor):
+                raise TypeError(f"attn_mask must be a Tensor, got {type(attn_mask).__name__}")
+
         logits = (_unit(q.float()) @ _unit(k.float()).transpose(-2, -1)) * self.tau
         if attn_mask is not None:  # bool: True = keep; float: added to logits
             if attn_mask.dtype == torch.bool:
