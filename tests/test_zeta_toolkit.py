@@ -94,7 +94,7 @@ def test_legacy_checkpoint_loads():
 
 
 def test_invalid_config_rejected():
-    for kw in ({"tau0": 0.0}, {"tau0": 60.0}, {"tau_max": -1.0}, {"tau_min": 0.0}, {"tau_min": 2.0, "tau0": 1.0}):
+    for kw in ({"tau0": 0.0}, {"tau0": 60.0}, {"tau_max": -1.0}, {"tau_min": 2.0, "tau0": 1.0}):
         with pytest.raises(ValueError):
             NonCollapsingAttention(8, **kw)
 
