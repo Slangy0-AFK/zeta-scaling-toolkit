@@ -228,3 +228,63 @@ def test_tau_stays_within_bounds_under_aggressive_optimization():
         loss.backward()
         opt.step()
     assert 1.0 <= attn.tau.item() <= 50.0, f"tau escaped bounds: {attn.tau.item()}"
+
+
+def test_gelu_silu_nonlinearity_rejected():
+    """make_corrected_linear should reject GELU/SiLU and suggest calibrate_gain."""
+    for nl in ("gelu", "silu"):
+        with pytest.raises(ValueError, match="calibrate_gain"):
+            make_corrected_linear(8, 8, nonlinearity=nl)
+
+
+def test_supported_nonlinearities_accepted():
+    """make_corrected_linear should accept all torch.nn.init.calculate_gain nonlinearities."""
+    for nl in ("linear", "relu", "leaky_relu", "tanh", "sigmoid", "selu", "conv1d"):
+        layer = make_corrected_linear(8, 8, nonlinearity=nl)
+        assert layer.weight is not None
+
+
+def test_calibrate_gain_gelu_stack_converges():
+    """calibrate_gain should bring a GELU stack norm ratio to near target (1.0)."""
+    from zeta_scaling_toolkit import calibrate_gain
+
+    torch.manual_seed(42)
+    model = torch.nn.Sequential(
+        make_corrected_linear(64, 64, nonlinearity="linear"),
+        torch.nn.GELU(),
+        make_corrected_linear(64, 64, nonlinearity="linear"),
+        torch.nn.GELU(),
+        make_corrected_linear(64, 64, nonlinearity="linear"),
+        torch.nn.GELU(),
+    )
+    x = torch.randn(32, 64)
+    ratio = calibrate_gain(model, x, target_ratio=1.0, iters=5, nonlinearity=torch.nn.GELU())
+    assert 0.5 <= ratio <= 2.0, f"calibrate_gain failed to converge: ratio={ratio}"
+
+
+def test_calibrate_gain_silu_stack_converges():
+    """calibrate_gain should also work for SiLU (GELU-like instability)."""
+    from zeta_scaling_toolkit import calibrate_gain
+
+    torch.manual_seed(42)
+    model = torch.nn.Sequential(
+        make_corrected_linear(64, 64, nonlinearity="linear"),
+        torch.nn.SiLU(),
+        make_corrected_linear(64, 64, nonlinearity="linear"),
+        torch.nn.SiLU(),
+        make_corrected_linear(64, 64, nonlinearity="linear"),
+        torch.nn.SiLU(),
+    )
+    x = torch.randn(32, 64)
+    ratio = calibrate_gain(model, x, target_ratio=1.0, iters=5, nonlinearity=torch.nn.SiLU())
+    assert 0.5 <= ratio <= 3.0, f"calibrate_gain failed for SiLU: ratio={ratio}"
+
+
+def test_calibrate_gain_rejects_grad_input():
+    """calibrate_gain should reject sample_input with requires_grad=True."""
+    from zeta_scaling_toolkit import calibrate_gain
+
+    model = torch.nn.Linear(32, 32)
+    x = torch.randn(8, 32, requires_grad=True)
+    with pytest.raises(ValueError, match="must not require grad"):
+        calibrate_gain(model, x)

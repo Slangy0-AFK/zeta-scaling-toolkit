@@ -169,10 +169,33 @@ def make_corrected_linear(
 ) -> nn.Linear:
     """Linear layer with orthogonal weights scaled by the nonlinearity's gain.
 
+    Supported nonlinearities: linear, relu, leaky_relu, tanh, sigmoid, selu,
+    and conv* (which all have stable gains via torch.nn.init.calculate_gain).
+
+    For GELU and SiLU (which lack stable gain values), use calibrate_gain() after
+    stacking layers, or consider using gain=1.0 (linear init) and tuning empirically.
+
     gain=sqrt(2) for ReLU keeps activation norms stable through deep ReLU stacks;
     pass nonlinearity="linear" for gain 1 (exact isometry on square layers).
     Rectangular layers with out < in necessarily shrink norms by ~sqrt(out/in).
+
+    Args:
+        in_features: input size.
+        out_features: output size.
+        bias: whether to add a bias term.
+        nonlinearity: one of the supported nonlinearities.
+
+    Raises:
+        ValueError: if nonlinearity is not supported.
     """
+    # Whitelist of nonlinearities supported by torch.nn.init.calculate_gain
+    supported = {"linear", "relu", "leaky_relu", "tanh", "sigmoid", "selu", "conv1d", "conv2d", "conv3d"}
+    if nonlinearity not in supported:
+        raise ValueError(
+            f"nonlinearity={nonlinearity!r} not supported. "
+            f"Supported: {sorted(supported)}. "
+            "For GELU/SiLU, use calibrate_gain(model, sample_input) after stacking."
+        )
     gain = nn.init.calculate_gain(nonlinearity)
     layer = nn.Linear(in_features, out_features, bias=bias)
     nn.init.orthogonal_(layer.weight, gain=gain)
@@ -181,10 +204,91 @@ def make_corrected_linear(
     return layer
 
 
+def calibrate_gain(
+    model_or_layer: nn.Module,
+    sample_input: torch.Tensor,
+    target_ratio: float = 1.0,
+    iters: int = 5,
+    nonlinearity: Optional[nn.Module] = None,
+) -> float:
+    """LSUV-style in-place gain calibration for a model/layer stack.
+
+    Rescales all Linear layer weights in-place so that passing sample_input through
+    the model yields an output with norm ratio (output_norm / input_norm) close to
+    target_ratio. Useful for GELU/SiLU stacks where calculate_gain doesn't apply.
+
+    No gradients are computed. Runs with torch.no_grad().
+
+    Args:
+        model_or_layer: nn.Module with Linear layers to calibrate.
+        sample_input: (batch, *features) tensor to drive calibration. Must not require grad.
+        target_ratio: desired output_norm / input_norm (default 1.0 for isometry).
+        iters: number of refinement passes (default 5).
+        nonlinearity: optional activation function to apply between layers (e.g., nn.GELU()).
+                      If None, no nonlinearity is applied.
+
+    Returns:
+        Final achieved norm ratio after calibration.
+
+    Example:
+        model = nn.Sequential(
+            nn.Linear(64, 64),
+            nn.GELU(),
+            nn.Linear(64, 64),
+            nn.GELU(),
+            nn.Linear(64, 64),
+        )
+        x = torch.randn(32, 64)
+        ratio = calibrate_gain(model, x, target_ratio=1.0)
+        print(f"Norm ratio: {ratio}")
+    """
+    if sample_input.requires_grad:
+        raise ValueError("sample_input must not require grad")
+
+    with torch.no_grad():
+        input_norm = sample_input.norm(dim=-1).mean().item()
+        if input_norm == 0:
+            raise ValueError("sample_input has zero norm")
+
+        for _ in range(iters):
+            out = sample_input.clone()
+            for module in model_or_layer.modules():
+                if isinstance(module, nn.Linear):
+                    out = module(out)
+                    if nonlinearity is not None:
+                        out = nonlinearity(out)
+
+            output_norm = out.norm(dim=-1).mean().item()
+            if output_norm == 0:
+                break
+
+            ratio = output_norm / input_norm
+            scale = (target_ratio / ratio) ** 0.5  # scale weights by sqrt of ratio
+
+            # Rescale all Linear layers
+            for module in model_or_layer.modules():
+                if isinstance(module, nn.Linear):
+                    module.weight.data.mul_(scale)
+
+        # Final pass to compute achieved ratio
+        out = sample_input.clone()
+        for module in model_or_layer.modules():
+            if isinstance(module, nn.Linear):
+                out = module(out)
+                if nonlinearity is not None:
+                    out = nonlinearity(out)
+
+        output_norm = out.norm(dim=-1).mean().item()
+        final_ratio = output_norm / input_norm if input_norm > 0 else 0.0
+        return final_ratio
+
+
+
 __all__ = [
     "NonCollapsingAttention",
     "AsymptoticLRScheduler",
     "get_isotropic_coords",
     "get_scale_invariant_vit_coords",
     "make_corrected_linear",
+    "calibrate_gain",
 ]
