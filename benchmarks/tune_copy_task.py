@@ -136,7 +136,11 @@ def main():
                 "learning_rate": trial_lr,
                 "comparison_base_lr": lr,
                 "scheduler": (
-                    "constant" if constant_lr else "cosine" if floor is None else "asymptotic"
+                    "constant"
+                    if constant_lr
+                    else "cosine"
+                    if floor is None
+                    else "cosine_with_floor"
                 ),
                 "A_attn": attention,
                 "floor_ratio": floor,
