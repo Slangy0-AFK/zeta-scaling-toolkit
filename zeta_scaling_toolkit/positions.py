@@ -40,11 +40,12 @@ def rotary_embedding(
     if scaling not in (None, "linear", "ntk"):
         raise ValueError("scaling must be None, 'linear', or 'ntk'")
     if (
-        not isinstance(scale_factor, numbers.Real)
+        isinstance(scale_factor, bool)
+        or not isinstance(scale_factor, numbers.Real)
         or not math.isfinite(scale_factor)
         or scale_factor < 1
     ):
-        raise ValueError("scale_factor must be finite and >= 1")
+        raise ValueError("scale_factor must be a finite real number >= 1")
 
     dimension = x.shape[-1]
     effective_base = float(base)
@@ -80,6 +81,8 @@ def alibi_bias(
         for length in (q_len, k_len)
     ):
         raise ValueError("q_len and k_len must be nonnegative integers")
+    if q_len > k_len:
+        raise ValueError("q_len must be <= k_len for aligned causal positions")
     if not isinstance(dtype, torch.dtype) or not torch.empty((), dtype=dtype).is_floating_point():
         raise TypeError("dtype must be a floating-point torch.dtype")
     query_positions = torch.arange(k_len - q_len, k_len, device=device)

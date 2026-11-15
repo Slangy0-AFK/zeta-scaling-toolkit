@@ -669,6 +669,7 @@ def test_alibi_bias_decreases_monotonically_with_absolute_distance():
         (torch.ones(1, 2), torch.arange(1), {"base": 1}, ValueError),
         (torch.ones(1, 2), torch.arange(1), {"scaling": "invalid"}, ValueError),
         (torch.ones(1, 2), torch.arange(1), {"scale_factor": 0}, ValueError),
+        (torch.ones(1, 2), torch.arange(1), {"scale_factor": True}, ValueError),
     ],
 )
 def test_rotary_embedding_rejects_invalid_inputs(values, positions, kwargs, error):
@@ -681,6 +682,7 @@ def test_rotary_embedding_rejects_invalid_inputs(values, positions, kwargs, erro
     [
         ((0, 1, 1), {}, ValueError),
         ((1, -1, 1), {}, ValueError),
+        ((1, 3, 2), {}, ValueError),
         ((1, 1, 1), {"dtype": torch.int64}, TypeError),
     ],
 )
