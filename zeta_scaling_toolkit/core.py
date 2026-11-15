@@ -7,7 +7,7 @@ gain-aware orthogonal init) with its failure modes closed off; see tests/.
 
 import math
 import warnings
-from typing import Optional, cast, Literal
+from typing import Literal, Optional, cast
 
 import torch
 import torch.nn as nn
