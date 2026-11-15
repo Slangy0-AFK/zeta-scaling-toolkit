@@ -28,34 +28,38 @@ def _unit(x: torch.Tensor) -> torch.Tensor:
 class NonCollapsingAttention(nn.Module):
     """QK-normalised attention with a bounded, learnable temperature.
 
-    logits = tau * cos(q, k), so |logit| <= tau <= tau_max. Unlike a fixed
-    d_k**-0.5 bound, tau starts high enough for peaked attention and can never
-    grow past ``tau_max``. Internals run in float32 (float16 safe); output is
-    cast back to ``v.dtype``.
+    logits = tau * cos(q, k), so tau_min <= tau <= tau_max. Unlike a fixed
+    d_k**-0.5 bound, tau starts high enough for peaked attention and stays
+    within [tau_min, tau_max]. Internals run in float32 (float16 safe); output
+    is cast back to ``v.dtype``.
 
     Args:
         d_k: per-head key dimension (inputs must match on the last dim).
         A_attn: deprecated, kept for API compatibility. Has no effect.
         tau0: initial temperature.
+        tau_min: hard floor on the temperature (default 1.0).
         tau_max: hard cap on the temperature.
     """
 
-    def __init__(self, d_k: int, A_attn: float = 1.0, tau0: float = 10.0, tau_max: float = 50.0):
+    def __init__(
+        self, d_k: int, A_attn: float = 1.0, tau0: float = 10.0, tau_min: float = 1.0, tau_max: float = 50.0
+    ):
         super().__init__()
         if d_k < 1:
             raise ValueError(f"d_k must be >= 1, got {d_k}")
-        if not (0.0 < tau0 <= tau_max):
-            raise ValueError(f"need 0 < tau0 <= tau_max, got tau0={tau0}, tau_max={tau_max}")
+        if not (0.0 < tau_min <= tau0 <= tau_max):
+            raise ValueError(f"need 0 < tau_min <= tau0 <= tau_max, got tau_min={tau_min}, tau0={tau0}, tau_max={tau_max}")
         if A_attn != 1.0:
             warnings.warn("A_attn is deprecated and has no effect.", DeprecationWarning, stacklevel=2)
         self.d_k = d_k
         self.A_attn = A_attn  # unused; retained so old benchmark scripts still assign it
+        self.tau_min = float(tau_min)
         self.tau_max = float(tau_max)
         self.raw_tau = nn.Parameter(torch.tensor(math.log(math.expm1(tau0))))  # inverse softplus
 
     @property
     def tau(self) -> torch.Tensor:
-        return F.softplus(self.raw_tau).clamp(max=self.tau_max)
+        return F.softplus(self.raw_tau).clamp(min=self.tau_min, max=self.tau_max)
 
     def forward(self, q, k, v, attn_mask: Optional[torch.Tensor] = None):
         if q.shape[-1] != self.d_k or k.shape[-1] != self.d_k:

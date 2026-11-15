@@ -94,7 +94,7 @@ def test_legacy_checkpoint_loads():
 
 
 def test_invalid_config_rejected():
-    for kw in ({"tau0": 0.0}, {"tau0": 60.0}, {"tau_max": -1.0}):
+    for kw in ({"tau0": 0.0}, {"tau0": 60.0}, {"tau_max": -1.0}, {"tau_min": 0.0}, {"tau_min": 2.0, "tau0": 1.0}):
         with pytest.raises(ValueError):
             NonCollapsingAttention(8, **kw)
 
@@ -214,3 +214,17 @@ def test_no_bias_and_bad_nonlinearity():
     assert make_corrected_linear(8, 16, bias=False).bias is None
     with pytest.raises(ValueError):
         make_corrected_linear(8, 8, nonlinearity="nope")
+
+
+def test_tau_stays_within_bounds_under_aggressive_optimization():
+    """tau_min should prevent tau from decaying to near-zero (uniform attention)."""
+    attn = NonCollapsingAttention(8, tau0=2.0, tau_min=1.0, tau_max=50.0)
+    opt = torch.optim.Adam([attn.raw_tau], lr=0.5)
+    q, k, v = torch.randn(1, 16, 8), torch.randn(1, 16, 8), torch.ones(1, 16, 8)
+    for _ in range(1000):
+        opt.zero_grad()
+        out = attn(q, k, v)
+        loss = (out - 0.5).pow(2).mean()
+        loss.backward()
+        opt.step()
+    assert 1.0 <= attn.tau.item() <= 50.0, f"tau escaped bounds: {attn.tau.item()}"
