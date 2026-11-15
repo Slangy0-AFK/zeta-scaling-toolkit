@@ -64,6 +64,11 @@ class NonCollapsingAttention(nn.Module):
     def forward(self, q, k, v, attn_mask: Optional[torch.Tensor] = None):
         if q.shape[-1] != self.d_k or k.shape[-1] != self.d_k:
             raise ValueError(f"expected last dim d_k={self.d_k}, got q={q.shape[-1]}, k={k.shape[-1]}")
+        # Validate key/query sequence lengths
+        if k.shape[-2] == 0:
+            raise ValueError(f"key sequence length must be >= 1, got {k.shape[-2]}")
+        if q.shape[-2] == 0:
+            raise ValueError(f"query sequence length must be >= 1, got {q.shape[-2]}")
         logits = (_unit(q.float()) @ _unit(k.float()).transpose(-2, -1)) * self.tau
         if attn_mask is not None:  # bool: True = keep; float: added to logits
             if attn_mask.dtype == torch.bool:

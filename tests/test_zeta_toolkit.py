@@ -315,3 +315,33 @@ def test_fully_masked_attention_row_gradients_are_finite():
     assert torch.isfinite(q.grad).all() and (q.grad.abs() < 1e5).all(), "q gradient not bounded"
     assert torch.isfinite(k.grad).all() and (k.grad.abs() < 1e5).all(), "k gradient not bounded"
     assert torch.isfinite(v.grad).all() and (v.grad.abs() < 1e5).all(), "v gradient not bounded"
+
+
+def test_empty_key_length_raises():
+    """Empty key sequence should raise ValueError."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(1, 4, 8)
+    k = torch.randn(1, 0, 8)
+    v = torch.randn(1, 0, 8)
+    with pytest.raises(ValueError, match="key sequence length"):
+        attn(q, k, v)
+
+
+def test_empty_query_length_raises():
+    """Empty query sequence should raise ValueError."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(1, 0, 8)
+    k = torch.randn(1, 4, 8)
+    v = torch.randn(1, 4, 8)
+    with pytest.raises(ValueError, match="query sequence length"):
+        attn(q, k, v)
+
+
+def test_empty_batch_size_is_allowed():
+    """Zero batch size should work (empty output)."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(0, 4, 8)
+    k = torch.randn(0, 4, 8)
+    v = torch.randn(0, 4, 8)
+    out = attn(q, k, v)
+    assert out.shape == (0, 4, 8)
