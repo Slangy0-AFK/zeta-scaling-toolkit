@@ -1,5 +1,8 @@
 # Zeta Scaling Toolkit
 
+[![Tests](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/actions/workflows/test.yml/badge.svg)](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/actions)
+[![codecov](https://codecov.io/gh/Slangy0-AFK/zeta-scaling-toolkit/graph/badge.svg)](https://codecov.io/gh/Slangy0-AFK/zeta-scaling-toolkit)
+
 A PyTorch library that helps large AI models train more stably and don't "break" or stop learning when they get massive.
 
 ## The Problem
