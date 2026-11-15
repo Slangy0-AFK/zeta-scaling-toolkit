@@ -158,6 +158,32 @@ python benchmarks/length_generalization.py --task char --variants rope --steps 5
 | 1024 | 16.3468 ± 2.5690 | -2.4541 [-3.9310, -1.1031] | 9/10 |
 | 4096 | 20.7109 ± 3.8651 | -4.7050 [-6.8017, -2.6631] | 9/10 |
 
+### Exploratory 2000-step paired comparison
+
+```bash
+python benchmarks/length_generalization.py --task char --variants rope rope-log --steps 2000 --seeds 42 43 44 45 46 47 48 49 50 51 --init-modes baseline --schedulers toolkit --output /tmp/length-generalization-char2000.jsonl
+```
+
+The paired runs use the same dataset hash, held-out split, seeds and evaluation
+sampling as the exploratory 500-step run. The 20 trial records are preserved in
+[length-generalization-char2000.jsonl](./length-generalization-char2000.jsonl).
+Perplexity differences are RoPE + log minus RoPE. The variant changes both QK
+normalization and temperature scaling, so their effects cannot be separated.
+
+| Context | RoPE perplexity mean ± SD | RoPE + log perplexity mean ± SD | Paired difference [95% CI] | Seeds with lower loss |
+|---:|---:|---:|---:|---:|
+| 64 | 7.4986 ± 1.0199 | 7.7400 ± 0.7692 | +0.2414 [-0.0608, +0.5274] | 2/10 |
+| 128 | 7.7718 ± 1.0069 | 8.6551 ± 1.1508 | +0.8833 [+0.6049, +1.1747] | 0/10 |
+| 256 | 7.8326 ± 0.7167 | 9.5773 ± 1.2513 | +1.7448 [+1.3569, +2.1295] | 0/10 |
+| 512 | 15.8098 ± 2.9635 | 12.4564 ± 0.6807 | -3.3534 [-5.1971, -1.9888] | 10/10 |
+| 1024 | 27.4523 ± 9.1786 | 16.1943 ± 1.9355 | -11.2580 [-17.0692, -6.6306] | 10/10 |
+| 4096 | 44.9728 ± 18.6546 | 24.3149 ± 2.9740 | -20.6579 [-32.5389, -10.5431] | 10/10 |
+
+The longer-context comparison favors the combined variant here, but the
+64-token confidence interval includes zero at both budgets. Perplexity also
+increases with context length for both variants. These results do not meet the
+recommendation rule and do not establish stable 64x length generalization.
+
 The full 500/2000-step variant and initialization/scheduler matrix, separate
 hyperparameter sweep, and matched-seed needle and successor evaluations have
 not been completed. No component meets the stated recommendation rule on this
