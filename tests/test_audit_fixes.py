@@ -38,25 +38,25 @@ def test_temperature_tau0_greater_than_tau_max_raises():
 def test_temperature_nan_tau0_raises():
     """NaN tau0 must be rejected."""
     with pytest.raises(ValueError, match="temperature values must be finite"):
-        NonCollapsingAttention(8, tau0=float('nan'), tau_min=1.0, tau_max=50.0)
+        NonCollapsingAttention(8, tau0=float("nan"), tau_min=1.0, tau_max=50.0)
 
 
 def test_temperature_nan_tau_min_raises():
     """NaN tau_min must be rejected."""
     with pytest.raises(ValueError, match="temperature values must be finite"):
-        NonCollapsingAttention(8, tau0=10.0, tau_min=float('nan'), tau_max=50.0)
+        NonCollapsingAttention(8, tau0=10.0, tau_min=float("nan"), tau_max=50.0)
 
 
 def test_temperature_nan_tau_max_raises():
     """NaN tau_max must be rejected."""
     with pytest.raises(ValueError, match="temperature values must be finite"):
-        NonCollapsingAttention(8, tau0=10.0, tau_min=1.0, tau_max=float('nan'))
+        NonCollapsingAttention(8, tau0=10.0, tau_min=1.0, tau_max=float("nan"))
 
 
 def test_temperature_inf_tau0_raises():
     """Infinite tau0 must be rejected."""
     with pytest.raises(ValueError, match="temperature values must be finite"):
-        NonCollapsingAttention(8, tau0=float('inf'), tau_min=1.0, tau_max=50.0)
+        NonCollapsingAttention(8, tau0=float("inf"), tau_min=1.0, tau_max=50.0)
 
 
 def test_temperature_normal_initialization():
@@ -122,7 +122,9 @@ def test_calibrate_gain_reverts_all_parameters_on_failure():
 
     linear_layers = [layer for layer in layers if isinstance(layer, nn.Linear)]
     original_weights = [layer.weight.clone() for layer in linear_layers]
-    original_biases = [layer.bias.clone() if layer.bias is not None else None for layer in linear_layers]
+    original_biases = [
+        layer.bias.clone() if layer.bias is not None else None for layer in linear_layers
+    ]
 
     # Use zero input to force failure
     sample_input = torch.zeros(2, 4)
@@ -188,7 +190,7 @@ def test_calibrate_gain_nan_activation_reverts():
     linear_layers = [layer for layer in layers if isinstance(layer, nn.Linear)]
     original_weights = [layer.weight.clone() for layer in linear_layers]
 
-    sample_input = torch.full((2, 4), float('inf'))
+    sample_input = torch.full((2, 4), float("inf"))
     with pytest.raises(ValueError, match="cannot calibrate|zero or non-finite|non-finite"):
         calibrate_gain(layers, sample_input, target_ratio=1.0, iters=1)
 
@@ -198,11 +200,13 @@ def test_calibrate_gain_nan_activation_reverts():
 
 def test_calibrate_gain_module_list_atomicity():
     """calibrate_gain on ModuleList should also be atomic."""
-    layers = nn.ModuleList([
-        nn.Linear(4, 4),
-        nn.ReLU(),
-        nn.Linear(4, 4),
-    ])
+    layers = nn.ModuleList(
+        [
+            nn.Linear(4, 4),
+            nn.ReLU(),
+            nn.Linear(4, 4),
+        ]
+    )
 
     linear_layers = [layer for layer in layers if isinstance(layer, nn.Linear)]
     original_weights = [layer.weight.clone() for layer in linear_layers]
@@ -235,7 +239,9 @@ def test_temperature_gradient_at_extreme_raw_tau(raw_tau_value):
 
     tau.sum().backward()
     if attn.raw_tau.grad is not None:
-        assert torch.isfinite(attn.raw_tau.grad).all(), f"Non-finite gradient at raw_tau={raw_tau_value}"
+        assert torch.isfinite(attn.raw_tau.grad).all(), (
+            f"Non-finite gradient at raw_tau={raw_tau_value}"
+        )
 
 
 def test_temperature_forward_pass_with_extreme_raw_tau():

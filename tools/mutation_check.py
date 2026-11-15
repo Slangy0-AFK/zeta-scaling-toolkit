@@ -19,8 +19,8 @@ MUTANTS = (
     ("zeta_scaling_toolkit/core.py", "max=self.tau_eff_max", "max=1e30"),
     (
         "zeta_scaling_toolkit/positions.py",
-        "effective_base ** (-frequencies / dimension)",
-        "effective_base ** (-frequencies / (dimension * 2))",
+        "torch.exp(-log_base * frequencies / dimension)",
+        "torch.exp(-log_base * frequencies / (dimension * 2))",
     ),
     (
         "zeta_scaling_toolkit/positions.py",

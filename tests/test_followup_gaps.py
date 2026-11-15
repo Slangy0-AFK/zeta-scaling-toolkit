@@ -1,6 +1,5 @@
 """Follow-up regression tests for gaps found by mutation testing and an audit."""
 
-
 import pytest
 import torch
 import torch.nn as nn
@@ -46,7 +45,11 @@ def test_temperature_is_sigmoid_bounded_in_range():
         attn.raw_tau.fill_(-2.0)
     attn.tau.backward()
     assert attn.raw_tau.grad is not None
-    sig_grad = torch.sigmoid(torch.tensor(-2.0)).item() * (1.0 - torch.sigmoid(torch.tensor(-2.0)).item()) * (50.0 - 0.0)
+    sig_grad = (
+        torch.sigmoid(torch.tensor(-2.0)).item()
+        * (1.0 - torch.sigmoid(torch.tensor(-2.0)).item())
+        * (50.0 - 0.0)
+    )
     assert attn.raw_tau.grad.item() == pytest.approx(sig_grad, rel=1e-4)
 
 

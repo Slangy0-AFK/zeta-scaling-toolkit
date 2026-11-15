@@ -151,9 +151,11 @@ def test_log_scaling_with_additive_bias_and_explicit_visibility():
     v = torch.randn(1, 6, 3, dtype=torch.float64, requires_grad=True)
     bias = torch.randn(3, 6, dtype=torch.float64, requires_grad=True)
     visible = torch.tensor(
-        [[True, True, False, False, False, False],
-         [True, True, True, True, True, True],
-         [False, False, False, False, False, False]]
+        [
+            [True, True, False, False, False, False],
+            [True, True, True, True, True, True],
+            [False, False, False, False, False, False],
+        ]
     )
     actual = attention(q, k, v, bias, visibility_mask=visible)
     expected = attention(q, k, v, bias.masked_fill(~visible, float("-inf")))

@@ -148,6 +148,7 @@ pip install zeta-scaling-toolkit==0.5.0
 ### Verify Installation
 ```python
 from zeta_scaling_toolkit import __version__
+
 print(f"Installed version: v{__version__}")
 ```
 

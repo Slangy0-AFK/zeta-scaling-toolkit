@@ -713,7 +713,11 @@ def calibrate_gain(
 
     linear_modules = [layer for layer in layers if isinstance(layer, nn.Linear)]
     parameter_snapshots = [
-        (layer, layer.weight.detach().clone(), layer.bias.detach().clone() if layer.bias is not None else None)
+        (
+            layer,
+            layer.weight.detach().clone(),
+            layer.bias.detach().clone() if layer.bias is not None else None,
+        )
         for layer in linear_modules
     ]
 
