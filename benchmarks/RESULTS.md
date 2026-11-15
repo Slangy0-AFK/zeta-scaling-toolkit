@@ -184,6 +184,22 @@ The longer-context comparison favors the combined variant here, but the
 increases with context length for both variants. These results do not meet the
 recommendation rule and do not establish stable 64x length generalization.
 
+### 16k-token numerical smoke checks
+
+Two CPU single-thread forward/backward checks used `NonCollapsingAttention(64)`
+with batch size 1 and sequence length 16,384. With standard-normal Q/K/V,
+outputs and query gradients were finite and output standard deviation was
+`0.0162`. In a separate stress check, Q and K were multiplied by `1e37` while
+V remained standard-normal; outputs and Q/K/V gradients were finite, and output
+standard deviation was `0.0160`. Neither run raised OOM. Peak memory was not
+measured.
+
+These are single-layer random-input numerical checks, not optimizer updates or
+training. They do not prove stable training, length generalization, or
+overflow safety for every finite input. The attention computation still has
+quadratic work in sequence length; practical full training at this length was
+not measured here.
+
 The full 500/2000-step variant and initialization/scheduler matrix, separate
 hyperparameter sweep, and matched-seed needle and successor evaluations have
 not been completed. No component meets the stated recommendation rule on this
