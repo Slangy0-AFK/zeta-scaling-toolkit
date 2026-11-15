@@ -119,11 +119,6 @@ def train_mlp(corrected, batches, evaluation_inputs):
 
 
 def main():
-    import matplotlib
-
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-
     torch.set_num_threads(1)
     generator = torch.Generator().manual_seed(SEED)
     token_batches = torch.randint(VOCAB_SIZE, (STEPS, BATCH_SIZE, SEQ_LEN), generator=generator)
@@ -133,17 +128,7 @@ def main():
     standard_losses = train_transformer(False, token_batches)
     corrected_losses = train_transformer(True, token_batches)
     print(f"Standard attention + cosine final loss: {standard_losses[-1]:.6f}")
-    print(f"Corrected attention + asymptotic final loss: {corrected_losses[-1]:.6f}")
-
-    plt.plot(range(1, STEPS + 1), standard_losses, label="Standard attention + cosine")
-    plt.plot(range(1, STEPS + 1), corrected_losses, label="Corrected attention + asymptotic")
-    plt.xlabel("Training step")
-    plt.ylabel("Token cross-entropy loss")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig("loss_curves.png")
-    plt.close()
-    print("Saved loss_curves.png")
+    print(f"Corrected attention + cosine-with-floor final loss: {corrected_losses[-1]:.6f}")
 
     standard_std = train_mlp(False, mlp_batches, mlp_evaluation_inputs)
     corrected_std = train_mlp(True, mlp_batches, mlp_evaluation_inputs)

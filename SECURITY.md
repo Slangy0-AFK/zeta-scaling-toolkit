@@ -21,22 +21,25 @@ If you discover a security vulnerability in the Zeta Scaling Toolkit, please **d
 
 ### Dependencies
 
-- **PyTorch** - We rely on PyTorch for all tensor operations. Follow PyTorch's security advisories at https://pytorch.org/
-- **NumPy** - Numerical operations are delegated to NumPy. See https://numpy.org/security for updates
-- All dependencies are pinned to known-good versions in `pyproject.toml`
+- **PyTorch** - The package uses PyTorch for tensor operations. Follow its
+  security advisories at https://pytorch.org/
+- Runtime dependencies are declared in `pyproject.toml`; development tools are
+  optional extras and are not needed to use the package.
 
 ### Code Security
 
-- **No external API calls** - This library does not make HTTP requests or contact external services
-- **No file I/O** - The toolkit operates entirely on in-memory tensors
-- **Input validation** - All inputs are validated to prevent unexpected tensor operations
-- **No arbitrary code execution** - The toolkit does not eval or exec user input
+- The package's tensor operations do not make network requests or access files.
+- The optional benchmark downloads its public dataset when it is not cached;
+  see `benchmarks/real_task.py` before running it.
+- Public tensor inputs and configuration values receive validation, but this
+  does not replace validation in downstream applications.
+- The package does not evaluate user-provided strings as code.
 
 ### Testing
 
-- **100% test coverage** - All functionality is covered by automated tests
-- **Type checking** - Optional static type hints with mypy for type safety
-- **Regular CI/CD** - Tests run on every commit via GitHub Actions
+- CI runs regression and property tests with a 95% package coverage threshold,
+  plus Ruff and strict mypy checks. Coverage and tests do not establish training
+  benefits or prove absence of defects.
 
 ## Best Practices for Users
 
@@ -46,7 +49,7 @@ If you discover a security vulnerability in the Zeta Scaling Toolkit, please **d
 - Always use `pip install` from trusted sources only
 
 ### Usage
-- Keep your PyTorch and NumPy versions up to date
+- Keep your PyTorch version up to date
 - Follow PyTorch's security guidelines when building production models
 - The toolkit is experimental - evaluate against benchmarks before production deployment
 
@@ -66,15 +69,14 @@ If you discover a security vulnerability in the Zeta Scaling Toolkit, please **d
 
 - Python 3.9+ is supported
 - PyTorch 2.0.0+
-- NumPy 1.21.0+
 
-Always keep your dependencies updated to receive security patches.
+Keep dependencies updated to receive security patches.
 
 ## Security Updates
 
 Security patches will be released as soon as practical after vulnerabilities are verified and fixed. Users are encouraged to:
 - Watch this repository for releases
-- Subscribe to PyTorch and NumPy security advisories
+- Subscribe to PyTorch security advisories
 - Update regularly to the latest version
 
 ## Questions?
