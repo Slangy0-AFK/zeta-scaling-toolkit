@@ -7,7 +7,7 @@ gain-aware orthogonal init) with its failure modes closed off; see tests/.
 
 import math
 import warnings
-from typing import Optional
+from typing import Optional, cast, Literal
 
 import torch
 import torch.nn as nn
@@ -240,7 +240,7 @@ def make_corrected_linear(
             f"Supported: {sorted(supported)}. "
             "For GELU/SiLU, use calibrate_gain(model, sample_input) after stacking."
         )
-    gain = nn.init.calculate_gain(nonlinearity)
+    gain = nn.init.calculate_gain(cast(Literal['linear', 'relu', 'leaky_relu', 'tanh', 'sigmoid', 'selu', 'conv1d', 'conv2d', 'conv3d'], nonlinearity))
     layer = nn.Linear(in_features, out_features, bias=bias)
     nn.init.orthogonal_(layer.weight, gain=gain)
     if bias:
