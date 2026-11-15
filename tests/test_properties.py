@@ -666,6 +666,40 @@ def test_streaming_attention_alibi_supports_headless_inputs(batch_shape):
     torch.testing.assert_close(actual, expected, atol=1e-10, rtol=1e-10)
 
 
+@pytest.mark.parametrize("length_scaling", ["none", "log"])
+def test_streaming_attention_alibi_broadcasts_singleton_query_heads(length_scaling):
+    torch.manual_seed(113)
+    q_sparse = torch.randn(2, 1, 5, 8, dtype=torch.float64, requires_grad=True)
+    k_sparse = torch.randn(2, 3, 9, 8, dtype=torch.float64, requires_grad=True)
+    v_sparse = torch.randn(2, 3, 9, 4, dtype=torch.float64, requires_grad=True)
+    q_dense = q_sparse.detach().clone().requires_grad_()
+    k_dense = k_sparse.detach().clone().requires_grad_()
+    v_dense = v_sparse.detach().clone().requires_grad_()
+    kwargs = {"length_scaling": length_scaling}
+    if length_scaling == "log":
+        kwargs["train_length"] = 4
+    sparse = NonCollapsingAttention(8, **kwargs).double()
+    dense = NonCollapsingAttention(8, **kwargs).double()
+    dense.load_state_dict(sparse.state_dict())
+    mask = streaming_mask(5, 9, window=3, sink_tokens=1)
+    bias = alibi_bias(3, 5, 9, dtype=torch.float64)
+    dense_mask = bias.masked_fill(~mask[None, None], float("-inf"))
+
+    sparse_output = sparse.forward_streaming(
+        q_sparse, k_sparse, v_sparse, window=3, sink_tokens=1, alibi=True, chunk_size=2
+    )
+    dense_output = dense(q_dense, k_dense, v_dense, attn_mask=dense_mask)
+    torch.testing.assert_close(sparse_output, dense_output, atol=1e-10, rtol=1e-10)
+    sparse_gradients = torch.autograd.grad(
+        sparse_output.square().sum(), (q_sparse, k_sparse, v_sparse, sparse.raw_tau)
+    )
+    dense_gradients = torch.autograd.grad(
+        dense_output.square().sum(), (q_dense, k_dense, v_dense, dense.raw_tau)
+    )
+    for sparse_gradient, dense_gradient in zip(sparse_gradients, dense_gradients):
+        torch.testing.assert_close(sparse_gradient, dense_gradient, atol=1e-10, rtol=1e-10)
+
+
 def test_streaming_attention_log_alibi_supports_rank_two_inputs():
     torch.manual_seed(109)
     query = torch.randn(5, 8, dtype=torch.float64)

@@ -171,12 +171,16 @@ python benchmarks/profile_sparse_attention.py --iterations 3 --dense-attention-m
 ```
 
 Environment: Python 3.14.2, PyTorch 2.15.0+cu132, Linux 6.8.0-1070-azure,
-AMD EPYC 7763 CPU, one thread, float32, window 64, four sink tokens, and query
-chunk size 128. Each measured case ran in a fresh process with two warmups and
-three timed iterations. CPU memory is process peak RSS, including Python and
-PyTorch startup; it is not incremental tensor allocation. CUDA was unavailable.
-The dense attention and ALiBi limits prevent large quadratic references from
-exceeding the configured caps. The mask equality check is capped separately.
+AMD EPYC 7763 CPU, one thread, float32, batch size 2, four heads, head size 16,
+window 64, four sink tokens, and query chunk size 128. Each measured case ran
+in a fresh process with two warmups and three timed iterations. The attention
+inputs Q/K/V require gradients; each backward computes Q/K/V and `raw_tau`
+gradients, and the worker verifies that Q/K/V gradients were produced. Input
+and parameter gradients are cleared between iterations. CPU memory is process
+peak RSS, including Python and PyTorch startup; it is not incremental tensor
+allocation. CUDA was unavailable. The dense attention and ALiBi limits prevent
+large quadratic references from exceeding the configured caps. The mask
+equality check is capped separately.
 
 Dense builders return the same dense tensors as before; chunking bounds
 intermediate construction allocations but does not make the returned tensor
@@ -185,55 +189,60 @@ divided by chunked time.
 
 | Builder | Length | Time (ms) | Peak RSS (MB) | Speedup | Max error / RMSE |
 |---|---:|---:|---:|---:|---:|
-| Mask | 128 | 0.084 -> 0.111 | 536.9 -> 538.1 | 0.76x | 0 / 0 |
-| Mask | 256 | 0.171 -> 0.255 | 537.1 -> 538.0 | 0.67x | 0 / 0 |
-| Mask | 512 | 0.779 -> 0.617 | 538.3 -> 538.6 | 1.26x | 0 / 0 |
-| Mask | 1,024 | 2.638 -> 2.450 | 542.7 -> 541.1 | 1.08x | 0 / 0 |
-| Mask | 2,048 | 9.031 -> 11.411 | 560.8 -> 550.0 | 0.79x | 0 / 0 |
-| Mask | 4,096 | 36.989 -> 31.401 | 633.0 -> 571.6 | 1.18x | 0 / 0 |
-| Mask | 8,192 | 275.419 -> 168.009 | 857.2 -> 668.1 | 1.64x | 0 / 0 |
-| Mask | 16,384 | 1,118.670 -> 707.985 | 1,817.4 -> 1,056.0 | 1.58x | Not compared |
-| ALiBi | 128 | 0.131 -> 0.241 | 538.6 -> 539.7 | 0.54x | 0 / 0 |
-| ALiBi | 256 | 0.651 -> 0.641 | 541.6 -> 543.0 | 1.01x | 0 / 0 |
-| ALiBi | 512 | 3.523 -> 3.816 | 550.4 -> 551.0 | 0.92x | 0 / 0 |
-| ALiBi | 1,024 | 11.718 -> 10.051 | 586.4 -> 574.6 | 1.17x | 0 / 0 |
-| ALiBi | 2,048 | 100.947 -> 61.394 | 682.3 -> 675.0 | 1.64x | 0 / 0 |
-| ALiBi | 4,096 | 451.093 -> 220.674 | 1,114.5 -> 1,065.1 | 2.04x | 0 / 0 |
+| Mask | 128 | 0.097 -> 0.113 | 536.9 -> 538.3 | 0.86x | 0 / 0 |
+| Mask | 256 | 0.170 -> 0.260 | 537.3 -> 538.3 | 0.65x | 0 / 0 |
+| Mask | 512 | 0.810 -> 0.678 | 538.5 -> 538.8 | 1.20x | 0 / 0 |
+| Mask | 1,024 | 1.711 -> 3.363 | 543.8 -> 541.1 | 0.51x | 0 / 0 |
+| Mask | 2,048 | 8.954 -> 11.972 | 561.1 -> 550.4 | 0.75x | 0 / 0 |
+| Mask | 4,096 | 45.230 -> 31.571 | 633.2 -> 571.8 | 1.43x | 0 / 0 |
+| Mask | 8,192 | 259.402 -> 201.944 | 857.3 -> 668.2 | 1.28x | 0 / 0 |
+| Mask | 16,384 | 1,099.071 -> 670.723 | 1,817.4 -> 1,056.4 | 1.64x | Not compared |
+| ALiBi | 128 | 0.109 -> 0.227 | 539.1 -> 539.9 | 0.48x | 0 / 0 |
+| ALiBi | 256 | 0.688 -> 0.614 | 541.8 -> 543.1 | 1.12x | 0 / 0 |
+| ALiBi | 512 | 5.395 -> 2.981 | 551.6 -> 551.0 | 1.81x | 0 / 0 |
+| ALiBi | 1,024 | 12.807 -> 10.748 | 586.7 -> 574.7 | 1.19x | 0 / 0 |
+| ALiBi | 2,048 | 101.399 -> 55.625 | 682.7 -> 674.3 | 1.82x | 0 / 0 |
+| ALiBi | 4,096 | 482.644 -> 227.816 | 1,114.8 -> 1,065.1 | 2.12x | 0 / 0 |
 | ALiBi | 8,192, 16,384 | Not run | Not run | — | Over configured dense-reference cap |
 
-Builder timings vary: chunking is slower at some short lengths and does not
-reduce total output storage. Its benefits appear at larger lengths, especially
-for ALiBi; the measured peak RSS reduction at 16,384 mask length was about 42%.
+Builder timings vary: chunking is slower at some lengths and does not reduce
+total output storage. Its benefits appear at larger lengths, especially for
+ALiBi; the measured peak RSS reduction at 16,384 mask length was about 42%.
 
-Attention timings include forward and backward; memory is process peak RSS.
-Dense versus sparse output max absolute error / RMSE is shown where both paths
-ran. Dense reference attention was capped at length 2,048 in the primary sweep.
+Attention timings include forward and backward through Q/K/V and `raw_tau`;
+memory is process peak RSS. Dense versus sparse output max absolute error /
+RMSE is shown where both paths ran. Dense reference attention was capped at
+length 2,048 in the primary sweep.
 
 | Length | Dense time / RSS | Sparse time / RSS | Speedup | Max error / RMSE |
 |---:|---:|---:|---:|---:|
-| 128 | 2.267 ms / 587.1 MB | 1.458 ms / 585.8 MB | 1.55x | 0 / 0 |
-| 256 | 12.075 ms / 594.1 MB | 2.749 ms / 588.3 MB | 4.39x | 4.17e-7 / 3.03e-8 |
-| 512 | 32.277 ms / 615.9 MB | 6.148 ms / 591.2 MB | 5.25x | 7.15e-7 / 3.66e-8 |
-| 1,024 | 130.357 ms / 791.9 MB | 20.081 ms / 602.6 MB | 6.49x | 4.77e-7 / 3.82e-8 |
-| 2,048 | 650.625 ms / 1,363.6 MB | 35.244 ms / 620.4 MB | 18.46x | 8.34e-7 / 3.76e-8 |
-| 4,096 | Not in primary sweep | 64.243 ms / 661.4 MB | — | — |
-| 8,192 | Not run | 106.905 ms / 740.1 MB | — | — |
-| 16,384 | Not run | 235.062 ms / 885.9 MB | — | — |
+| 128 | 5.963 ms / 591.3 MB | 2.914 ms / 588.9 MB | 2.05x | 0 / 0 |
+| 256 | 14.870 ms / 609.8 MB | 6.406 ms / 595.4 MB | 2.32x | 4.77e-7 / 3.23e-8 |
+| 512 | 52.437 ms / 683.8 MB | 25.083 ms / 603.9 MB | 2.09x | 9.54e-7 / 3.76e-8 |
+| 1,024 | 291.270 ms / 1,011.2 MB | 28.555 ms / 628.5 MB | 10.20x | 8.34e-7 / 3.89e-8 |
+| 2,048 | 1,173.736 ms / 2,268.0 MB | 63.004 ms / 670.6 MB | 18.63x | 7.15e-7 / 3.83e-8 |
+| 4,096 | Not in primary sweep | 135.334 ms / 756.2 MB | — | — |
+| 8,192 | Not run | 345.601 ms / 953.5 MB | — | — |
+| 16,384 | Not run | 962.155 ms / 1,289.8 MB | — | — |
 
-A separate exploratory 4,096 run with one measured iteration completed: dense
-attention took 2,522.016 ms at 2,695.1 MB peak RSS; sparse took 52.633 ms at
-653.8 MB, with max absolute error 7.15e-7 and RMSE 3.74e-8. A three-iteration
-repeat was terminated, so this single-iteration result is not included in the
-primary table or treated as a stable benchmark. No dense attention comparison
-was attempted at 8,192 or 16,384. Sparse-only timings at those lengths are not
-speedup claims.
+A separate exploratory 4,096 run with one measured iteration completed under
+the earlier benchmark setup: dense attention took 2,522.016 ms at 2,695.1 MB
+peak RSS; sparse took 52.633 ms at 653.8 MB, with max absolute error 7.15e-7
+and RMSE 3.74e-8. That run did not measure Q/K/V gradients and is not
+comparable to the regenerated table. A three-iteration repeat was terminated,
+so this single-iteration result is not treated as a stable benchmark. No dense
+attention comparison was attempted at 8,192 or 16,384; sparse-only timings at
+those lengths are not speedup claims.
 
 These are CPU microbenchmarks for batch 2, width 64, and four heads. They show
 that the additive sparse attention path avoids the full attention matrix and
-matches the dense reference closely in measured comparisons. They do not
-establish GPU performance or end-to-end transformer throughput. Dense builder
-APIs remain dense by design; callers seeking asymptotically reduced attention
-memory must use the sparse attention API.
+matches the dense reference closely in measured comparisons. The chunk bound
+describes per-chunk forward temporaries only: autograd retains saved activations
+for all chunks, so training memory still grows with sequence length. These
+measurements do not establish CUDA performance, CUDA memory use, or end-to-end
+transformer throughput. Dense builder APIs remain dense by design; callers
+seeking asymptotically reduced attention memory must use the sparse attention
+API.
 
 Both variants solve this deliberately simple task. Corrected initialization
 does not improve paired loss, and the accuracy ceiling makes this a weak test
