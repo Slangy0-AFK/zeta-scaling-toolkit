@@ -91,7 +91,34 @@ difference to either individually. After 300 scheduler steps, the asymptotic
 rate is about 0.12 times the base rate; cosine is 0.5 at step 150 and zero
 after step 300. Both attention variants use four heads and the same input and
 output projection architecture. This is one task and one run, not external
-validation. A 2×2 attention/scheduler ablation is a next step.
+validation. The tuning script below also runs a 2×2 attention/scheduler
+ablation.
+
+### Tuning and ablation
+
+```bash
+python benchmarks/tune_copy_task.py > tuning-results.jsonl
+```
+
+This runs all four attention/scheduler combinations over five matched seeds,
+using the same initial weights and training batches for each configuration.
+It prints one JSON record per grid point with per-seed final training-batch
+and held-out toy-batch losses and their means. Compare D against C with the
+same `learning_rate` and `A_attn`, and A against the other configurations
+with the same learning rate. Use `--help` to change the grid, steps, or seeds.
+To use your own task, replace `train_trial` with your model, data, and training
+loop, preserving the attention/scheduler switches and seed matching.
+
+`A_attn` changes the attention divisor `1 + A_attn / ln(N)`; zero recovers
+ordinary scaled dot-product attention in this benchmark. The scheduler's
+`floor_ratio` is a fraction of the optimizer's base learning rate, not an
+absolute rate. Its decay depends on scheduler steps, so call `step()` after
+each optimizer update. A higher floor becomes effective only once the
+logarithmic factor falls below it. The script also searches base learning
+rates if supplied via `--learning-rates`. There is no global `A0` in the
+current API, and the attention and scheduler do not require corrected linear
+initialization; this transformer's linear layers use PyTorch defaults.
+These toy results cannot guarantee a particular ranking or real-task benefit.
 
 ## Requirements and license
 
