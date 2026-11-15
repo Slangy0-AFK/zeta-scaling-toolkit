@@ -48,11 +48,12 @@ dev = [
     "ruff>=0.1.0",
     "mypy>=1.0.0",
     "build>=1.0.0",
-    "twine>=4.0.0"
+    "twine>=4.0.0",
+    "hypothesis>=6.0.0"
 ]
 test = [
     "pytest>=7.0.0",
-    "pytest-cov>=4.0.0"
+    "hypothesis>=6.0.0"
 ]
 benchmark = [
     "matplotlib>=3.5.0"
@@ -87,4 +88,4 @@ disallow_incomplete_defs = false
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
-addopts = "-v --cov=zeta_scaling_toolkit --cov-report=term-missing --cov-report=html"
+addopts = "-v"
