@@ -19,7 +19,8 @@ def rotary_embedding(
     Position angles are computed from int64 positions in float64, then the
     rotated tensor is cast back to the input dtype. ``linear`` divides positions
     by ``scale_factor``. ``ntk`` scales the frequency base using the common NTK
-    interpolation rule.
+    interpolation rule in log space to avoid intermediate overflow. Extremely
+    large scale factors can still limit positional precision.
     """
     if not isinstance(x, torch.Tensor) or not x.is_floating_point():
         raise TypeError("x must be a floating-point torch.Tensor")
@@ -48,16 +49,16 @@ def rotary_embedding(
         raise ValueError("scale_factor must be a finite real number >= 1")
 
     dimension = x.shape[-1]
-    effective_base = float(base)
     position_values = positions.to(torch.float64)
+    log_base = math.log(float(base))
     if scaling == "linear":
         position_values = position_values / scale_factor
     elif scaling == "ntk" and scale_factor > 1:
         exponent = dimension / (dimension - 2) if dimension > 2 else 1.0
-        effective_base *= scale_factor**exponent
+        log_base += exponent * math.log(float(scale_factor))
 
     frequencies = torch.arange(0, dimension, 2, device=x.device, dtype=torch.float64)
-    inverse_frequencies = effective_base ** (-frequencies / dimension)
+    inverse_frequencies = torch.exp(-log_base * frequencies / dimension)
     angles = position_values[..., None] * inverse_frequencies
     cosine, sine = torch.cos(angles), torch.sin(angles)
     pairs = x.to(torch.float64).reshape(*x.shape[:-1], dimension // 2, 2)

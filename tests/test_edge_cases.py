@@ -9,7 +9,16 @@ from zeta_scaling_toolkit import (
     calibrate_gain,
     get_isotropic_coords,
     make_corrected_linear,
+    rotary_embedding,
 )
+
+
+def test_rotary_ntk_large_finite_scale_factor_does_not_overflow():
+    x = torch.randn(1, 4)
+    positions = torch.tensor([1], dtype=torch.int64)
+    output = rotary_embedding(x, positions, scaling="ntk", scale_factor=1e308)
+    assert output.shape == x.shape
+    assert torch.isfinite(output).all()
 
 
 def test_attention_constructor_validates_dimension_and_flags():
