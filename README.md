@@ -156,6 +156,16 @@ attention and established LR schedules are recommended unless the experimental
 components have been evaluated for the intended task. The historical
 high-floor run cannot be reproduced with the current scheduler formula.
 
+## Known limitations
+
+- `calibrate_gain` equalises the whole-batch norm, not each sample's norm. For
+  GELU/SiLU in deep stacks without normalisation layers the batch norm can be
+  preserved while the median sample's signal collapses (30-layer SiLU: median
+  per-row ratio about 0.01). See `test_known_limitation_silu_calibration_*`.
+- `calibrate_gain` emits a `RuntimeWarning` when its target ratio is not reached
+  within 2% (for example, bounded activations such as tanh cannot reach 1.0).
+- Nothing here has been validated on large-scale training runs.
+
 ## Requirements and license
 
 Python >= 3.9 and PyTorch >= 2.0. MIT License; see [LICENSE](LICENSE).

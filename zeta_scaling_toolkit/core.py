@@ -22,7 +22,14 @@ _NORM_EPS = 1e-6
 
 def _unit(x: torch.Tensor) -> torch.Tensor:
     """L2-normalise the last dim; finite value and bounded gradient at x == 0."""
-    return x * torch.rsqrt(x.pow(2).sum(dim=-1, keepdim=True) + _NORM_EPS)
+    # Handle overflow: if x.pow(2) would overflow, rescale x first
+    abs_max = x.abs().amax(dim=-1, keepdim=True)
+    # If max value > sqrt(1e19), rescale to avoid overflow in x**2
+    rescale = torch.where(abs_max > 1e9, abs_max / 1e9, torch.ones_like(abs_max))
+    x_scaled = x / rescale
+    norm_sq = x_scaled.pow(2).sum(dim=-1, keepdim=True) + _NORM_EPS
+    # The unit vector is the same regardless of rescaling
+    return x_scaled * torch.rsqrt(norm_sq)
 
 
 class NonCollapsingAttention(nn.Module):
@@ -52,8 +59,8 @@ class NonCollapsingAttention(nn.Module):
         super().__init__()
         if d_k < 1:
             raise ValueError(f"d_k must be >= 1, got {d_k}")
-        if not (0.0 < tau_min <= tau0 <= tau_max):
-            raise ValueError(f"need 0 < tau_min <= tau0 <= tau_max, got tau_min={tau_min}, tau0={tau0}, tau_max={tau_max}")
+        if not (0.0 <= tau_min <= tau0 <= tau_max):
+            raise ValueError(f"need 0 <= tau_min <= tau0 <= tau_max, got tau_min={tau_min}, tau0={tau0}, tau_max={tau_max}")
         if A_attn != 1.0:
             warnings.warn("A_attn is deprecated and has no effect.", DeprecationWarning, stacklevel=2)
         self.d_k = d_k
@@ -289,24 +296,23 @@ def calibrate_gain(
     if sample_input.requires_grad:
         raise ValueError("sample_input must not require grad")
 
+    worst_deviation = 0.0
     with torch.no_grad():
         input_norm = sample_input.norm(dim=-1).mean().item()
         if input_norm == 0:
             raise ValueError("sample_input has zero norm")
 
         for _ in range(iters):
-            out = sample_input.clone()
-            for module in model_or_layer.modules():
-                if isinstance(module, nn.Linear):
-                    out = module(out)
-                    if nonlinearity is not None:
-                        out = nonlinearity(out)
-
+            # Forward pass through the model as-is (all modules apply their logic)
+            out = model_or_layer(sample_input)
+            
             output_norm = out.norm(dim=-1).mean().item()
-            if output_norm == 0:
+            if output_norm == 0 or not torch.isfinite(torch.tensor(output_norm)):
                 break
 
             ratio = output_norm / input_norm
+            worst_deviation = max(worst_deviation, abs(ratio / target_ratio - 1.0))
+            
             scale = (target_ratio / ratio) ** 0.5  # scale weights by sqrt of ratio
 
             # Rescale all Linear layers
@@ -315,15 +321,18 @@ def calibrate_gain(
                     module.weight.data.mul_(scale)
 
         # Final pass to compute achieved ratio
-        out = sample_input.clone()
-        for module in model_or_layer.modules():
-            if isinstance(module, nn.Linear):
-                out = module(out)
-                if nonlinearity is not None:
-                    out = nonlinearity(out)
-
+        out = model_or_layer(sample_input)
         output_norm = out.norm(dim=-1).mean().item()
-        final_ratio = output_norm / input_norm if input_norm > 0 else 0.0
+        final_ratio = output_norm / input_norm if input_norm > 0 and torch.isfinite(torch.tensor(output_norm)) else 0.0
+        
+        if worst_deviation > 0.02 and final_ratio > 0:
+            warnings.warn(
+                f"calibrate_gain did not reach target_ratio={target_ratio} within 2% "
+                f"(worst layer off by {worst_deviation:.1%}); the target may be unreachable "
+                "for this activation and input scale.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
         return final_ratio
 
 
