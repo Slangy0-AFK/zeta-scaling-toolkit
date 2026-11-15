@@ -10,7 +10,7 @@ from .core import (
 )
 from .positions import StreamingKVCache, alibi_bias, rotary_embedding, streaming_mask
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 __all__ = [
     "NonCollapsingAttention",
     "AsymptoticLRScheduler",
