@@ -1,13 +1,10 @@
-"""Experimental scaling utilities (v0.2.0).
-
-Not validated on real training runs. Every component here is a standard
-technique (QK-normalised attention, cosine-with-floor LR, isotropic coordinates,
-gain-aware orthogonal init) with its failure modes closed off; see tests/.
-"""
+"""Experimental PyTorch scaling utilities; not validated on large-scale training."""
 
 import math
+import numbers
 import warnings
-from typing import Optional
+from collections.abc import Sequence
+from typing import Any, Literal, Optional, Union, cast
 
 import torch
 import torch.nn as nn
@@ -15,14 +12,38 @@ import torch.nn.functional as F
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import LambdaLR
 
-# Added to the squared norm: bounds the gradient at zero vectors by 1/sqrt(eps) (~1e3) and keeps
-# float16 finite. Trade-off: scale invariance is exact only for ||x|| >~ 1e-2.
+# Added to the squared norm to keep zero-vector gradients bounded and inputs finite.
+# The relative effect becomes small for vector norms around 1e-2 and larger.
 _NORM_EPS = 1e-6
+GainName = Literal[
+    "linear",
+    "conv1d",
+    "conv2d",
+    "conv3d",
+    "conv_transpose1d",
+    "conv_transpose2d",
+    "conv_transpose3d",
+    "sigmoid",
+    "tanh",
+    "relu",
+    "leaky_relu",
+    "selu",
+]
 
 
 def _unit(x: torch.Tensor) -> torch.Tensor:
-    """L2-normalise the last dim; finite value and bounded gradient at x == 0."""
-    return x * torch.rsqrt(x.pow(2).sum(dim=-1, keepdim=True) + _NORM_EPS)
+    """L2-normalise the last dim without overflowing on large finite values."""
+    scale = x.abs().amax(dim=-1, keepdim=True).clamp_min(1.0)
+    scaled = x / scale
+    epsilon = _NORM_EPS / scale / scale
+    return scaled * torch.rsqrt(scaled.square().sum(dim=-1, keepdim=True) + epsilon)
+
+
+def _broadcast_shape(*shapes: torch.Size) -> Optional[torch.Size]:
+    try:
+        return cast(torch.Size, torch.broadcast_shapes(*shapes))  # type: ignore[no-untyped-call]
+    except RuntimeError:
+        return None
 
 
 class NonCollapsingAttention(nn.Module):
@@ -31,58 +52,151 @@ class NonCollapsingAttention(nn.Module):
     logits = tau * cos(q, k), so |logit| <= tau <= tau_max. Unlike a fixed
     d_k**-0.5 bound, tau starts high enough for peaked attention and can never
     grow past ``tau_max``. Internals run in float32 (float16 safe); output is
-    cast back to ``v.dtype``.
+    cast back to ``v.dtype``. Scale invariance is approximate near zero: because
+    ``1e-6`` is added to the squared norm, it is reliable for vector norms of
+    about ``1e-2`` and larger. Fully masked query rows return zero vectors.
 
     Args:
         d_k: per-head key dimension (inputs must match on the last dim).
         A_attn: deprecated, kept for API compatibility. Has no effect.
         tau0: initial temperature.
         tau_max: hard cap on the temperature.
+        tau_min: lower bound on the temperature.
+        check_finite: raise when q, k, or v contain NaN or infinity.
     """
 
-    def __init__(self, d_k: int, A_attn: float = 1.0, tau0: float = 10.0, tau_max: float = 50.0):
+    def __init__(
+        self,
+        d_k: int,
+        A_attn: float = 1.0,
+        tau0: float = 10.0,
+        tau_max: float = 50.0,
+        tau_min: float = 1.0,
+        check_finite: bool = False,
+    ):
         super().__init__()
-        if d_k < 1:
+        if isinstance(d_k, bool) or not isinstance(d_k, int) or d_k < 1:
             raise ValueError(f"d_k must be >= 1, got {d_k}")
-        if not (0.0 < tau0 <= tau_max):
-            raise ValueError(f"need 0 < tau0 <= tau_max, got tau0={tau0}, tau_max={tau_max}")
+        values = {"tau0": tau0, "tau_min": tau_min, "tau_max": tau_max}
+        if any(
+            not isinstance(value, numbers.Real) or not math.isfinite(value)
+            for value in values.values()
+        ):
+            raise ValueError(f"temperature values must be finite real numbers, got {values}")
+        if not (0.0 <= tau_min <= tau0 <= tau_max) or tau0 == 0.0:
+            raise ValueError(
+                "need 0 <= tau_min <= tau0 <= tau_max and tau0 > 0, "
+                f"got tau_min={tau_min}, tau0={tau0}, tau_max={tau_max}"
+            )
+        if not isinstance(check_finite, bool):
+            raise TypeError("check_finite must be a bool")
         if A_attn != 1.0:
-            warnings.warn("A_attn is deprecated and has no effect.", DeprecationWarning, stacklevel=2)
+            warnings.warn(
+                "A_attn is deprecated and has no effect.", DeprecationWarning, stacklevel=2
+            )
         self.d_k = d_k
         self.A_attn = A_attn  # unused; retained so old benchmark scripts still assign it
         self.tau_max = float(tau_max)
-        self.raw_tau = nn.Parameter(torch.tensor(math.log(math.expm1(tau0))))  # inverse softplus
+        self.tau_min = float(tau_min)
+        self.check_finite = check_finite
+        inverse_softplus = tau0 + math.log(-math.expm1(-tau0))
+        self.raw_tau = nn.Parameter(torch.tensor(inverse_softplus))
 
     @property
     def tau(self) -> torch.Tensor:
-        return F.softplus(self.raw_tau).clamp(max=self.tau_max)
+        return F.softplus(self.raw_tau).clamp(min=self.tau_min, max=self.tau_max)
 
-    def forward(self, q, k, v, attn_mask: Optional[torch.Tensor] = None):
+    def forward(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        attn_mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        for name, tensor in (("q", q), ("k", k), ("v", v)):
+            if not isinstance(tensor, torch.Tensor):
+                raise TypeError(f"{name} must be a torch.Tensor")
+            if tensor.ndim < 2:
+                raise ValueError(f"{name} must have rank >= 2, got rank {tensor.ndim}")
+            if not tensor.is_floating_point():
+                raise TypeError(f"{name} must have a floating-point dtype")
         if q.shape[-1] != self.d_k or k.shape[-1] != self.d_k:
-            raise ValueError(f"expected last dim d_k={self.d_k}, got q={q.shape[-1]}, k={k.shape[-1]}")
-        logits = (_unit(q.float()) @ _unit(k.float()).transpose(-2, -1)) * self.tau
-        if attn_mask is not None:  # bool: True = keep; float: added to logits
-            if attn_mask.dtype == torch.bool:
-                logits = logits.masked_fill(~attn_mask, float("-inf"))  # fully masked row -> NaN
-            else:
-                logits = logits + attn_mask.float()
-        return (F.softmax(logits, dim=-1) @ v.float()).to(v.dtype)
+            raise ValueError(
+                f"expected last dim d_k={self.d_k}, got q={q.shape[-1]}, k={k.shape[-1]}"
+            )
+        if k.shape[-2] == 0:
+            raise ValueError("key sequence length must be nonzero")
+        if v.shape[-2] != k.shape[-2]:
+            raise ValueError("key and value sequence lengths must match")
+        if q.device != k.device or q.device != v.device:
+            raise ValueError("q, k, and v must be on the same device")
+        if _broadcast_shape(q.shape[:-2], k.shape[:-2], v.shape[:-2]) is None:
+            raise ValueError("q, k, and v batch dimensions must be broadcastable")
+        if self.check_finite and not all(torch.isfinite(tensor).all() for tensor in (q, k, v)):
+            raise ValueError("q, k, and v must contain only finite values")
 
-    def _load_from_state_dict(self, state_dict, prefix, *args, **kwargs):
+        dtype = (
+            torch.float64
+            if any(tensor.dtype == torch.float64 for tensor in (q, k, v))
+            else torch.float32
+        )
+        logits = (_unit(q.to(dtype)) @ _unit(k.to(dtype)).transpose(-2, -1)) * self.tau.to(dtype)
+        if attn_mask is not None:  # bool: True = keep; float: added to logits
+            if not isinstance(attn_mask, torch.Tensor):
+                raise TypeError("attn_mask must be a torch.Tensor")
+            if attn_mask.device != logits.device:
+                raise ValueError("attn_mask must be on the same device as q, k, and v")
+            if attn_mask.dtype != torch.bool and not attn_mask.is_floating_point():
+                raise TypeError("attn_mask must have a bool or floating-point dtype")
+            mask_shape = _broadcast_shape(attn_mask.shape, logits.shape)
+            if mask_shape is None:
+                raise ValueError("attn_mask must be broadcastable to the attention logits")
+            if tuple(mask_shape) != tuple(logits.shape):
+                raise ValueError("attn_mask must be broadcastable to the attention logits")
+            if attn_mask.dtype == torch.bool:
+                logits = logits.masked_fill(~attn_mask, float("-inf"))
+            else:
+                if torch.isnan(attn_mask).any() or torch.isposinf(attn_mask).any():
+                    raise ValueError("floating attn_mask values must not contain NaN or +inf")
+                logits = logits + attn_mask.to(dtype)
+        row_has_keys = ~torch.isneginf(logits).all(dim=-1, keepdim=True)
+        safe_logits = torch.where(row_has_keys, logits, torch.zeros_like(logits))
+        weights = F.softmax(safe_logits, dim=-1)
+        weights = torch.where(row_has_keys, weights, torch.zeros_like(weights))
+        output = weights @ v.to(dtype)
+        return output.to(v.dtype)
+
+    def _load_from_state_dict(
+        self,
+        state_dict: Any,
+        prefix: str,
+        local_metadata: Any,
+        strict: bool,
+        missing_keys: Any,
+        unexpected_keys: Any,
+        error_msgs: Any,
+    ) -> None:
         legacy = [prefix + "q_scale", prefix + "k_scale"]
         if any(key in state_dict for key in legacy):
-            warnings.warn("Dropping legacy q_scale/k_scale from checkpoint; raw_tau keeps its init.")
+            warnings.warn(
+                "Dropping legacy q_scale/k_scale from checkpoint; raw_tau keeps its init.",
+                UserWarning,
+                stacklevel=2,
+            )
+            state_dict = state_dict.copy()
             for key in legacy:
                 state_dict.pop(key, None)
             state_dict.setdefault(prefix + "raw_tau", self.raw_tau.detach().clone())
-        super()._load_from_state_dict(state_dict, prefix, *args, **kwargs)
+        super()._load_from_state_dict(
+            state_dict, prefix, local_metadata, strict, missing_keys, unexpected_keys, error_msgs
+        )
 
 
 class AsymptoticLRScheduler(LambdaLR):
     """Linear warmup, then cosine decay to ``floor_ratio * base_lr``, then a hard clamp.
 
-    This is cosine annealing with a minimum LR (not a true asymptote). Call
-    ``step()`` after each optimizer update.
+    This schedule reaches a fixed minimum LR; it does not decay indefinitely.
+    Call ``step()`` after each optimizer update.
 
     Args:
         floor_ratio: final LR as a fraction of base LR, in [0, 1].
@@ -98,18 +212,28 @@ class AsymptoticLRScheduler(LambdaLR):
         last_epoch: int = -1,
         warmup_steps: int = 0,
     ):
+        if (
+            isinstance(floor_ratio, bool)
+            or not isinstance(floor_ratio, numbers.Real)
+            or not math.isfinite(floor_ratio)
+        ):
+            raise ValueError(f"floor_ratio must be finite, got {floor_ratio}")
         if not (0.0 <= floor_ratio <= 1.0):
             raise ValueError(f"floor_ratio must be in [0, 1], got {floor_ratio}")
-        if total_steps < 1:
+        if isinstance(total_steps, bool) or not isinstance(total_steps, int) or total_steps < 1:
             raise ValueError(f"total_steps must be >= 1, got {total_steps}")
-        if not (0 <= warmup_steps < total_steps):
+        if (
+            isinstance(warmup_steps, bool)
+            or not isinstance(warmup_steps, int)
+            or not (0 <= warmup_steps < total_steps)
+        ):
             raise ValueError(f"need 0 <= warmup_steps < total_steps, got {warmup_steps}")
-        self.floor_ratio = floor_ratio
-        self.total_steps = total_steps
-        self.warmup_steps = warmup_steps
+        self.floor_ratio: float = float(floor_ratio)
+        self.total_steps: int = total_steps
+        self.warmup_steps: int = warmup_steps
         super().__init__(optimizer, self.lr_lambda, last_epoch=last_epoch)
 
-    def lr_lambda(self, step):
+    def lr_lambda(self, step: int) -> float:
         if step < self.warmup_steps:
             return (step + 1) / self.warmup_steps
         if step >= self.total_steps:
@@ -119,14 +243,28 @@ class AsymptoticLRScheduler(LambdaLR):
         return self.floor_ratio + (1.0 - self.floor_ratio) * cosine
 
 
-def get_isotropic_coords(height: int, width: int, dtype=torch.float32, device=None) -> torch.Tensor:
+def get_isotropic_coords(
+    height: int,
+    width: int,
+    dtype: torch.dtype = torch.float32,
+    device: Optional[Union[torch.device, str]] = None,
+) -> torch.Tensor:
     """Pixel-centred (x, y) coords, centred on the image, divided by max(h, w).
 
     Equal pixel distances give equal coordinate distances in x and y, so aspect
     ratio is preserved. Shape (height, width, 2).
     """
-    if height < 1 or width < 1:
+    if (
+        isinstance(height, bool)
+        or not isinstance(height, int)
+        or isinstance(width, bool)
+        or not isinstance(width, int)
+        or height < 1
+        or width < 1
+    ):
         raise ValueError(f"height and width must be >= 1, got {height}x{width}")
+    if not isinstance(dtype, torch.dtype) or not torch.empty((), dtype=dtype).is_floating_point():
+        raise TypeError("dtype must be a floating-point torch.dtype")
     scale = float(max(height, width))
     ys = (torch.arange(height, dtype=dtype, device=device) + 0.5 - height / 2) / scale
     xs = (torch.arange(width, dtype=dtype, device=device) + 0.5 - width / 2) / scale
@@ -140,8 +278,8 @@ def get_scale_invariant_vit_coords(
     T: Optional[float] = None,
     A_coords: float = 0.0,
     smooth_angle: bool = False,
-    dtype=torch.float32,
-    device=None,
+    dtype: torch.dtype = torch.float32,
+    device: Optional[Union[torch.device, str]] = None,
 ) -> torch.Tensor:
     """Polar coords on the isotropic grid.
 
@@ -150,7 +288,9 @@ def get_scale_invariant_vit_coords(
     ``T`` and ``A_coords`` are deprecated and ignored.
     """
     if T is not None or A_coords != 0.0:
-        warnings.warn("T and A_coords are deprecated and have no effect.", DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            "T and A_coords are deprecated and have no effect.", DeprecationWarning, stacklevel=2
+        )
     xy = get_isotropic_coords(height, width, dtype=dtype, device=device)
     x, y = xy[..., 0], xy[..., 1]
     r = torch.hypot(x, y)
@@ -161,7 +301,10 @@ def get_scale_invariant_vit_coords(
 
 
 def make_corrected_linear(
-    in_features: int, out_features: int, bias: bool = True, nonlinearity: str = "relu"
+    in_features: int,
+    out_features: int,
+    bias: bool = True,
+    nonlinearity: GainName = "relu",
 ) -> nn.Linear:
     """Linear layer with orthogonal weights scaled by the nonlinearity's gain.
 
@@ -169,6 +312,27 @@ def make_corrected_linear(
     pass nonlinearity="linear" for gain 1 (exact isometry on square layers).
     Rectangular layers with out < in necessarily shrink norms by ~sqrt(out/in).
     """
+    supported = {
+        "linear",
+        "conv1d",
+        "conv2d",
+        "conv3d",
+        "conv_transpose1d",
+        "conv_transpose2d",
+        "conv_transpose3d",
+        "sigmoid",
+        "tanh",
+        "relu",
+        "leaky_relu",
+        "selu",
+    }
+    if not isinstance(nonlinearity, str) or nonlinearity not in supported:
+        raise ValueError(
+            f"unsupported nonlinearity {nonlinearity!r}; GELU and SiLU require "
+            "data-dependent calibrate_gain(...)"
+        )
+    if not isinstance(bias, bool):
+        raise TypeError("bias must be a bool")
     gain = nn.init.calculate_gain(nonlinearity)
     layer = nn.Linear(in_features, out_features, bias=bias)
     nn.init.orthogonal_(layer.weight, gain=gain)
@@ -177,10 +341,113 @@ def make_corrected_linear(
     return layer
 
 
+def calibrate_gain(
+    model_or_layer_stack: Union[nn.Module, Sequence[nn.Module]],
+    sample_input: torch.Tensor,
+    target_ratio: float = 1.0,
+    iters: int = 10,
+) -> Union[nn.Module, Sequence[nn.Module]]:
+    """Calibrate a sequential layer stack's activation norm using sample data.
+
+    The stack must be an ``nn.Sequential``, ``nn.ModuleList``, or a sequence of
+    modules. Each layer's output norm is adjusted toward ``target_ratio`` times
+    its input norm. Calibration runs without gradients, preserves module
+    training flags and CPU/CUDA RNG state, and mutates linear layer weights.
+    """
+    if not isinstance(sample_input, torch.Tensor) or not sample_input.is_floating_point():
+        raise TypeError("sample_input must be a floating-point torch.Tensor")
+    if (
+        not isinstance(target_ratio, numbers.Real)
+        or not math.isfinite(target_ratio)
+        or target_ratio <= 0
+    ):
+        raise ValueError("target_ratio must be a finite positive real number")
+    if isinstance(iters, bool) or not isinstance(iters, int) or iters < 1:
+        raise ValueError("iters must be a positive integer")
+    if isinstance(model_or_layer_stack, (nn.Sequential, nn.ModuleList)):
+        layers = list(model_or_layer_stack)
+    elif isinstance(model_or_layer_stack, Sequence) and all(
+        isinstance(layer, nn.Module) for layer in model_or_layer_stack
+    ):
+        layers = list(model_or_layer_stack)
+    else:
+        raise TypeError(
+            "model_or_layer_stack must be nn.Sequential, nn.ModuleList, or a module sequence"
+        )
+    if not layers:
+        raise ValueError("model_or_layer_stack must not be empty")
+    if not any(isinstance(layer, nn.Linear) for layer in layers):
+        raise ValueError("model_or_layer_stack must contain a direct nn.Linear layer")
+
+    modules = [module for layer in layers for module in layer.modules()]
+    training_flags = [module.training for module in modules]
+    cpu_rng = torch.random.get_rng_state()
+    cuda_rng = torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None
+    activation_types = (nn.ReLU, nn.LeakyReLU, nn.GELU, nn.SiLU, nn.Tanh, nn.Sigmoid)
+    try:
+        for layer in layers:
+            layer.eval()
+        with torch.no_grad():
+            for _ in range(iters):
+                values = sample_input
+                index = 0
+                while index < len(layers):
+                    layer = layers[index]
+                    layer_input = values
+                    if not isinstance(layer, nn.Linear):
+                        values = layer(values)
+                        index += 1
+                        continue
+
+                    values = layer(values)
+                    following_activation = (
+                        layers[index + 1]
+                        if index + 1 < len(layers)
+                        and isinstance(layers[index + 1], activation_types)
+                        else None
+                    )
+                    measured = (
+                        following_activation(values) if following_activation is not None else values
+                    )
+                    input_norm = torch.linalg.vector_norm(layer_input.double())
+                    output_norm = torch.linalg.vector_norm(measured.double())
+                    if input_norm == 0 or output_norm == 0 or not torch.isfinite(output_norm):
+                        raise ValueError(
+                            "cannot calibrate a layer with zero or non-finite activation norm"
+                        )
+                    factor = float(target_ratio) * input_norm / output_norm
+                    if not torch.isfinite(factor) or factor <= 0:
+                        raise ValueError("calibration produced a non-finite or non-positive scale")
+                    scaled_weight = layer.weight * factor.to(layer.weight.dtype)
+                    if not torch.isfinite(scaled_weight).all():
+                        raise ValueError("calibration would produce non-finite layer weights")
+                    scaled_bias = None
+                    if layer.bias is not None:
+                        scaled_bias = layer.bias * factor.to(layer.bias.dtype)
+                        if not torch.isfinite(scaled_bias).all():
+                            raise ValueError("calibration would produce non-finite layer bias")
+                    layer.weight.copy_(scaled_weight)
+                    if layer.bias is not None and scaled_bias is not None:
+                        layer.bias.copy_(scaled_bias)
+                    values = layer(layer_input)
+                    if following_activation is not None:
+                        values = following_activation(values)
+                        index += 1
+                    index += 1
+    finally:
+        for module, training in zip(modules, training_flags):
+            module.training = training
+        torch.random.set_rng_state(cpu_rng)
+        if cuda_rng is not None:
+            torch.cuda.set_rng_state_all(cuda_rng)
+    return model_or_layer_stack
+
+
 __all__ = [
     "NonCollapsingAttention",
     "AsymptoticLRScheduler",
     "get_isotropic_coords",
     "get_scale_invariant_vit_coords",
     "make_corrected_linear",
+    "calibrate_gain",
 ]

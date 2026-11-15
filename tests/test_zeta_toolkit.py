@@ -1,7 +1,6 @@
 """Adversarial regression tests: each one pins a failure found in the v0.1 audit."""
 
 import math
-import warnings
 
 import pytest
 import torch
@@ -29,7 +28,11 @@ def test_attention_matches_reference_formula():
 def test_attention_is_not_near_uniform():
     torch.manual_seed(0)
     k = torch.randn(1, 128, 64)
-    w = F.softmax((F.normalize(k, dim=-1) @ F.normalize(k, dim=-1).transpose(-2, -1)) * NonCollapsingAttention(64).tau, -1)
+    w = F.softmax(
+        (F.normalize(k, dim=-1) @ F.normalize(k, dim=-1).transpose(-2, -1))
+        * NonCollapsingAttention(64).tau,
+        -1,
+    )
     assert w[0].diagonal().mean() > 0.9  # v0.1 gave 0.0088 vs 0.0078 uniform
 
 
@@ -67,7 +70,9 @@ def test_input_scale_invariance():
     torch.manual_seed(0)
     q, k, v = (torch.randn(1, 16, 32) for _ in range(3))
     attn = NonCollapsingAttention(32)
-    torch.testing.assert_close(attn(q, k, v), attn(q * 1e3, k * 1e-1, v), atol=1e-4, rtol=1e-4)  # holds for ||x|| >~ 1e-2
+    torch.testing.assert_close(
+        attn(q, k, v), attn(q * 1e3, k * 1e-1, v), atol=1e-4, rtol=1e-4
+    )  # holds for ||x|| >~ 1e-2
 
 
 def test_mask_blocks_positions():
@@ -127,14 +132,25 @@ def test_monotone_without_warmup():
 
 def test_warmup_ramps_then_peaks_at_base():
     lrs = _lrs(60, total_steps=50, warmup_steps=10, floor_ratio=0.1)
-    assert lrs[0] == pytest.approx(0.1) and lrs[9] == pytest.approx(1.0) and lrs[10] == pytest.approx(1.0)
+    assert (
+        lrs[0] == pytest.approx(0.1)
+        and lrs[9] == pytest.approx(1.0)
+        and lrs[10] == pytest.approx(1.0)
+    )
     assert lrs[-1] == pytest.approx(0.1)
     assert all(a <= b for a, b in zip(lrs[:10], lrs[1:10]))
 
 
 @pytest.mark.parametrize(
     "kw",
-    [{"floor_ratio": 1.5}, {"floor_ratio": -0.1}, {"total_steps": 0}, {"total_steps": -5}, {"warmup_steps": 300}, {"warmup_steps": -1}],
+    [
+        {"floor_ratio": 1.5},
+        {"floor_ratio": -0.1},
+        {"total_steps": 0},
+        {"total_steps": -5},
+        {"warmup_steps": 300},
+        {"warmup_steps": -1},
+    ],
 )
 def test_scheduler_rejects_bad_config(kw):
     with pytest.raises(ValueError):
@@ -144,7 +160,9 @@ def test_scheduler_rejects_bad_config(kw):
 # ---------- coordinates ----------
 def test_aspect_ratio_preserved():
     c = get_isotropic_coords(224, 448)
-    assert (c[112, 274, 0] - c[112, 224, 0]).item() == pytest.approx((c[162, 224, 1] - c[112, 224, 1]).item())  # v0.1: 2.0x
+    assert (c[112, 274, 0] - c[112, 224, 0]).item() == pytest.approx(
+        (c[162, 224, 1] - c[112, 224, 1]).item()
+    )  # v0.1: 2.0x
 
 
 def test_grid_is_centred_and_radius_bounded():
@@ -166,7 +184,9 @@ def test_smooth_angle_is_continuous_across_the_branch_cut():
     assert smooth.shape == (32, 32, 3)
     # rows 15 and 16 straddle y=0; on the left half they sit either side of theta = +-pi
     assert (raw[15, :10, 1] - raw[16, :10, 1]).abs().min() > 6.0  # raw angle jumps ~2*pi
-    assert (smooth[15, :10, 1:] - smooth[16, :10, 1:]).abs().max() < 0.2  # (cos, sin) moves only by the true pixel spacing
+    assert (
+        smooth[15, :10, 1:] - smooth[16, :10, 1:]
+    ).abs().max() < 0.2  # (cos, sin) moves only by the true pixel spacing
 
 
 def test_deprecated_coord_args_warn_and_do_nothing():
