@@ -12,6 +12,7 @@ import sys
 import urllib.request
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Optional
 
 import torch
 import torch.nn as nn
@@ -152,11 +153,12 @@ def train_trial(
     vocabulary_size: int,
     steps: int,
     floor_ratio: float,
+    device: torch.device,
 ) -> dict[str, float]:
     corrected_attention = component in ("attention", "all")
     corrected_init = component in ("init", "all")
     torch.manual_seed(seed)
-    model = TinyCharLM(vocabulary_size, corrected_attention, corrected_init)
+    model = TinyCharLM(vocabulary_size, corrected_attention, corrected_init).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=BASE_LR)
     scheduler = (
         AsymptoticLRScheduler(optimizer, floor_ratio=floor_ratio, total_steps=steps)
@@ -165,7 +167,7 @@ def train_trial(
     )
 
     model.train()
-    inputs, targets = train_batches
+    inputs, targets = (tensor.to(device) for tensor in train_batches)
     for step in range(steps):
         optimizer.zero_grad(set_to_none=True)
         logits = model(inputs[step])
@@ -183,6 +185,8 @@ def train_trial(
     evaluation_inputs, evaluation_targets = evaluation_batches
     with torch.no_grad():
         for batch_inputs, batch_targets in zip(evaluation_inputs, evaluation_targets):
+            batch_inputs = batch_inputs.to(device)
+            batch_targets = batch_targets.to(device)
             logits = model(batch_inputs)
             losses.append(
                 F.cross_entropy(
@@ -229,13 +233,19 @@ def positive_int(value: str) -> int:
     return result
 
 
-def main() -> None:
+def main(
+    default_steps: int = 100,
+    default_seeds: Optional[Sequence[int]] = None,
+) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--steps", type=positive_int, default=100)
+    parser.add_argument("--steps", type=positive_int, default=default_steps)
     parser.add_argument("--batch-size", type=positive_int, default=32)
     parser.add_argument("--eval-batches", type=positive_int, default=16)
-    parser.add_argument("--seeds", type=int, nargs="+", default=list(range(42, 52)))
+    parser.add_argument(
+        "--seeds", type=int, nargs="+", default=list(default_seeds or range(42, 52))
+    )
     parser.add_argument("--floor-ratio", type=float, default=0.1)
+    parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     parser.add_argument(
         "--data-path",
         type=Path,
@@ -248,6 +258,13 @@ def main() -> None:
         parser.error("seeds must be distinct nonnegative integers")
     if not 0.0 <= args.floor_ratio <= 1.0 or not math.isfinite(args.floor_ratio):
         parser.error("floor ratio must be finite and in [0, 1]")
+    if args.device == "cuda" and not torch.cuda.is_available():
+        parser.error("--device cuda was requested but CUDA is unavailable")
+    device = torch.device(
+        "cuda"
+        if args.device == "cuda" or (args.device == "auto" and torch.cuda.is_available())
+        else "cpu"
+    )
     torch.set_num_threads(1)
 
     text = load_text(args.data_path)
@@ -272,6 +289,7 @@ def main() -> None:
                 len(vocabulary),
                 args.steps,
                 args.floor_ratio,
+                device,
             )
             results[component].append(result)
             print(
@@ -294,7 +312,7 @@ def main() -> None:
             "cpu_model": cpu_model_name(),
             "cpu_count": os.cpu_count(),
             "torch_threads": torch.get_num_threads(),
-            "device": "cpu",
+            "device": str(device),
             "cuda_available": torch.cuda.is_available(),
             "seeds": args.seeds,
             "steps": args.steps,

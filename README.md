@@ -91,6 +91,8 @@ mypy --strict zeta_scaling_toolkit
 
 CI runs the CPU test matrix and a nightly Hypothesis profile. CUDA coverage is
 skipped when no CUDA device is available. See [TESTING.md](./TESTING.md).
+Reviewers can see the passing full GitHub Actions matrix at commit
+[719bfb7](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/commit/719bfb73f97e350087cfefa9617f94571a9d02d1).
 
 ## Real-task evaluation
 
@@ -98,9 +100,10 @@ The matched-seed char-level language-model benchmark and its results are
 documented in [benchmarks/RESULTS.md](./benchmarks/RESULTS.md). The 100-step
 table is early-optimisation only. At 500 steps, only the scheduler-only variant
 improved loss on all ten matched seeds; attention-only, initialization-only,
-and the combined variant had higher loss. These results apply to the measured
-small model and dataset only; the attention and initialization options show no
-measured training benefit here.
+and the combined variant had higher loss. At 1,000 steps over 20 seeds, the
+scheduler-only variant improved loss on all 20 matched seeds; attention-only
+was worse, while initialization-only and all-components paired intervals
+included zero. These results apply to the measured model and dataset only.
 
 ## What this can and cannot do
 
@@ -128,9 +131,11 @@ measured training benefit here.
   to the input type. Large positions should not be converted directly to
   float16 or bfloat16; the precision behavior is tested in
   [test_properties.py](./tests/test_properties.py).
-- Language-model measurements use one 32-wide model and one small dataset.
-  They do not generalize to large-scale training. Attention and initialization
-  have no measured training benefit in the 500-step run; see
+- Language-model measurements use one 32-wide model and one small dataset; the
+  synthetic vision task used 500 steps and is deliberately simple. Validated
+  on a 1,000-step character-level LM and a separate 500-step synthetic vision
+  task, but not on large-scale foundation models. These results do not
+  generalize to large-scale training; see
   [benchmarks/RESULTS.md](./benchmarks/RESULTS.md).
 
 ## Known limitations
