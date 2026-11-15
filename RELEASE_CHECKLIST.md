@@ -45,7 +45,7 @@
 ### GitHub Actions Setup
 - [x] Workflow file `.github/workflows/publish.yml` configured
 - [x] Uses twine with API token authentication
-- [x] GitHub secret PYPI_API_TOKEN registered
+- [x] GitHub secret PYPI_TOKEN registered
 - [x] Workflow ready to execute
 
 ### PyPI Configuration

@@ -28,7 +28,7 @@ The OIDC trusted publisher configuration failed because PyPI didn't have the cor
 - name: Publish to PyPI
   env:
     TWINE_USERNAME: __token__
-    TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+    TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
   run: |
     twine upload dist/* --non-interactive --skip-existing
 ```
@@ -58,15 +58,13 @@ Add the token to your GitHub repository:
 **Via GitHub Web UI** (Easiest):
 1. Go to: https://github.com/Slangy0-AFK/zeta-scaling-toolkit/settings/secrets/actions
 2. Click "New repository secret"
-3. Name: `PYPI_API_TOKEN`
+3. Name: `PYPI_TOKEN`
 4. Value: (paste the token from step 1)
 5. Click "Add secret"
 
 **Via GitHub CLI**:
 ```bash
-gh secret set PYPI_API_TOKEN \
-  --repo Slangy0-AFK/zeta-scaling-toolkit \
-  --body "pypi-YOUR_TOKEN_HERE"
+gh secret set PYPI_TOKEN --repo Slangy0-AFK/zeta-scaling-toolkit
 ```
 
 **Via GitHub API**:
@@ -74,7 +72,7 @@ gh secret set PYPI_API_TOKEN \
 curl -X PUT \
   -H "Accept: application/vnd.github.v3+json" \
   -H "Authorization: Bearer $GITHUB_TOKEN" \
-  https://api.github.com/repos/Slangy0-AFK/zeta-scaling-toolkit/actions/secrets/PYPI_API_TOKEN \
+  https://api.github.com/repos/Slangy0-AFK/zeta-scaling-toolkit/actions/secrets/PYPI_TOKEN \
   -d '{"encrypted_value":"YOUR_ENCRYPTED_VALUE","key_id":"YOUR_KEY_ID"}'
 ```
 
@@ -182,7 +180,7 @@ Visit: https://pypi.org/project/zeta-scaling-toolkit/0.5.0/
 
 | Item | Value |
 |------|-------|
-| GitHub Secret Name | `PYPI_API_TOKEN` |
+| GitHub Secret Name | `PYPI_TOKEN` |
 | PyPI Project | zeta-scaling-toolkit |
 | Package Version | 0.5.0 |
 | Workflow File | `.github/workflows/publish.yml` |
@@ -192,7 +190,7 @@ Visit: https://pypi.org/project/zeta-scaling-toolkit/0.5.0/
 
 ## Next Action
 
-**Create GitHub secret `PYPI_API_TOKEN` with your PyPI API token, then trigger the workflow.**
+**Create GitHub secret `PYPI_TOKEN` with your PyPI API token, then trigger the workflow.**
 
 ---
 
