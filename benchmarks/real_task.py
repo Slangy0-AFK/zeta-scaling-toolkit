@@ -38,17 +38,39 @@ COMPONENTS = ("baseline", "attention", "scheduler", "init", "all")
 class TransformerBlock(nn.Module):
     def __init__(self, corrected_attention: bool, corrected_init: bool, head_size: int):
         super().__init__()
-        linear = make_corrected_linear if corrected_init else nn.Linear
         self.norm_attention = nn.LayerNorm(MODEL_WIDTH)
-        self.qkv = linear(MODEL_WIDTH, MODEL_WIDTH * 3)
-        self.projection = linear(MODEL_WIDTH, MODEL_WIDTH)
+        self.qkv = (
+            make_corrected_linear(MODEL_WIDTH, MODEL_WIDTH * 3, nonlinearity="linear")
+            if corrected_init
+            else nn.Linear(MODEL_WIDTH, MODEL_WIDTH * 3)
+        )
+        self.projection = (
+            make_corrected_linear(MODEL_WIDTH, MODEL_WIDTH, nonlinearity="linear")
+            if corrected_init
+            else nn.Linear(MODEL_WIDTH, MODEL_WIDTH)
+        )
         self.norm_feedforward = nn.LayerNorm(MODEL_WIDTH)
+        feedforward_input = (
+            make_corrected_linear(MODEL_WIDTH, MODEL_WIDTH * 2, nonlinearity="relu")
+            if corrected_init
+            else nn.Linear(MODEL_WIDTH, MODEL_WIDTH * 2)
+        )
+        feedforward_output = (
+            make_corrected_linear(MODEL_WIDTH * 2, MODEL_WIDTH, nonlinearity="linear")
+            if corrected_init
+            else nn.Linear(MODEL_WIDTH * 2, MODEL_WIDTH)
+        )
         self.feedforward = nn.Sequential(
-            linear(MODEL_WIDTH, MODEL_WIDTH * 2),
+            feedforward_input,
             nn.ReLU(),
-            linear(MODEL_WIDTH * 2, MODEL_WIDTH),
+            feedforward_output,
         )
         self.attention = NonCollapsingAttention(head_size) if corrected_attention else None
+        if corrected_init:
+            residual_scale = 1.0 / math.sqrt(2 * LAYERS)
+            with torch.no_grad():
+                self.projection.weight.mul_(residual_scale)
+                feedforward_output.weight.mul_(residual_scale)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         batch, sequence, _ = x.shape
@@ -73,7 +95,6 @@ class TransformerBlock(nn.Module):
 class TinyCharLM(nn.Module):
     def __init__(self, vocabulary_size: int, corrected_attention: bool, corrected_init: bool):
         super().__init__()
-        linear = make_corrected_linear if corrected_init else nn.Linear
         self.token_embedding = nn.Embedding(vocabulary_size, MODEL_WIDTH)
         self.position_embedding = nn.Embedding(CONTEXT, MODEL_WIDTH)
         self.blocks = nn.Sequential(
@@ -83,7 +104,11 @@ class TinyCharLM(nn.Module):
             )
         )
         self.norm = nn.LayerNorm(MODEL_WIDTH)
-        self.output = linear(MODEL_WIDTH, vocabulary_size)
+        self.output = (
+            make_corrected_linear(MODEL_WIDTH, vocabulary_size, nonlinearity="linear")
+            if corrected_init
+            else nn.Linear(MODEL_WIDTH, vocabulary_size)
+        )
 
     def forward(self, tokens: torch.Tensor) -> torch.Tensor:
         positions = torch.arange(tokens.shape[1], device=tokens.device)
