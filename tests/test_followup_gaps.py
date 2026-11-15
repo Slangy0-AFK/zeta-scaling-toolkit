@@ -1,6 +1,5 @@
 """Follow-up regression tests for gaps found by mutation testing and an audit."""
 
-import math
 
 import pytest
 import torch
@@ -34,20 +33,21 @@ def test_float16_near_max_inputs_match_normal_scale():
     torch.testing.assert_close(actual, attn(q, k, v.float()).half(), atol=2e-2, rtol=2e-2)
 
 
-def test_temperature_is_softplus_of_the_raw_parameter():
-    """Pins the parameterisation (abs() or a plain clamp would pass the other tests)."""
+def test_temperature_is_sigmoid_bounded_in_range():
+    """Pins the parameterisation (sigmoid with bounds; the raw parameter is logit-scaled)."""
     attn = NonCollapsingAttention(8, tau0=1.0, tau_min=0.0, tau_max=50.0)
     for raw in (-2.0, 0.0, 1.5):
         with torch.no_grad():
             attn.raw_tau.fill_(raw)
-        assert attn.tau.item() == pytest.approx(math.log1p(math.exp(raw)), rel=1e-5)
+        sig = torch.sigmoid(torch.tensor(raw)).item()
+        expected_tau = 0.0 + sig * (50.0 - 0.0)
+        assert attn.tau.item() == pytest.approx(expected_tau, rel=1e-5)
     with torch.no_grad():
         attn.raw_tau.fill_(-2.0)
     attn.tau.backward()
     assert attn.raw_tau.grad is not None
-    assert attn.raw_tau.grad.item() == pytest.approx(
-        torch.sigmoid(torch.tensor(-2.0)).item(), rel=1e-4
-    )
+    sig_grad = torch.sigmoid(torch.tensor(-2.0)).item() * (1.0 - torch.sigmoid(torch.tensor(-2.0)).item()) * (50.0 - 0.0)
+    assert attn.raw_tau.grad.item() == pytest.approx(sig_grad, rel=1e-4)
 
 
 @pytest.mark.parametrize("tau0", [1.0, 7.0, 10.0, 49.0])

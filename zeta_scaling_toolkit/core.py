@@ -123,12 +123,15 @@ class NonCollapsingAttention(nn.Module):
         self.length_scaling: Literal["none", "log"] = length_scaling
         self.train_length: Optional[int] = train_length
         self.tau_eff_max: float = float(tau_eff_max)
-        inverse_softplus = tau0 + math.log(-math.expm1(-tau0))
-        self.raw_tau: nn.Parameter = nn.Parameter(torch.tensor(inverse_softplus))
+        scaled_tau0 = (tau0 - tau_min) / (tau_max - tau_min)
+        clipped_scaled = max(1e-7, min(1.0 - 1e-7, scaled_tau0))
+        logit_tau0 = math.log(clipped_scaled / (1.0 - clipped_scaled))
+        self.raw_tau: nn.Parameter = nn.Parameter(torch.tensor(logit_tau0))
 
     @property
     def tau(self) -> torch.Tensor:
-        return F.softplus(self.raw_tau).clamp(min=self.tau_min, max=self.tau_max)
+        scaled = torch.sigmoid(self.raw_tau)
+        return self.tau_min + scaled * (self.tau_max - self.tau_min)
 
     def forward(
         self,

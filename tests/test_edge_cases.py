@@ -158,3 +158,15 @@ def test_calibrate_gain_accepts_a_module_list():
     layers = nn.ModuleList([nn.Linear(4, 4), nn.GELU()])
     result = calibrate_gain(layers, torch.randn(8, 4), iters=2)
     assert result is layers
+
+
+def test_temperature_recovers_after_crossing_lower_bound():
+    model = NonCollapsingAttention(8, tau0=5.0, tau_min=1.0, tau_max=50.0)
+    with torch.no_grad():
+        model.raw_tau.fill_(-10.0)
+    model.zero_grad()
+    tau = model.tau
+    tau.sum().backward()
+    assert model.raw_tau.grad is not None
+    grad_magnitude = model.raw_tau.grad.abs().item()
+    assert grad_magnitude > 0, f"Gradient is zero at raw_tau=-10; cannot recover: {grad_magnitude}"
