@@ -6,11 +6,11 @@ Implements 4 core fixes for numerical stability, scaling, and initialization.
 """
 
 from .core import (
-    NonCollapsingAttention,
-    AsymptoticLRScheduler,
-    get_scale_invariant_vit_coords,
-    CorrectedVarianceLinear,
     A0,
+    AsymptoticLRScheduler,
+    CorrectedVarianceLinear,
+    NonCollapsingAttention,
+    get_scale_invariant_vit_coords,
 )
 
 __version__ = "0.1.0"

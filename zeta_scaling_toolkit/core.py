@@ -6,6 +6,7 @@ Implements 4 core fixes for numerical stability, scaling, and initialization.
 """
 
 import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -30,8 +31,7 @@ class NonCollapsingAttention(nn.Module):
         if N <= 1:
             raise ValueError("Sequence length N must be > 1.")
         ln_N = math.log(N)
-        W_N = 1.0 + self.A0 / ln_N          # Always > 1 for finite N
-        scale = 1.0 / W_N                    # Non-degenerate floor
+        W_N = 1.0 + self.A0 / ln_N  # Always > 1 for finite N
 
         logits = torch.matmul(Q, K.transpose(-2, -1)) / (math.sqrt(self.d_k) * W_N)
         attn_weights = F.softmax(logits, dim=-1)
@@ -48,9 +48,9 @@ class AsymptoticLRScheduler(LRScheduler):
         super().__init__(optimizer, last_epoch)
 
     def get_lr(self):
-        T = max(self.last_epoch + 1, 2)      # Ensure T > 1
+        T = max(self.last_epoch + 1, 2)  # Ensure T > 1
         ln_T = math.log(T)
-        alpha_T = (1.0 / ln_T) + (self.A0 / (ln_T ** 2))
+        alpha_T = (1.0 / ln_T) + (self.A0 / (ln_T**2))
         return [base_lr * alpha_T for base_lr in self.base_lrs]
 
 
@@ -67,7 +67,7 @@ def get_scale_invariant_vit_coords(height: int, width: int, T: float, A0: float 
 
     u = torch.linspace(-0.5, 0.5, width)
     v = torch.linspace(0.0, 1.0, height)
-    grid_v, grid_u = torch.meshgrid(v, u, indexing='ij')
+    grid_v, grid_u = torch.meshgrid(v, u, indexing="ij")
 
     theta = 2 * math.pi * grid_u
     R = r_T * torch.sqrt(grid_v)
@@ -104,9 +104,9 @@ class CorrectedVarianceLinear(nn.Linear):
 
 # Explicit export list
 __all__ = [
-    'NonCollapsingAttention',
-    'AsymptoticLRScheduler',
-    'get_scale_invariant_vit_coords',
-    'CorrectedVarianceLinear',
-    'A0'
+    "NonCollapsingAttention",
+    "AsymptoticLRScheduler",
+    "get_scale_invariant_vit_coords",
+    "CorrectedVarianceLinear",
+    "A0",
 ]

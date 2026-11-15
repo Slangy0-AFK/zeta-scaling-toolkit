@@ -9,17 +9,18 @@ Tests all 4 core fixes:
 """
 
 import math
+
 import pytest
 import torch
 import torch.nn as nn
 import torch.optim as optim
 
 from zeta_scaling_toolkit import (
-    NonCollapsingAttention,
-    AsymptoticLRScheduler,
-    get_scale_invariant_vit_coords,
-    CorrectedVarianceLinear,
     A0,
+    AsymptoticLRScheduler,
+    CorrectedVarianceLinear,
+    NonCollapsingAttention,
+    get_scale_invariant_vit_coords,
 )
 
 
@@ -192,7 +193,7 @@ class TestAsymptoticLRScheduler:
 
         # alpha_T = 1/ln(2) + A0/ln(2)^2
         ln_2 = math.log(2)
-        expected_alpha = (1.0 / ln_2) + (A0 / (ln_2 ** 2))
+        expected_alpha = (1.0 / ln_2) + (A0 / (ln_2**2))
         expected_lr = 0.1 * expected_alpha
 
         assert abs(lr_epoch1 - expected_lr) < 1e-6, f"Expected {expected_lr}, got {lr_epoch1}"
@@ -208,7 +209,11 @@ class TestScaleInvariantVitCoords:
 
         coords = get_scale_invariant_vit_coords(height, width, T)
 
-        assert coords.shape == (height, width, 2), f"Expected shape ({height}, {width}, 2), got {coords.shape}"
+        assert coords.shape == (
+            height,
+            width,
+            2,
+        ), f"Expected shape ({height}, {width}, 2), got {coords.shape}"
 
     def test_output_shape_different_resolutions(self):
         """Test output shape with various resolutions."""
@@ -301,9 +306,9 @@ class TestCorrectedVarianceLinear:
 
         # Allow ~20% tolerance (due to random initialization)
         tolerance = 0.2 * expected_var
-        assert abs(weight_var - expected_var) < tolerance, (
-            f"Weight variance {weight_var} should be close to {expected_var}"
-        )
+        assert (
+            abs(weight_var - expected_var) < tolerance
+        ), f"Weight variance {weight_var} should be close to {expected_var}"
 
     def test_bias_initialization(self):
         """Test that bias is initialized to zero."""
