@@ -20,7 +20,10 @@ on large-scale tasks.
 - **`AsymptoticLRScheduler`** is the retained public class name for a schedule
   that linearly warms up, follows cosine decay to `floor_ratio * base_lr`, then
   stays at that floor. `floor_ratio` must be in `[0, 1]`, `total_steps >= 1`,
-  and `0 <= warmup_steps < total_steps`. See
+  and `0 <= warmup_steps < total_steps`. Without warmup it is mathematically
+  equivalent to `CosineAnnealingLR` with the same floor inside the configured
+  horizon, up to floating-point rounding; unlike stock cosine it stays clamped
+  to the floor beyond that horizon. See
   [scheduler property and resume tests](./tests/test_properties.py).
 - **`get_isotropic_coords`** returns pixel-centred `(x, y)` coordinates
   normalized by `max(height, width)`. **`get_scale_invariant_vit_coords`**
@@ -88,13 +91,52 @@ mypy --strict zeta_scaling_toolkit
 
 CI runs the CPU test matrix and a nightly Hypothesis profile. CUDA coverage is
 skipped when no CUDA device is available. See [TESTING.md](./TESTING.md).
+Reviewers can see the passing full GitHub Actions matrix at commit
+[719bfb7](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/commit/719bfb73f97e350087cfefa9617f94571a9d02d1).
 
 ## Real-task evaluation
 
 The matched-seed char-level language-model benchmark and its results are
-documented in [benchmarks/RESULTS.md](./benchmarks/RESULTS.md). Results are
-reported as paired differences with bootstrap confidence intervals; no
-component is described as beneficial unless the interval excludes zero.
+documented in [benchmarks/RESULTS.md](./benchmarks/RESULTS.md). The 100-step
+table is early-optimisation only. At 500 steps, only the scheduler-only variant
+improved loss on all ten matched seeds; attention-only, initialization-only,
+and the combined variant had higher loss. At 1,000 steps over 20 seeds, the
+scheduler-only variant improved loss on all 20 matched seeds; attention-only
+was worse, while initialization-only and all-components paired intervals
+included zero. These results apply to the measured model and dataset only.
+
+## What this can and cannot do
+
+- Opt-in log-length temperature scaling compensates for softmax dilution as
+  unmasked key count grows. The synthetic measurement and approximation are
+  recorded in [benchmarks/RESULTS.md](./benchmarks/RESULTS.md) and tested in
+  [test_properties.py](./tests/test_properties.py). This does not establish a
+  language-model training benefit.
+- RoPE and ALiBi do not require a learned absolute-position table. Their
+  relative-position and numerical properties are covered in
+  [test_properties.py](./tests/test_properties.py); extrapolation quality is
+  task-dependent and must be measured.
+- Context is not infinite. The optional streaming mask exposes a fixed window
+  plus sink tokens and cannot recall information outside that window. Its
+  visibility set is tested in [test_properties.py](./tests/test_properties.py).
+  The mask alone is dense. `StreamingKVCache` supplies a bounded inference-only
+  KV cache when used one token at a time; it detaches cached values and retains
+  only sinks plus a recent window. Cache retention and agreement with the dense
+  mask are tested in [test_properties.py](./tests/test_properties.py).
+- Attention uses SDPA when one scale applies to every row and chunks query rows
+  for row-specific scales or fully masked rows. Dense masks and ALiBi biases
+  still use quadratic memory when constructed for a full sequence. None of
+  these mechanisms provide unbounded recall.
+- RoPE angles are computed in float64 from int64 positions before casting back
+  to the input type. Large positions should not be converted directly to
+  float16 or bfloat16; the precision behavior is tested in
+  [test_properties.py](./tests/test_properties.py).
+- Language-model measurements use one 32-wide model and one small dataset; the
+  synthetic vision task used 500 steps and is deliberately simple. Validated
+  on a 1,000-step character-level LM and a separate 500-step synthetic vision
+  task, but not on large-scale foundation models. These results do not
+  generalize to large-scale training; see
+  [benchmarks/RESULTS.md](./benchmarks/RESULTS.md).
 
 ## Known limitations
 

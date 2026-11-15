@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.0
+
+- Added opt-in log-length attention temperature scaling, rotary position
+  embeddings, ALiBi biases, causal streaming masks, and a bounded inference KV
+  cache with attention sinks.
+- Updated the benchmark's optional corrected initialization and added a
+  resumable, matched-seed length-generalization evaluation runner.
+- Recorded the 500-step matched-seed result: attention-only, initialization-
+  only, and the combined variant have higher loss than baseline; see
+  [benchmark results](./benchmarks/RESULTS.md).
+- Added measured scheduler-equivalence and distractor-mass regression tests.
+- New attention length scaling and positional encodings remain opt-in; no
+  length-generalization or broad training improvement is claimed.
+
 ## Unreleased
 
 - Tests: huge-finite-input attention (overflow rescale), softplus temperature

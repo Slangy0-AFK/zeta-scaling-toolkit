@@ -63,6 +63,9 @@ class NonCollapsingAttention(nn.Module):
         tau_max: hard cap on the temperature.
         tau_min: lower bound on the temperature.
         check_finite: raise when q, k, or v contain NaN or infinity.
+        length_scaling: optional logarithmic scaling by unmasked key count.
+        train_length: training key count used as the log-scaling reference.
+        tau_eff_max: upper bound on the scaled effective temperature.
     """
 
     def __init__(
@@ -73,6 +76,9 @@ class NonCollapsingAttention(nn.Module):
         tau_max: float = 50.0,
         tau_min: float = 1.0,
         check_finite: bool = False,
+        length_scaling: Literal["none", "log"] = "none",
+        train_length: Optional[int] = None,
+        tau_eff_max: float = 200.0,
     ):
         super().__init__()
         if isinstance(d_k, bool) or not isinstance(d_k, int) or d_k < 1:
@@ -90,17 +96,35 @@ class NonCollapsingAttention(nn.Module):
             )
         if not isinstance(check_finite, bool):
             raise TypeError("check_finite must be a bool")
+        if length_scaling not in ("none", "log"):
+            raise ValueError(f"length_scaling must be 'none' or 'log', got {length_scaling!r}")
+        if train_length is not None and (
+            isinstance(train_length, bool) or not isinstance(train_length, int) or train_length < 2
+        ):
+            raise ValueError(f"train_length must be an integer >= 2, got {train_length!r}")
+        if length_scaling == "log" and train_length is None:
+            raise ValueError("train_length is required when length_scaling='log'")
+        if (
+            isinstance(tau_eff_max, bool)
+            or not isinstance(tau_eff_max, numbers.Real)
+            or not math.isfinite(tau_eff_max)
+            or tau_eff_max <= 0
+        ):
+            raise ValueError(f"tau_eff_max must be positive and finite, got {tau_eff_max}")
         if A_attn != 1.0:
             warnings.warn(
                 "A_attn is deprecated and has no effect.", DeprecationWarning, stacklevel=2
             )
-        self.d_k = d_k
+        self.d_k: int = d_k
         self.A_attn = A_attn  # unused; retained so old benchmark scripts still assign it
-        self.tau_max = float(tau_max)
-        self.tau_min = float(tau_min)
-        self.check_finite = check_finite
+        self.tau_max: float = float(tau_max)
+        self.tau_min: float = float(tau_min)
+        self.check_finite: bool = check_finite
+        self.length_scaling: Literal["none", "log"] = length_scaling
+        self.train_length: Optional[int] = train_length
+        self.tau_eff_max: float = float(tau_eff_max)
         inverse_softplus = tau0 + math.log(-math.expm1(-tau0))
-        self.raw_tau = nn.Parameter(torch.tensor(inverse_softplus))
+        self.raw_tau: nn.Parameter = nn.Parameter(torch.tensor(inverse_softplus))
 
     @property
     def tau(self) -> torch.Tensor:
@@ -140,30 +164,100 @@ class NonCollapsingAttention(nn.Module):
             if any(tensor.dtype == torch.float64 for tensor in (q, k, v))
             else torch.float32
         )
-        logits = (_unit(q.to(dtype)) @ _unit(k.to(dtype)).transpose(-2, -1)) * self.tau.to(dtype)
-        if attn_mask is not None:  # bool: True = keep; float: added to logits
+        batch_shape = _broadcast_shape(q.shape[:-2], k.shape[:-2], v.shape[:-2])
+        assert batch_shape is not None
+        query_length, key_length = q.shape[-2], k.shape[-2]
+        value_length = v.shape[-1]
+        q_unit = _unit(q.to(dtype)).expand(*batch_shape, query_length, self.d_k)
+        k_unit = _unit(k.to(dtype)).expand(*batch_shape, key_length, self.d_k)
+        values = v.to(dtype).expand(*batch_shape, key_length, value_length)
+        logits_shape = (*batch_shape, query_length, key_length)
+        expanded_mask: Optional[torch.Tensor] = None
+        if attn_mask is not None:
             if not isinstance(attn_mask, torch.Tensor):
                 raise TypeError("attn_mask must be a torch.Tensor")
-            if attn_mask.device != logits.device:
+            if attn_mask.device != q.device:
                 raise ValueError("attn_mask must be on the same device as q, k, and v")
             if attn_mask.dtype != torch.bool and not attn_mask.is_floating_point():
                 raise TypeError("attn_mask must have a bool or floating-point dtype")
-            mask_shape = _broadcast_shape(attn_mask.shape, logits.shape)
-            if mask_shape is None:
+            mask_shape = _broadcast_shape(attn_mask.shape, torch.Size(logits_shape))
+            if mask_shape is None or tuple(mask_shape) != tuple(logits_shape):
                 raise ValueError("attn_mask must be broadcastable to the attention logits")
-            if tuple(mask_shape) != tuple(logits.shape):
-                raise ValueError("attn_mask must be broadcastable to the attention logits")
-            if attn_mask.dtype == torch.bool:
-                logits = logits.masked_fill(~attn_mask, float("-inf"))
+            if attn_mask.dtype != torch.bool and (
+                torch.isnan(attn_mask).any() or torch.isposinf(attn_mask).any()
+            ):
+                raise ValueError("floating attn_mask values must not contain NaN or +inf")
+            expanded_mask = attn_mask.expand(logits_shape)
+        if query_length == 0 or any(dimension == 0 for dimension in batch_shape):
+            logits = (q_unit @ k_unit.transpose(-2, -1)) * self.tau.to(dtype)
+            return (logits @ values).to(v.dtype)
+
+        counts: Union[int, torch.Tensor] = key_length
+        if expanded_mask is not None:
+            if expanded_mask.dtype == torch.bool:
+                counts = expanded_mask.sum(dim=-1, keepdim=True)
             else:
-                if torch.isnan(attn_mask).any() or torch.isposinf(attn_mask).any():
-                    raise ValueError("floating attn_mask values must not contain NaN or +inf")
-                logits = logits + attn_mask.to(dtype)
-        row_has_keys = ~torch.isneginf(logits).all(dim=-1, keepdim=True)
-        safe_logits = torch.where(row_has_keys, logits, torch.zeros_like(logits))
-        weights = F.softmax(safe_logits, dim=-1)
-        weights = torch.where(row_has_keys, weights, torch.zeros_like(weights))
-        output = weights @ v.to(dtype)
+                counts = torch.isfinite(expanded_mask).sum(dim=-1, keepdim=True)
+
+        scale_per_row = isinstance(counts, torch.Tensor) and counts.numel() > 0
+        if self.length_scaling == "log":
+            assert self.train_length is not None
+            if isinstance(counts, torch.Tensor):
+                scale_per_row = scale_per_row and bool((counts != counts.reshape(-1)[0]).any())
+                length_factor: Union[float, torch.Tensor] = (
+                    counts.clamp_min(1).to(dtype).log() / math.log(self.train_length)
+                ).clamp_min(1.0)
+            else:
+                length_factor = max(1.0, math.log(counts) / math.log(self.train_length))
+            tau_eff: Union[float, torch.Tensor] = (self.tau.to(dtype) * length_factor).clamp(
+                max=self.tau_eff_max
+            )
+        else:
+            tau_eff = self.tau.to(dtype)
+            scale_per_row = False
+
+        has_empty_rows = isinstance(counts, torch.Tensor) and bool((counts == 0).any())
+        if not scale_per_row and not has_empty_rows:
+            if isinstance(tau_eff, torch.Tensor):
+                scale = tau_eff.reshape(-1)[0]
+            else:
+                scale = torch.tensor(tau_eff, dtype=dtype, device=q.device)
+            scaled_q = q_unit * (scale * math.sqrt(self.d_k))
+            sdpa_mask = expanded_mask
+            if sdpa_mask is not None and sdpa_mask.dtype != torch.bool:
+                sdpa_mask = sdpa_mask.to(dtype)
+            output = F.scaled_dot_product_attention(
+                scaled_q,
+                k_unit,
+                values,
+                attn_mask=sdpa_mask,
+                dropout_p=0.0,
+            )
+            return output.to(v.dtype)
+
+        if expanded_mask is not None and expanded_mask.dtype != torch.bool:
+            expanded_mask = expanded_mask.to(dtype)
+        outputs = []
+        for start in range(0, query_length, 128):
+            end = min(start + 128, query_length)
+            logits = q_unit[..., start:end, :] @ k_unit.transpose(-2, -1)
+            if isinstance(tau_eff, torch.Tensor) and tau_eff.ndim > 0:
+                row_scale = tau_eff[..., start:end, :]
+                logits = logits * row_scale
+            else:
+                logits = logits * tau_eff
+            mask_chunk = expanded_mask[..., start:end, :] if expanded_mask is not None else None
+            if mask_chunk is not None:
+                if mask_chunk.dtype == torch.bool:
+                    logits = logits.masked_fill(~mask_chunk, float("-inf"))
+                else:
+                    logits = logits + mask_chunk
+            row_has_keys = ~torch.isneginf(logits).all(dim=-1, keepdim=True)
+            safe_logits = torch.where(row_has_keys, logits, torch.zeros_like(logits))
+            weights = F.softmax(safe_logits, dim=-1)
+            weights = torch.where(row_has_keys, weights, torch.zeros_like(weights))
+            outputs.append(weights @ values)
+        output = torch.cat(outputs, dim=-2)
         return output.to(v.dtype)
 
     def _load_from_state_dict(

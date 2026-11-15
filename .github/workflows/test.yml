@@ -55,6 +55,8 @@ jobs:
           python -m pip install -e ".[dev]"
       - name: Ruff
         run: ruff check zeta_scaling_toolkit tests benchmarks smoke_test.py
+      - name: Check formatting
+        run: ruff format --check .
       - name: Mypy
         run: mypy --strict zeta_scaling_toolkit
 
