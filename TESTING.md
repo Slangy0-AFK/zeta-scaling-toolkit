@@ -25,10 +25,8 @@ pip install -e ".[test]"
 pytest tests/ -v
 ```
 
-Expected output:
-```
-====== 29 passed in 3.68s ======
-```
+For a separate smoke check, run `python zeta_scaling_toolkit.py`. These tests
+check formulas and basic behavior; they do not establish training benefits.
 
 ## Viewing Test Coverage
 
@@ -55,50 +53,36 @@ tests/
 └── ... (additional test files)
 ```
 
-### Test Classes
+### Test Groups
 
 #### 1. NonCollapsingAttention Tests
-```python
-class TestNonCollapsingAttention:
-```
-- Tests attention mechanism stability
-- Verifies softmax doesn't saturate on long sequences
-- Checks gradient flow
+- Checks the attention temperature formula and invalid sequence length
 
 #### 2. AsymptoticLRScheduler Tests
-```python
-class TestAsymptoticLRScheduler:
-```
 - Validates learning rate decay schedule
-- Ensures LR never reaches zero
-- Verifies logarithmic decay formula
+- Verifies the starting rate, logarithmic decay, and configured floor
 
 #### 3. Scale-Invariant Vision Coords Tests
-```python
-class TestScaleInvariantVitCoords:
-```
 - Tests coordinate scaling for different image sizes
 - Validates polar coordinate transformation
-- Checks aspect-ratio handling
+- Checks radius and output shape
 
-#### 4. CorrectedVarianceLinear Tests
+#### 4. Linear Initialization Tests
 ```python
-class TestCorrectedVarianceLinear:
+test_linear_uses_kaiming_variance
 ```
-- Validates layer initialization
-- Checks variance correction formula
-- Verifies signal preservation in deep networks
+- Checks Kaiming initialization and zero bias
 
 ## Running Specific Tests
 
-### Run a Single Test Class
+### Run Attention Tests
 ```bash
-pytest tests/test_zeta_toolkit.py::TestNonCollapsingAttention -v
+pytest tests/test_zeta_toolkit.py -k attention -v
 ```
 
-### Run a Specific Test Method
+### Run a Specific Test
 ```bash
-pytest tests/test_zeta_toolkit.py::TestNonCollapsingAttention::test_attention_stability -v
+pytest tests/test_zeta_toolkit.py::test_attention_uses_mild_temperature -v
 ```
 
 ### Run Tests Matching a Pattern
@@ -124,7 +108,7 @@ class TestMyFeature:
         V = torch.randn(2, 128, 64)
         
         # Execute
-        output = component(Q, K, V, N=128)
+        output = component(Q, K, V)
         
         # Assert
         assert output.shape == (2, 128, 64)
@@ -194,7 +178,7 @@ K = torch.randn(1, 1024, 64)
 V = torch.randn(1, 1024, 64)
 
 start = time.time()
-output = attn(Q, K, V, N=1024)
+output = attn(Q, K, V)
 end = time.time()
 
 print(f"Time: {(end-start)*1000:.2f}ms")
@@ -210,7 +194,7 @@ import torch
 from zeta_scaling_toolkit import (
     NonCollapsingAttention,
     AsymptoticLRScheduler,
-    CorrectedVarianceLinear
+    make_corrected_linear
 )
 
 def test_model_with_zeta_components():
@@ -219,7 +203,7 @@ def test_model_with_zeta_components():
     # Build model with toolkit components
     model = MyModel(
         attention=NonCollapsingAttention(d_k=64),
-        linear=CorrectedVarianceLinear(1024, 4096)
+        linear=make_corrected_linear(1024, 4096)
     )
     
     # Test forward pass

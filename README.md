@@ -1,54 +1,31 @@
 # Zeta Scaling Toolkit
 
-[![Tests](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/actions/workflows/test.yml/badge.svg)](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/actions)
-[![codecov](https://codecov.io/gh/Slangy0-AFK/zeta-scaling-toolkit/graph/badge.svg)](https://codecov.io/gh/Slangy0-AFK/zeta-scaling-toolkit)
+Experimental PyTorch scaling utilities. This is an AI-assisted build, originally
+created in one day and revised to remove known mathematical errors. It has not
+been validated on real training runs or externally validated. The smoke tests
+and self-run toy experiment below do not establish training benefits.
 
-A PyTorch library that helps large AI models train more stably and don't "break" or stop learning when they get massive.
+## Components
 
-## The Problem
+- `NonCollapsingAttention` divides attention logits by
+  `sqrt(d_k) * (1 + A_attn / ln(N))`, with `A_attn=1.0` by default.
+- `AsymptoticLRScheduler` starts at the base learning rate and scales it by
+  `max(ln(2) / ln(T), floor_ratio)`, with a default floor of 1% of the base.
+- `get_scale_invariant_vit_coords` produces polar coordinates with radius
+  `sqrt((ln(T) + A_coords) / pi)`; `A_coords` defaults to zero.
+- `make_corrected_linear` creates a linear layer with Kaiming normal weights
+  and zero bias.
 
-When AI models (like Transformers or Vision models) get really big, they usually suffer from four major headaches:
-
-1. **Attention Collapse** — They lose focus when reading long documents
-2. **Training Stagnation** — They stop learning after a while because the learning rate hits zero
-3. **Aspect-Ratio Distortion** — They get confused when looking at images of different sizes
-4. **Weight Decay** — Their internal signals fade away as the network gets deeper
-
-## The Solution
-
-This toolkit uses a mathematical "floor" to prevent these numbers from dropping to zero. It applies a boundary formula: **W(T) = 1 + A₀ / ln(T)** where A₀ = 100π.
-
-### The 4 Fixes
-
-**1. `NonCollapsingAttention` (Fixes lost focus)**
-- **What it does:** Stops the AI from losing attention when it reads really long text. It puts a safety floor on the attention scores so the model doesn't "zone out" on long documents.
-- **Why it matters:** Prevents softmax saturation and representational collapse in long-context models.
-
-**2. `AsymptoticLRScheduler` (Fixes early stopping)**
-- **What it does:** Standard learning rates drop to zero eventually. This scheduler gets slower and slower, but *never hits zero*. This means you can train a model forever without it completely giving up.
-- **Why it matters:** Allows infinite training without zero-gradient lockout. The LR decays to a logarithmic floor rather than zero.
-
-**3. `get_scale_invariant_vit_coords` (Fixes image confusion)**
-- **What it does:** If you train a Vision AI on small images and then show it a massive image, it usually breaks. This function maps image coordinates in a polar coordinate system, so the AI understands the image regardless of its size.
-- **Why it matters:** Fixes aspect-ratio distortion across varying image resolutions for Vision Transformers.
-
-**4. `CorrectedVarianceLinear` (Fixes fading signals)**
-- **What it does:** When building a deep neural network, signals can fade out (like a whisper down a long hallway). This custom layer initializes the weights perfectly so the signal stays strong from start to finish.
-- **Why it matters:** Fixes the 63% signal-volume decay in massive fan-in layers by normalizing variance against the logarithmic scale.
+These are formulas to evaluate, not guarantees against attention collapse,
+training stagnation, or image distortion.
 
 ## Installation
-
-```bash
-pip install -r requirements.txt
-```
-
-Or install from source:
 
 ```bash
 pip install -e .
 ```
 
-## Quick Start
+## Quick start
 
 ```python
 import torch
@@ -56,77 +33,66 @@ from zeta_scaling_toolkit import (
     NonCollapsingAttention,
     AsymptoticLRScheduler,
     get_scale_invariant_vit_coords,
-    CorrectedVarianceLinear
+    make_corrected_linear,
 )
 
-# 1. Use stable attention for long sequences
 attn = NonCollapsingAttention(d_k=64)
-Q = torch.randn(2, 128, 64)
-K = torch.randn(2, 128, 64)
-V = torch.randn(2, 128, 64)
-output = attn(Q, K, V, N=128)
+Q, K, V = (torch.randn(2, 128, 64) for _ in range(3))
+output = attn(Q, K, V)
 
-# 2. Use a learning rate that never drops to zero
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+linear = make_corrected_linear(in_features=1024, out_features=4096)
+optimizer = torch.optim.Adam(linear.parameters(), lr=0.001)
 scheduler = AsymptoticLRScheduler(optimizer)
-for epoch in range(100):
-    # training loop
-    scheduler.step()
+optimizer.step()
+scheduler.step()
 
-# 3. Get scale-invariant vision transformer coordinates
 coords = get_scale_invariant_vit_coords(height=224, width=224, T=256)
-
-# 4. Replace standard linear layers with corrected initialization
-linear = CorrectedVarianceLinear(in_features=1024, out_features=4096)
-x = torch.randn(2, 1024)
-y = linear(x)
 ```
+
+The corrected API replaces the old global `A0`: use `A_attn` for attention,
+`floor_ratio` for the scheduler, and `A_coords` for coordinates. Attention
+infers `N` from `Q`, and `make_corrected_linear` replaces
+`CorrectedVarianceLinear`.
 
 ## Testing
 
-Run the comprehensive test suite:
+```bash
+python zeta_scaling_toolkit.py
+pytest tests/
+```
+
+The first command runs self-verification smoke tests only.
+
+## Toy benchmark (self-run, single seed, not peer-reviewed)
 
 ```bash
-pip install -e ".[test]"
-pytest tests/ -v --cov=zeta_scaling_toolkit
+pip install -e ".[benchmark]"
+python benchmarks/toy_copy_task.py
 ```
 
-All 29 tests should pass with 100% code coverage.
+The CPU benchmark runs 300 steps of sequence-copy training per transformer,
+using identical initial parameters and batches. It compares standard attention
+with cosine decay to corrected attention with the asymptotic scheduler, prints
+the final batch losses, and writes `loss_curves.png` in the current directory.
+It also trains two 30-layer MLPs for 300 steps on an identity regression task
+and prints their last hidden-layer activation standard deviations on the same
+held-out inputs. Both MLPs use the same seed and training data.
 
-## How It Works
+One run used seed 42 and AdamW with a base learning rate of 0.001:
 
-The core insight is that many scaling factors in deep learning can hit zero, causing gradients to vanish or attention to collapse. By applying a mathematical floor based on logarithmic growth, we ensure:
+| Variant | Final batch loss | 30-layer MLP activation std |
+|---|---:|---:|
+| Standard attention + cosine LR / standard linear | 0.0208 | 0.081 |
+| Corrected attention + asymptotic LR / corrected linear | 1.167 | 0.300 |
 
-- Attention weights never fully collapse
-- Learning rates decay asymptotically but never reach zero
-- Weight initialization accounts for layer depth
-- Vision transformers work at any resolution
+The corrected transformer performed substantially worse on this task. The
+comparison changes both attention and scheduler, so it cannot attribute the
+difference to either individually. After 300 scheduler steps, the asymptotic
+rate is about 0.12 times the base rate; cosine is 0.5 at step 150 and zero
+after step 300. Both attention variants use four heads and the same input and
+output projection architecture. This is one task and one run, not external
+validation. A 2×2 attention/scheduler ablation is a next step.
 
-For technical details, see the source code with detailed docstrings in `zeta_scaling_toolkit/core.py`.
+## Requirements and license
 
-## Requirements
-
-- Python >= 3.9
-- PyTorch >= 2.0.0
-- NumPy >= 1.21.0
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Citation
-
-If you use this toolkit in your research, please cite:
-
-```bibtex
-@software{zeta_scaling_toolkit_2026,
-  title={Zeta Scaling Toolkit: Self-Normalizing Scaling for AI Pipelines},
-  author={Zeta Scaling Toolkit Contributors},
-  year={2026},
-  url={https://github.com/Slangy0-AFK/zeta-scaling-toolkit}
-}
-```
-
-## Disclaimer
-
-This is an experimental mathematical framework. Evaluate against standard benchmarks for your specific architecture before deploying to production.
+Python >= 3.9 and PyTorch >= 2.0. MIT License; see [LICENSE](LICENSE).

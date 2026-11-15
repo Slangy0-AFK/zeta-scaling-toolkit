@@ -31,7 +31,7 @@ Be respectful and constructive in all interactions. We're building a community o
 #### Prerequisites
 - Python 3.9+
 - PyTorch 2.0.0+
-- Familiarity with the W(T) = 1 + A₀/ln(T) framework
+- Familiarity with the scaling formulas in the README
 
 #### Setup for Development
 ```bash
@@ -202,24 +202,11 @@ tests/
 
 ### Mathematical Notation
 
-When explaining the W(T) framework or related math:
+When explaining the scaling formulas or related math:
 - Use clear mathematical notation
 - Explain assumptions
 - Cite relevant research
 - Include references in docstrings
-
-Example:
-```python
-def asymptotic_floor(t: float, a0: float = 100 * math.pi) -> float:
-    """Compute W(T) = 1 + A₀/ln(T).
-    
-    This provides an asymptotic lower bound that prevents
-    scaling factors from collapsing to zero.
-    
-    References:
-        [1] Your paper/research citation
-    """
-```
 
 ## Review Process
 
