@@ -260,6 +260,160 @@ class NonCollapsingAttention(nn.Module):
         output = torch.cat(outputs, dim=-2)
         return output.to(v.dtype)
 
+    def forward_streaming(
+        self,
+        q: torch.Tensor,
+        k: torch.Tensor,
+        v: torch.Tensor,
+        window: int,
+        sink_tokens: int = 0,
+        *,
+        alibi: bool = False,
+        chunk_size: int = 128,
+    ) -> torch.Tensor:
+        """Attend exactly to sink keys and each query's recent causal window.
+
+        Unlike a dense ``streaming_mask`` plus dense ALiBi bias, this method
+        selects only the union of sink keys and recent keys for each query
+        chunk. Query/key tensors use the same shapes as :meth:`forward`; for
+        rank-4 inputs the third-from-last dimension is interpreted as heads
+        when ``alibi=True``. Query positions are aligned to the final ``q_len``
+        key positions, matching ``streaming_mask`` and ``alibi_bias``.
+
+        The result is exact (no approximation). Intermediate attention state is
+        bounded by ``chunk_size * (sink_tokens + window + chunk_size)`` rather
+        than the full Q-by-K matrix. Gradients are supported through Q/K/V and
+        the learnable temperature.
+        """
+        for name, tensor in (("q", q), ("k", k), ("v", v)):
+            if not isinstance(tensor, torch.Tensor):
+                raise TypeError(f"{name} must be a torch.Tensor")
+            if tensor.ndim < 2:
+                raise ValueError(f"{name} must have rank >= 2, got rank {tensor.ndim}")
+            if not tensor.is_floating_point():
+                raise TypeError(f"{name} must have a floating-point dtype")
+        if q.shape[-1] != self.d_k or k.shape[-1] != self.d_k:
+            raise ValueError(
+                f"expected last dim d_k={self.d_k}, got q={q.shape[-1]}, k={k.shape[-1]}"
+            )
+        if k.shape[-2] == 0:
+            raise ValueError("key sequence length must be nonzero")
+        if q.shape[-2] > k.shape[-2]:
+            raise ValueError("query sequence length must be <= key sequence length")
+        if v.shape[-2] != k.shape[-2]:
+            raise ValueError("key and value sequence lengths must match")
+        if q.device != k.device or q.device != v.device:
+            raise ValueError("q, k, and v must be on the same device")
+        if _broadcast_shape(q.shape[:-2], k.shape[:-2], v.shape[:-2]) is None:
+            raise ValueError("q, k, and v batch dimensions must be broadcastable")
+        if self.check_finite and not all(torch.isfinite(tensor).all() for tensor in (q, k, v)):
+            raise ValueError("q, k, and v must contain only finite values")
+        if isinstance(window, bool) or not isinstance(window, int) or window < 1:
+            raise ValueError("window must be an integer >= 1")
+        if isinstance(sink_tokens, bool) or not isinstance(sink_tokens, int) or sink_tokens < 0:
+            raise ValueError("sink_tokens must be a nonnegative integer")
+        if isinstance(chunk_size, bool) or not isinstance(chunk_size, int) or chunk_size < 1:
+            raise ValueError("chunk_size must be an integer >= 1")
+        if not isinstance(alibi, bool):
+            raise TypeError("alibi must be a bool")
+
+        batch_shape = _broadcast_shape(q.shape[:-2], k.shape[:-2], v.shape[:-2])
+        assert batch_shape is not None
+        query_length, key_length = q.shape[-2], k.shape[-2]
+        value_length = v.shape[-1]
+        if query_length == 0 or any(dimension == 0 for dimension in batch_shape):
+            zero = q.sum() * 0 + k.sum() * 0 + v.sum() * 0 + self.raw_tau.to(q.dtype) * 0
+            return zero.expand(*batch_shape, query_length, value_length).to(v.dtype)
+        dtype = (
+            torch.float64
+            if any(tensor.dtype == torch.float64 for tensor in (q, k, v))
+            else torch.float32
+        )
+        q_unit = _unit(q.to(dtype)).expand(*batch_shape, query_length, self.d_k)
+        k_unit = _unit(k.to(dtype)).expand(*batch_shape, key_length, self.d_k)
+        values = v.to(dtype).expand(*batch_shape, key_length, value_length)
+        query_offset = key_length - query_length
+        sink_end = min(sink_tokens, key_length)
+        all_sink_positions = torch.arange(sink_end, device=q.device)
+
+        if alibi:
+            head_count = q.shape[-3] if q.ndim >= 4 else 1
+            head_ids = torch.arange(1, head_count + 1, dtype=dtype, device=q.device)
+            slopes = torch.exp2(-8.0 * head_ids / head_count)
+        else:
+            slopes = None
+
+        outputs: list[torch.Tensor] = []
+        for start in range(0, query_length, chunk_size):
+            end = min(start + chunk_size, query_length)
+            first_query_position = query_offset + start
+            final_query_position = query_offset + end
+            recent_start = max(sink_end, first_query_position - window + 1)
+            recent_end = max(recent_start, final_query_position)
+            recent_positions = torch.arange(recent_start, recent_end, device=q.device)
+            if sink_end:
+                key_positions = torch.cat((all_sink_positions, recent_positions))
+            else:
+                key_positions = recent_positions
+
+            query_positions = torch.arange(
+                first_query_position, final_query_position, device=q.device
+            )
+            keep = (key_positions[None, :] <= query_positions[:, None]) & (
+                (key_positions[None, :] < sink_tokens)
+                | (key_positions[None, :] >= query_positions[:, None] - window + 1)
+            )
+            counts = keep.sum(dim=-1).clamp_min(1)
+            q_chunk = q_unit[..., start:end, :]
+            k_chunk = k_unit.index_select(-2, key_positions)
+            v_chunk = values.index_select(-2, key_positions)
+
+            if self.length_scaling == "log":
+                assert self.train_length is not None
+                length_factor = (counts.to(dtype).log() / math.log(self.train_length)).clamp_min(
+                    1.0
+                )
+                row_scale = (self.tau.to(dtype) * length_factor).clamp(max=self.tau_eff_max)
+                logits = q_chunk @ k_chunk.transpose(-2, -1)
+                logits = logits * row_scale.reshape(*([1] * len(batch_shape)), end - start, 1)
+                if alibi:
+                    assert slopes is not None
+                    distances = (query_positions[:, None] - key_positions[None, :]).abs().to(dtype)
+                    if q.ndim >= 4:
+                        slope_shape = (*([1] * (len(batch_shape) - 1)), head_count, 1, 1)
+                        slope_values: Union[torch.Tensor, float] = slopes.reshape(*slope_shape)
+                    else:
+                        slope_values = slopes[0]
+                    bias = -slope_values * distances
+                    logits = logits + bias
+                logits = logits.masked_fill(~keep, float("-inf"))
+                weights = F.softmax(logits, dim=-1)
+                output_chunk = weights @ v_chunk
+            else:
+                scaled_query = q_chunk * (self.tau.to(dtype) * math.sqrt(self.d_k))
+                if alibi:
+                    assert slopes is not None
+                    distances = (query_positions[:, None] - key_positions[None, :]).abs().to(dtype)
+                    if q.ndim >= 4:
+                        slope_shape = (*([1] * (len(batch_shape) - 1)), head_count, 1, 1)
+                        slope_values = slopes.reshape(*slope_shape)
+                    else:
+                        slope_values = slopes[0]
+                    bias = -slope_values * distances
+                    bias = bias.masked_fill(~keep, float("-inf"))
+                    attention_mask = bias
+                else:
+                    attention_mask = keep
+                output_chunk = F.scaled_dot_product_attention(
+                    scaled_query,
+                    k_chunk,
+                    v_chunk,
+                    attn_mask=attention_mask,
+                    dropout_p=0.0,
+                )
+            outputs.append(output_chunk)
+        return torch.cat(outputs, dim=-2).to(v.dtype)
+
     def _load_from_state_dict(
         self,
         state_dict: Any,

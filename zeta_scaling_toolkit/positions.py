@@ -72,8 +72,14 @@ def alibi_bias(
     k_len: int,
     dtype: torch.dtype = torch.float32,
     device: Optional[Union[torch.device, str]] = None,
+    chunk_size: int = 128,
 ) -> torch.Tensor:
-    """Return negative absolute-distance ALiBi biases with shape (1, heads, Q, K)."""
+    """Return negative absolute-distance ALiBi biases with shape (1, heads, Q, K).
+
+    Query rows are built in chunks to limit temporary distance and bias tensors.
+    The returned bias remains dense; use ``NonCollapsingAttention.forward_streaming``
+    to avoid materializing a full bias for sink/window attention.
+    """
     if isinstance(num_heads, bool) or not isinstance(num_heads, int) or num_heads < 1:
         raise ValueError("num_heads must be an integer >= 1")
     if any(
@@ -83,18 +89,38 @@ def alibi_bias(
         raise ValueError("q_len and k_len must be nonnegative integers")
     if q_len > k_len:
         raise ValueError("q_len must be <= k_len for aligned causal positions")
+    if isinstance(chunk_size, bool) or not isinstance(chunk_size, int) or chunk_size < 1:
+        raise ValueError("chunk_size must be an integer >= 1")
     if not isinstance(dtype, torch.dtype) or not torch.empty((), dtype=dtype).is_floating_point():
         raise TypeError("dtype must be a floating-point torch.dtype")
-    query_positions = torch.arange(k_len - q_len, k_len, device=device)
     key_positions = torch.arange(k_len, device=device)
-    distances = (query_positions[:, None] - key_positions[None, :]).abs().to(dtype)
     head_ids = torch.arange(1, num_heads + 1, device=device, dtype=dtype)
     slopes = torch.exp2(-8.0 * head_ids / num_heads)
-    return -slopes[None, :, None, None] * distances[None, None, :, :]
+    bias = torch.empty((1, num_heads, q_len, k_len), dtype=dtype, device=device)
+    query_offset = k_len - q_len
+    for start in range(0, q_len, chunk_size):
+        end = min(start + chunk_size, q_len)
+        query_positions = torch.arange(query_offset + start, query_offset + end, device=device)
+        distances = (query_positions[:, None] - key_positions[None, :]).abs().to(dtype)
+        bias[:, :, start:end, :] = -slopes[None, :, None, None] * distances[None, None, :, :]
+    return bias
 
 
-def streaming_mask(q_len: int, k_len: int, window: int, sink_tokens: int) -> torch.Tensor:
-    """Return a boolean causal window mask with permanently visible initial sink keys."""
+def streaming_mask(
+    q_len: int,
+    k_len: int,
+    window: int,
+    sink_tokens: int,
+    device: Optional[Union[torch.device, str]] = None,
+    chunk_size: int = 128,
+) -> torch.Tensor:
+    """Return a boolean causal window mask with permanently visible initial sink keys.
+
+    The dense output contract is unchanged. Query chunks bound temporary mask
+    construction memory; ``device`` can place the result directly with attention
+    inputs. For a genuinely sparse sink/window operation, use
+    ``NonCollapsingAttention.forward_streaming`` instead.
+    """
     if any(
         isinstance(length, bool) or not isinstance(length, int) or length < 0
         for length in (q_len, k_len)
@@ -106,13 +132,22 @@ def streaming_mask(q_len: int, k_len: int, window: int, sink_tokens: int) -> tor
         raise ValueError("window must be an integer >= 1")
     if isinstance(sink_tokens, bool) or not isinstance(sink_tokens, int) or sink_tokens < 0:
         raise ValueError("sink_tokens must be a nonnegative integer")
+    if isinstance(chunk_size, bool) or not isinstance(chunk_size, int) or chunk_size < 1:
+        raise ValueError("chunk_size must be an integer >= 1")
 
-    query_positions = torch.arange(k_len - q_len, k_len)
-    key_positions = torch.arange(k_len)
-    causal = key_positions[None, :] <= query_positions[:, None]
-    in_window = key_positions[None, :] >= query_positions[:, None] - window + 1
-    is_sink = key_positions[None, :] < sink_tokens
-    return causal & (in_window | is_sink)
+    key_positions = torch.arange(k_len, device=device)
+    mask = torch.empty((q_len, k_len), dtype=torch.bool, device=device)
+    query_offset = k_len - q_len
+    sink_end = min(sink_tokens, k_len)
+    for start in range(0, q_len, chunk_size):
+        end = min(start + chunk_size, q_len)
+        query_positions = torch.arange(query_offset + start, query_offset + end, device=device)
+        block = key_positions[None, :] <= query_positions[:, None]
+        block &= key_positions[None, :] >= query_positions[:, None] - window + 1
+        if sink_end:
+            block[:, :sink_end] |= key_positions[:sink_end][None, :] <= query_positions[:, None]
+        mask[start:end] = block
+    return mask
 
 
 class StreamingKVCache:

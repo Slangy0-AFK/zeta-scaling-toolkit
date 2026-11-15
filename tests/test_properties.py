@@ -405,6 +405,116 @@ def test_attention_empty_queries_keep_autograd_connections():
         assert torch.isfinite(gradient).all()
 
 
+@pytest.mark.parametrize("window,sinks", [(1, 0), (4, 1), (32, 0), (2, 20)])
+@pytest.mark.parametrize("alibi", [False, True])
+@pytest.mark.parametrize("length_scaling", ["none", "log"])
+def test_streaming_attention_matches_dense_outputs_and_gradients(
+    window, sinks, alibi, length_scaling
+):
+    torch.manual_seed(101)
+    q_sparse = torch.randn(2, 3, 5, 8, dtype=torch.float64, requires_grad=True)
+    k_sparse = torch.randn(2, 3, 9, 8, dtype=torch.float64, requires_grad=True)
+    v_sparse = torch.randn(2, 3, 9, 6, dtype=torch.float64, requires_grad=True)
+    q_dense = q_sparse.detach().clone().requires_grad_()
+    k_dense = k_sparse.detach().clone().requires_grad_()
+    v_dense = v_sparse.detach().clone().requires_grad_()
+    kwargs = {"length_scaling": length_scaling}
+    if length_scaling == "log":
+        kwargs["train_length"] = 4
+    sparse = NonCollapsingAttention(8, **kwargs).double()
+    dense = NonCollapsingAttention(8, **kwargs).double()
+    dense.load_state_dict(sparse.state_dict())
+    dense_mask = streaming_mask(5, 9, window, sinks)
+    if alibi:
+        dense_bias = alibi_bias(3, 5, 9, dtype=torch.float64)
+        dense_mask = dense_bias.masked_fill(~dense_mask[None, None], float("-inf"))
+
+    sparse_output = sparse.forward_streaming(
+        q_sparse, k_sparse, v_sparse, window, sinks, alibi=alibi, chunk_size=2
+    )
+    dense_output = dense(q_dense, k_dense, v_dense, attn_mask=dense_mask)
+    torch.testing.assert_close(sparse_output, dense_output, atol=1e-10, rtol=1e-10)
+    sparse_gradients = torch.autograd.grad(
+        sparse_output.square().sum(),
+        (q_sparse, k_sparse, v_sparse, sparse.raw_tau),
+    )
+    dense_gradients = torch.autograd.grad(
+        dense_output.square().sum(),
+        (q_dense, k_dense, v_dense, dense.raw_tau),
+    )
+    for sparse_gradient, dense_gradient in zip(sparse_gradients, dense_gradients):
+        torch.testing.assert_close(sparse_gradient, dense_gradient, atol=1e-9, rtol=1e-9)
+
+
+@pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16, torch.float32])
+def test_streaming_attention_supports_low_precision_values(dtype):
+    torch.manual_seed(103)
+    query = torch.randn(1, 2, 8, 8, dtype=dtype)
+    keys = torch.randn(1, 2, 16, 8, dtype=dtype)
+    values = torch.randn(1, 2, 16, 4, dtype=dtype)
+    output = NonCollapsingAttention(8).forward_streaming(
+        query, keys, values, window=4, sink_tokens=2, alibi=True, chunk_size=3
+    )
+    assert output.dtype == dtype
+    assert torch.isfinite(output).all()
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"window": 0},
+        {"window": 1, "sink_tokens": -1},
+        {"window": 1, "chunk_size": 0},
+        {"window": 1, "alibi": 1},
+    ],
+)
+def test_streaming_attention_rejects_invalid_options(kwargs):
+    query = torch.randn(1, 2, 4)
+    keys = torch.randn(1, 3, 4)
+    values = torch.randn(1, 3, 4)
+    with pytest.raises((TypeError, ValueError)):
+        NonCollapsingAttention(4).forward_streaming(query, keys, values, **kwargs)
+
+
+def test_streaming_attention_rejects_query_longer_than_key_context():
+    query = torch.randn(1, 4, 4)
+    keys = torch.randn(1, 3, 4)
+    values = torch.randn(1, 3, 4)
+    with pytest.raises(ValueError, match="query sequence length"):
+        NonCollapsingAttention(4).forward_streaming(query, keys, values, window=2)
+
+
+def test_streaming_attention_empty_queries_keep_finite_gradient_connections():
+    query = torch.empty(1, 0, 4, requires_grad=True)
+    keys = torch.randn(1, 3, 4, requires_grad=True)
+    values = torch.randn(1, 3, 2, requires_grad=True)
+    attention = NonCollapsingAttention(4)
+    output = attention.forward_streaming(query, keys, values, window=2)
+    assert output.shape == (1, 0, 2)
+    output.sum().backward()
+    for gradient in (query.grad, keys.grad, values.grad, attention.raw_tau.grad):
+        assert gradient is not None
+        assert torch.isfinite(gradient).all()
+
+
+@pytest.mark.parametrize("batch_shape", [(), (2,)])
+def test_streaming_attention_alibi_supports_headless_inputs(batch_shape):
+    torch.manual_seed(107)
+    query = torch.randn(*batch_shape, 5, 8, dtype=torch.float64)
+    keys = torch.randn(*batch_shape, 9, 8, dtype=torch.float64)
+    values = torch.randn(*batch_shape, 9, 4, dtype=torch.float64)
+    attention = NonCollapsingAttention(8).double()
+    mask = streaming_mask(5, 9, window=3, sink_tokens=1)
+    dense_bias = alibi_bias(1, 5, 9, dtype=torch.float64)[0, 0]
+    dense_mask = dense_bias.masked_fill(~mask, float("-inf"))
+
+    expected = attention(query, keys, values, attn_mask=dense_mask)
+    actual = attention.forward_streaming(
+        query, keys, values, window=3, sink_tokens=1, alibi=True, chunk_size=2
+    )
+    torch.testing.assert_close(actual, expected, atol=1e-10, rtol=1e-10)
+
+
 def test_log_length_attention_handles_empty_batches_with_a_mask():
     query = torch.empty(0, 2, 4, requires_grad=True)
     keys = torch.empty(0, 3, 4, requires_grad=True)
@@ -569,6 +679,52 @@ def test_streaming_mask_matches_causal_window_and_sink_visibility():
         ]
     )
     assert torch.equal(mask, expected)
+
+
+@pytest.mark.parametrize(
+    ("q_len", "k_len", "window", "sinks"),
+    [
+        (0, 0, 1, 0),
+        (0, 5, 1, 0),
+        (1, 1, 1, 0),
+        (4, 8, 1, 0),
+        (4, 8, 3, 1),
+        (4, 8, 20, 0),
+        (4, 8, 2, 1),
+        (4, 8, 2, 8),
+    ],
+)
+@pytest.mark.parametrize("chunk_size", [1, 3, 128])
+def test_chunked_streaming_mask_matches_dense_reference(q_len, k_len, window, sinks, chunk_size):
+    query_positions = torch.arange(k_len - q_len, k_len)
+    key_positions = torch.arange(k_len)
+    expected = (key_positions[None, :] <= query_positions[:, None]) & (
+        (key_positions[None, :] >= query_positions[:, None] - window + 1)
+        | (key_positions[None, :] < sinks)
+    )
+    assert torch.equal(streaming_mask(q_len, k_len, window, sinks, chunk_size=chunk_size), expected)
+
+
+def test_chunked_streaming_mask_supports_device_and_long_sequence():
+    mask = streaming_mask(4096, 4096, window=64, sink_tokens=4, device="cpu", chunk_size=32)
+    assert mask.device == torch.device("cpu")
+    assert mask.shape == (4096, 4096)
+    assert mask.dtype == torch.bool
+    assert int(mask.sum(dim=-1).max()) <= 68
+
+
+@pytest.mark.parametrize("dtype", [torch.float32, torch.float64, torch.float16, torch.bfloat16])
+@pytest.mark.parametrize(("q_len", "k_len", "heads"), [(0, 0, 1), (2, 5, 2), (5, 5, 4)])
+@pytest.mark.parametrize("chunk_size", [1, 3, 128])
+def test_chunked_alibi_bias_matches_dense_reference(dtype, q_len, k_len, heads, chunk_size):
+    query_positions = torch.arange(k_len - q_len, k_len)
+    key_positions = torch.arange(k_len)
+    distances = (query_positions[:, None] - key_positions[None, :]).abs().to(dtype)
+    head_ids = torch.arange(1, heads + 1, dtype=dtype)
+    slopes = torch.exp2(-8.0 * head_ids / heads)
+    expected = -slopes[None, :, None, None] * distances[None, None, :, :]
+    actual = alibi_bias(heads, q_len, k_len, dtype=dtype, chunk_size=chunk_size)
+    torch.testing.assert_close(actual, expected, atol=0, rtol=0)
 
 
 def test_streaming_kv_cache_retains_sinks_and_window_with_bounded_memory():
