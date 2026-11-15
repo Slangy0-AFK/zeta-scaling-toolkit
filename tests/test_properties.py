@@ -177,7 +177,7 @@ def test_isotropic_coordinates_properties(shape):
     if height > 1 and width > 1:
         x_step = coords[0, 1, 0] - coords[0, 0, 0]
         y_step = coords[1, 0, 1] - coords[0, 0, 1]
-        assert x_step == pytest.approx(float(y_step))
+        assert float(x_step) == pytest.approx(float(y_step), abs=1e-12)
 
 
 @given(height=st.integers(1, 32), width=st.integers(1, 32))
@@ -315,8 +315,13 @@ def test_attention_state_dict_deepcopy_pickle_and_compile_smoke():
 
     if not hasattr(torch, "compile"):
         pytest.skip("torch.compile is unavailable in this PyTorch version")
-    compiled = torch.compile(attention, backend="eager")
-    torch.testing.assert_close(compiled(q, k, v), expected)
+    try:
+        compiled = torch.compile(attention, backend="eager")
+        torch.testing.assert_close(compiled(q, k, v), expected)
+    except RuntimeError as error:
+        if "not yet supported for torch.compile" in str(error):
+            pytest.skip(f"torch.compile is unsupported by this torch/Python combination: {error}")
+        raise
 
 
 def test_attention_is_deterministic_with_deterministic_algorithms_enabled():

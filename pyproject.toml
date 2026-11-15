@@ -86,7 +86,11 @@ warn_unused_configs = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
-addopts = "-v --strict-config --strict-markers -W error"
+addopts = "-v --strict-config --strict-markers"
+filterwarnings = [
+    "error",
+    "ignore:Failed to initialize NumPy:UserWarning",
+]
 markers = [
     "cuda: requires a CUDA device",
 ]
