@@ -100,12 +100,16 @@ ablation.
 python benchmarks/tune_copy_task.py > tuning-results.jsonl
 ```
 
-This runs all four attention/scheduler combinations over five matched seeds,
+This runs all four attention/scheduler combinations and a standard-attention
+constant-LR control (E) over five matched seeds,
 using the same initial weights and training batches for each configuration.
 It prints one JSON record per grid point with per-seed final training-batch
 and held-out toy-batch losses and their means. Compare D against C with the
 same `learning_rate` and `A_attn`, and A against the other configurations
-with the same learning rate. Use `--help` to change the grid, steps, or seeds.
+with the same learning rate. E uses a constant LR of 0.75 times each base LR
+by default; use `--constant-lr-ratio` to change it. Compare E with B at the
+same `comparison_base_lr` to assess the effect of the schedule. Use `--help`
+to change the grid, steps, or seeds.
 To use your own task, replace `train_trial` with your model, data, and training
 loop, preserving the attention/scheduler switches and seed matching.
 
@@ -114,11 +118,44 @@ ordinary scaled dot-product attention in this benchmark. The scheduler's
 `floor_ratio` is a fraction of the optimizer's base learning rate, not an
 absolute rate. Its decay depends on scheduler steps, so call `step()` after
 each optimizer update. A higher floor becomes effective only once the
-logarithmic factor falls below it. The script also searches base learning
-rates if supplied via `--learning-rates`. There is no global `A0` in the
-current API, and the attention and scheduler do not require corrected linear
-initialization; this transformer's linear layers use PyTorch defaults.
+logarithmic factor falls below it. With 300 steps, the default 0.01 floor
+never activates: the logarithmic factor is still about 0.12. Both the decay
+and choice of floor can affect finite-run results and should be tuned for the
+task and training duration. In this toy benchmark, `A_attn=1` slightly
+increased the mean loss compared with `A_attn=0`; it may degrade performance
+on other small tasks and needs task-specific evaluation. The script also
+searches base learning rates if supplied via `--learning-rates`. There is no
+global `A0` in the current API, and the attention and scheduler do not require
+corrected linear initialization; this transformer's linear layers use PyTorch defaults.
 These toy results cannot guarantee a particular ranking or real-task benefit.
+
+### Empirical benchmark and status
+
+The following self-run toy copy-task results use 300 steps, batch size 32,
+seeds 42–46 and base LR 0.001. The evaluation loss is averaged over one
+held-out batch per seed; this is not a real-world benchmark.
+
+| Config | Attention and LR schedule | Settings | Mean evaluation loss |
+|---|---|---|---:|
+| A | Standard attention + cosine | Base LR 0.001 | 0.01996 |
+| B | Standard attention + asymptotic | `floor_ratio=0.75` | 0.00729 |
+| C | Corrected attention + cosine | `A_attn=1.0` | 0.02048 |
+| D | Corrected attention + asymptotic | `A_attn=1.0`, `floor_ratio=0.75` | 0.00730 |
+| E | Standard attention + constant | LR 0.00075 | 0.00734 |
+
+The high-floor scheduler and constant-LR control perform similarly in this
+experiment, but this does not establish a general scheduler advantage or
+remove the need to tune the learning rate. With the default 0.01 floor,
+standard attention plus the asymptotic schedule yielded a mean evaluation
+loss of 1.08061; rapid decay may contribute, but the result does not establish
+the cause. Corrected attention had slightly higher loss than standard
+attention with cosine decay on this task.
+
+Development on this line of research is paused at these results. Standard
+attention and established LR schedules are recommended unless the experimental
+components have been evaluated for the intended task. To reproduce the
+high-floor run, use `floor_ratio=0.75`; it is not a universally recommended
+minimum, and higher values require their own evaluation.
 
 ## Requirements and license
 
