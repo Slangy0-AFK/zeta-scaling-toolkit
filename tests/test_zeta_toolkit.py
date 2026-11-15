@@ -11,6 +11,7 @@ from torch.optim import SGD
 from zeta_scaling_toolkit import (
     AsymptoticLRScheduler,
     NonCollapsingAttention,
+    calibrate_gain,
     get_isotropic_coords,
     get_scale_invariant_vit_coords,
     make_corrected_linear,
@@ -426,3 +427,236 @@ def test_mask_type_validation():
     q, k, v = torch.randn(1, 4, 8), torch.randn(1, 4, 8), torch.randn(1, 4, 8)
     with pytest.raises(TypeError, match="attn_mask must be a Tensor"):
         attn(q, k, v, attn_mask=[True, False, True, False])
+
+
+# Additional coverage tests for missing lines
+def test_d_k_must_be_positive():
+    """d_k must be >= 1."""
+    with pytest.raises(ValueError, match="d_k must be >= 1"):
+        NonCollapsingAttention(0)
+    with pytest.raises(ValueError, match="d_k must be >= 1"):
+        NonCollapsingAttention(-1)
+
+
+def test_k_type_validation():
+    """k must be a Tensor."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(1, 4, 8)
+    v = torch.randn(1, 4, 8)
+    with pytest.raises(TypeError, match="k must be a Tensor"):
+        attn(q, [1, 2, 3], v)
+
+
+def test_v_type_validation():
+    """v must be a Tensor."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(1, 4, 8)
+    k = torch.randn(1, 4, 8)
+    with pytest.raises(TypeError, match="v must be a Tensor"):
+        attn(q, k, {"bad": "value"})
+
+
+def test_k_rank_validation():
+    """k must be at least 2D."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(1, 4, 8)
+    v = torch.randn(1, 4, 8)
+    with pytest.raises(ValueError, match="must be at least 2D"):
+        attn(q, torch.randn(8), v)
+
+
+def test_v_rank_validation():
+    """v must be at least 2D."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(1, 4, 8)
+    k = torch.randn(1, 4, 8)
+    with pytest.raises(ValueError, match="must be at least 2D"):
+        attn(q, k, torch.randn(4))
+
+
+def test_k_v_batch_dim_validation():
+    """k and v must have same batch dims."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(2, 4, 8)
+    k = torch.randn(2, 4, 8)
+    v = torch.randn(1, 4, 8)  # Different batch dim
+    with pytest.raises(ValueError, match="same batch dims"):
+        attn(q, k, v)
+
+
+def test_attention_with_float_mask_add():
+    """Float mask should be added to logits."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(1, 4, 8)
+    k = torch.randn(1, 4, 8)
+    v = torch.randn(1, 4, 8)
+    
+    # Float mask that penalizes certain positions
+    mask = torch.zeros(1, 4, 4)
+    mask[0, 0, 1] = -1e9  # Penalize position 1 from position 0
+    
+    out = attn(q, k, v, attn_mask=mask)
+    assert torch.isfinite(out).all()
+
+
+def test_calibrate_gain_zero_norm_input_raises():
+    """calibrate_gain should raise if sample_input has zero norm."""
+    model = torch.nn.Linear(8, 8)
+    zero_input = torch.zeros(2, 8)
+    
+    with pytest.raises(ValueError, match="sample_input has zero norm"):
+        calibrate_gain(model, zero_input)
+
+
+# Module robustness tests
+def test_attention_state_dict_round_trip():
+    """State dict should save and load correctly."""
+    attn1 = NonCollapsingAttention(16, tau0=15.0, tau_min=1.0, tau_max=50.0)
+    state = attn1.state_dict()
+    
+    attn2 = NonCollapsingAttention(16)
+    attn2.load_state_dict(state)
+    
+    # Check that raw_tau parameter matches (tau_min/max are not in state dict)
+    assert torch.allclose(attn1.raw_tau, attn2.raw_tau)
+    
+    # Check that forward pass produces same output when both use same bounds
+    q = torch.randn(2, 4, 16)
+    k = torch.randn(2, 4, 16)
+    v = torch.randn(2, 4, 16)
+    out1 = attn1(q, k, v)
+    out2 = attn2(q, k, v)
+    assert torch.allclose(out1, out2)
+
+
+def test_scheduler_state_dict_round_trip():
+    """Scheduler state dict should restore state correctly."""
+    optimizer = torch.optim.SGD([torch.randn(4, requires_grad=True)], lr=1.0)
+    sched1 = AsymptoticLRScheduler(optimizer, total_steps=100, warmup_steps=10, floor_ratio=0.1)
+    
+    # Take some steps
+    for _ in range(25):
+        sched1.step()
+    
+    state = sched1.state_dict()
+    step_at_save = sched1.last_epoch
+    
+    # Create new scheduler and restore
+    optimizer2 = torch.optim.SGD([torch.randn(4, requires_grad=True)], lr=1.0)
+    sched2 = AsymptoticLRScheduler(optimizer2, total_steps=100, warmup_steps=10, floor_ratio=0.1)
+    sched2.load_state_dict(state)
+    
+    # Should be at same step
+    assert sched1.last_epoch == sched2.last_epoch
+    assert step_at_save == sched2.last_epoch
+
+
+def test_attention_deepcopy():
+    """Attention should be deepcopyable."""
+    import copy
+    attn1 = NonCollapsingAttention(16, tau0=12.0)
+    attn2 = copy.deepcopy(attn1)
+    
+    # Modify attn2
+    attn2.raw_tau.data.fill_(0.5)
+    
+    # attn1 should be unchanged
+    assert not torch.allclose(attn1.raw_tau, attn2.raw_tau)
+
+
+def test_attention_pickle():
+    """Attention should be picklable."""
+    import pickle
+    attn1 = NonCollapsingAttention(16, tau0=12.0)
+    
+    pickled = pickle.dumps(attn1)
+    attn2 = pickle.loads(pickled)
+    
+    # Check that it works
+    q = torch.randn(2, 4, 16)
+    k = torch.randn(2, 4, 16)
+    v = torch.randn(2, 4, 16)
+    out1 = attn1(q, k, v)
+    out2 = attn2(q, k, v)
+    assert torch.allclose(out1, out2)
+
+
+def test_attention_deterministic_with_manual_seed():
+    """Output should be deterministic with manual seed."""
+    torch.manual_seed(42)
+    attn = NonCollapsingAttention(16)
+    q = torch.randn(2, 4, 16)
+    k = torch.randn(2, 4, 16)
+    v = torch.randn(2, 4, 16)
+    out1 = attn(q, k, v)
+    
+    torch.manual_seed(42)
+    attn = NonCollapsingAttention(16)
+    q = torch.randn(2, 4, 16)
+    k = torch.randn(2, 4, 16)
+    v = torch.randn(2, 4, 16)
+    out2 = attn(q, k, v)
+    
+    assert torch.allclose(out1, out2)
+
+
+def test_linear_orthogonal_init_deterministic():
+    """Orthogonal init should be deterministic."""
+    torch.manual_seed(42)
+    layer1 = make_corrected_linear(32, 32, nonlinearity="tanh")
+    w1 = layer1.weight.clone()
+    
+    torch.manual_seed(42)
+    layer2 = make_corrected_linear(32, 32, nonlinearity="tanh")
+    w2 = layer2.weight.clone()
+    
+    assert torch.allclose(w1, w2)
+
+
+def test_attention_with_batch_size_1():
+    """Attention should work with batch size 1."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(1, 4, 8)
+    k = torch.randn(1, 4, 8)
+    v = torch.randn(1, 4, 8)
+    
+    out = attn(q, k, v)
+    assert out.shape == (1, 4, 8)
+    assert torch.isfinite(out).all()
+
+
+def test_attention_with_single_token():
+    """Attention should work with single token."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(2, 1, 8)
+    k = torch.randn(2, 1, 8)
+    v = torch.randn(2, 1, 8)
+    
+    out = attn(q, k, v)
+    assert out.shape == (2, 1, 8)
+
+
+def test_scheduler_with_multiple_param_groups():
+    """Scheduler should work with multiple param groups."""
+    params1 = [torch.randn(4, requires_grad=True)]
+    params2 = [torch.randn(8, requires_grad=True)]
+    
+    optimizer = torch.optim.SGD(
+        [{'params': params1, 'lr': 1.0}, {'params': params2, 'lr': 0.5}]
+    )
+    
+    scheduler = AsymptoticLRScheduler(
+        optimizer,
+        total_steps=50,
+        warmup_steps=10,
+        floor_ratio=0.1,
+    )
+    
+    # Take a few steps
+    for _ in range(20):
+        scheduler.step()
+    
+    # Check that both param groups are updated
+    assert len(optimizer.param_groups) == 2
+    assert optimizer.param_groups[0]["lr"] > 0.1
+    assert optimizer.param_groups[1]["lr"] > 0.05
