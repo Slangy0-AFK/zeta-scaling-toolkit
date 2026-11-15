@@ -8,6 +8,12 @@ on:
   schedule:
     - cron: "0 3 * * *"
   workflow_dispatch:
+    inputs:
+      run_mutation_check:
+        description: Run the slow full-suite mutation check
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   test:
@@ -59,6 +65,21 @@ jobs:
         run: ruff format --check .
       - name: Mypy
         run: mypy --strict zeta_scaling_toolkit
+
+  mutation-check:
+    if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.run_mutation_check) }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install CPU PyTorch and development tools
+        run: |
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple
+          python -m pip install -e ".[dev]"
+      - name: Run full-suite mutation check
+        run: python tools/mutation_check.py
 
   nightly-hypothesis:
     if: github.event_name == 'schedule'

@@ -89,6 +89,12 @@ ruff check zeta_scaling_toolkit tests
 mypy --strict zeta_scaling_toolkit
 ```
 
+Run the optional mutation check with `python tools/mutation_check.py`. It
+temporarily injects targeted source changes and runs the full test suite for
+each one, restoring the source afterward. `KILLED` means a test detected the
+injected bug; `SURVIVED` means the suite missed it. This expensive check is not
+part of the default CI matrix.
+
 CI runs the CPU test matrix and a nightly Hypothesis profile. CUDA coverage is
 skipped when no CUDA device is available. See [TESTING.md](./TESTING.md).
 Reviewers can see the passing full GitHub Actions matrix at commit

@@ -476,6 +476,59 @@ def test_streaming_attention_rejects_invalid_options(kwargs):
         NonCollapsingAttention(4).forward_streaming(query, keys, values, **kwargs)
 
 
+@pytest.mark.parametrize(
+    "case",
+    [
+        "type",
+        "rank",
+        "dtype",
+        "dimension",
+        "empty_keys",
+        "value_length",
+        "device",
+        "batch",
+        "finite",
+    ],
+)
+def test_streaming_attention_rejects_malformed_tensor_inputs(case):
+    query = torch.randn(1, 2, 4)
+    keys = torch.randn(1, 3, 4)
+    values = torch.randn(1, 3, 2)
+    attention = NonCollapsingAttention(4, check_finite=case == "finite")
+    if case == "type":
+        query = None
+        error, message = TypeError, "q must be a torch.Tensor"
+    elif case == "rank":
+        query = torch.randn(4)
+        error, message = ValueError, "q must have rank >= 2"
+    elif case == "dtype":
+        query = torch.ones(1, 2, 4, dtype=torch.int64)
+        error, message = TypeError, "q must have a floating-point dtype"
+    elif case == "dimension":
+        query = torch.randn(1, 2, 3)
+        error, message = ValueError, "expected last dim d_k=4"
+    elif case == "empty_keys":
+        keys = torch.empty(1, 0, 4)
+        values = torch.empty(1, 0, 2)
+        error, message = ValueError, "key sequence length must be nonzero"
+    elif case == "value_length":
+        values = torch.randn(1, 4, 2)
+        error, message = ValueError, "key and value sequence lengths must match"
+    elif case == "device":
+        query = torch.empty(1, 2, 4, device="meta")
+        error, message = ValueError, "must be on the same device"
+    elif case == "batch":
+        query = torch.randn(2, 2, 4)
+        keys = torch.randn(3, 3, 4)
+        values = torch.randn(3, 3, 2)
+        error, message = ValueError, "batch dimensions must be broadcastable"
+    else:
+        query[0, 0, 0] = float("nan")
+        error, message = ValueError, "only finite values"
+    with pytest.raises(error, match=message):
+        attention.forward_streaming(query, keys, values, window=2)
+
+
 def test_streaming_attention_rejects_query_longer_than_key_context():
     query = torch.randn(1, 4, 4)
     keys = torch.randn(1, 3, 4)
@@ -508,6 +561,22 @@ def test_streaming_attention_alibi_supports_headless_inputs(batch_shape):
     dense_bias = alibi_bias(1, 5, 9, dtype=torch.float64)[0, 0]
     dense_mask = dense_bias.masked_fill(~mask, float("-inf"))
 
+    expected = attention(query, keys, values, attn_mask=dense_mask)
+    actual = attention.forward_streaming(
+        query, keys, values, window=3, sink_tokens=1, alibi=True, chunk_size=2
+    )
+    torch.testing.assert_close(actual, expected, atol=1e-10, rtol=1e-10)
+
+
+def test_streaming_attention_log_alibi_supports_rank_two_inputs():
+    torch.manual_seed(109)
+    query = torch.randn(5, 8, dtype=torch.float64)
+    keys = torch.randn(9, 8, dtype=torch.float64)
+    values = torch.randn(9, 4, dtype=torch.float64)
+    attention = NonCollapsingAttention(8, length_scaling="log", train_length=4).double()
+    mask = streaming_mask(5, 9, window=3, sink_tokens=1)
+    dense_bias = alibi_bias(1, 5, 9, dtype=torch.float64)[0, 0]
+    dense_mask = dense_bias.masked_fill(~mask, float("-inf"))
     expected = attention(query, keys, values, attn_mask=dense_mask)
     actual = attention.forward_streaming(
         query, keys, values, window=3, sink_tokens=1, alibi=True, chunk_size=2
@@ -840,6 +909,7 @@ def test_rotary_embedding_rejects_invalid_inputs(values, positions, kwargs, erro
         ((1, -1, 1), {}, ValueError),
         ((1, 3, 2), {}, ValueError),
         ((1, 1, 1), {"dtype": torch.int64}, TypeError),
+        ((1, 1, 1), {"chunk_size": 0}, ValueError),
     ],
 )
 def test_alibi_bias_rejects_invalid_inputs(args, kwargs, error):
@@ -847,10 +917,27 @@ def test_alibi_bias_rejects_invalid_inputs(args, kwargs, error):
         alibi_bias(*args, **kwargs)
 
 
-@pytest.mark.parametrize("args", [(-1, 1, 1, 0), (2, 1, 1, 0), (1, 1, 0, 0), (1, 1, 1, -1)])
+@pytest.mark.parametrize(
+    "args",
+    [
+        (-1, 1, 1, 0),
+        (2, 1, 1, 0),
+        (1, 1, 0, 0),
+        (1, 1, 1, -1),
+        (1, 1, 1, 0, None, 0),
+    ],
+)
 def test_streaming_mask_rejects_invalid_inputs(args):
     with pytest.raises(ValueError):
         streaming_mask(*args)
+
+
+def test_rotary_embedding_rejects_mismatched_device_and_unbroadcastable_positions():
+    values = torch.ones(2, 4, 8)
+    with pytest.raises(ValueError, match="same device"):
+        rotary_embedding(values, torch.empty(2, 4, device="meta", dtype=torch.int64))
+    with pytest.raises(ValueError, match="broadcastable"):
+        rotary_embedding(values, torch.ones(3, dtype=torch.int64))
 
 
 @st.composite
