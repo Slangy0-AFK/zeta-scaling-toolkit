@@ -67,6 +67,26 @@ MUTANTS = (
         "(positions < self.sink_tokens) | (positions >= self.next_position - self.window + 1)",
         "(positions >= self.next_position - self.window + 1)",
     ),
+    (
+        "zeta_scaling_toolkit/core.py",
+        "key_positions[None, :] < sink_tokens",
+        "key_positions[None, :] < 0",
+    ),
+    (
+        "zeta_scaling_toolkit/core.py",
+        "query_positions[:, None] - window + 1",
+        "query_positions[:, None] - window",
+    ),
+    (
+        "zeta_scaling_toolkit/core.py",
+        "query_offset = key_length - query_length",
+        "query_offset = 0",
+    ),
+    (
+        "zeta_scaling_toolkit/core.py",
+        "bias = -slope_values * distances",
+        "bias = slope_values * distances",
+    ),
 )
 
 

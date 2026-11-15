@@ -446,6 +446,104 @@ def test_streaming_attention_matches_dense_outputs_and_gradients(
         torch.testing.assert_close(sparse_gradient, dense_gradient, atol=1e-9, rtol=1e-9)
 
 
+@pytest.mark.parametrize("length", [200, 513])
+@pytest.mark.parametrize("window", [16, 64])
+@pytest.mark.parametrize("sinks", [0, 4])
+@pytest.mark.parametrize("alibi", [False, True])
+@pytest.mark.parametrize("chunk_size", [37, 128])
+@pytest.mark.parametrize("length_scaling", ["none", "log"])
+def test_streaming_attention_long_grid_matches_dense_outputs_and_gradients(
+    length, window, sinks, alibi, chunk_size, length_scaling
+):
+    torch.manual_seed(211 + length + window + sinks + chunk_size + int(alibi))
+    q_sparse = torch.randn(1, 1, length, 4, dtype=torch.float64, requires_grad=True)
+    k_sparse = torch.randn(1, 1, length, 4, dtype=torch.float64, requires_grad=True)
+    v_sparse = torch.randn(1, 1, length, 3, dtype=torch.float64, requires_grad=True)
+    q_dense = q_sparse.detach().clone().requires_grad_()
+    k_dense = k_sparse.detach().clone().requires_grad_()
+    v_dense = v_sparse.detach().clone().requires_grad_()
+    kwargs = {"length_scaling": length_scaling}
+    if length_scaling == "log":
+        kwargs["train_length"] = 16
+    sparse = NonCollapsingAttention(4, **kwargs).double()
+    dense = NonCollapsingAttention(4, **kwargs).double()
+    dense.load_state_dict(sparse.state_dict())
+    dense_mask = streaming_mask(length, length, window, sinks, chunk_size=chunk_size)
+    if alibi:
+        dense_bias = alibi_bias(1, length, length, dtype=torch.float64, chunk_size=chunk_size)
+        dense_mask = dense_bias.masked_fill(~dense_mask[None, None], float("-inf"))
+
+    sparse_output = sparse.forward_streaming(
+        q_sparse,
+        k_sparse,
+        v_sparse,
+        window,
+        sinks,
+        alibi=alibi,
+        chunk_size=chunk_size,
+    )
+    dense_output = dense(q_dense, k_dense, v_dense, attn_mask=dense_mask)
+    torch.testing.assert_close(sparse_output, dense_output, atol=1e-5, rtol=1e-5)
+    sparse_gradients = torch.autograd.grad(
+        sparse_output.square().sum(), (q_sparse, k_sparse, v_sparse, sparse.raw_tau)
+    )
+    dense_gradients = torch.autograd.grad(
+        dense_output.square().sum(), (q_dense, k_dense, v_dense, dense.raw_tau)
+    )
+    for sparse_gradient, dense_gradient in zip(sparse_gradients, dense_gradients):
+        torch.testing.assert_close(sparse_gradient, dense_gradient, atol=1e-5, rtol=1e-5)
+
+
+def test_streaming_attention_decode_matches_dense_outputs_and_gradients():
+    torch.manual_seed(227)
+    q_sparse = torch.randn(1, 2, 7, 8, dtype=torch.float64, requires_grad=True)
+    k_sparse = torch.randn(1, 2, 19, 8, dtype=torch.float64, requires_grad=True)
+    v_sparse = torch.randn(1, 2, 19, 4, dtype=torch.float64, requires_grad=True)
+    q_dense = q_sparse.detach().clone().requires_grad_()
+    k_dense = k_sparse.detach().clone().requires_grad_()
+    v_dense = v_sparse.detach().clone().requires_grad_()
+    sparse = NonCollapsingAttention(8, length_scaling="log", train_length=4).double()
+    dense = NonCollapsingAttention(8, length_scaling="log", train_length=4).double()
+    dense.load_state_dict(sparse.state_dict())
+    mask = streaming_mask(7, 19, window=4, sink_tokens=2)
+    bias = alibi_bias(2, 7, 19, dtype=torch.float64)
+    dense_mask = bias.masked_fill(~mask[None, None], float("-inf"))
+
+    sparse_output = sparse.forward_streaming(
+        q_sparse, k_sparse, v_sparse, window=4, sink_tokens=2, alibi=True, chunk_size=3
+    )
+    dense_output = dense(q_dense, k_dense, v_dense, attn_mask=dense_mask)
+    torch.testing.assert_close(sparse_output, dense_output, atol=1e-5, rtol=1e-5)
+    sparse_gradients = torch.autograd.grad(
+        sparse_output.square().sum(), (q_sparse, k_sparse, v_sparse, sparse.raw_tau)
+    )
+    dense_gradients = torch.autograd.grad(
+        dense_output.square().sum(), (q_dense, k_dense, v_dense, dense.raw_tau)
+    )
+    for sparse_gradient, dense_gradient in zip(sparse_gradients, dense_gradients):
+        torch.testing.assert_close(sparse_gradient, dense_gradient, atol=1e-5, rtol=1e-5)
+
+
+@torch.no_grad()
+def test_streaming_attention_is_finite_at_length_32768():
+    """Forward-only CPU smoke test; the generous runtime budget is 120 seconds."""
+    import time
+
+    torch.manual_seed(223)
+    length = 32768
+    query = torch.randn(1, length, 8)
+    keys = torch.randn(1, length, 8)
+    values = torch.randn(1, length, 4)
+    attention = NonCollapsingAttention(8, length_scaling="log", train_length=128)
+    started = time.perf_counter()
+    output = attention.forward_streaming(
+        query, keys, values, window=64, sink_tokens=4, alibi=True, chunk_size=128
+    )
+    elapsed = time.perf_counter() - started
+    assert torch.isfinite(output).all()
+    assert elapsed < 120.0, f"length-32768 streaming forward took {elapsed:.1f}s"
+
+
 @pytest.mark.parametrize("dtype", [torch.float16, torch.bfloat16, torch.float32])
 def test_streaming_attention_supports_low_precision_values(dtype):
     torch.manual_seed(103)

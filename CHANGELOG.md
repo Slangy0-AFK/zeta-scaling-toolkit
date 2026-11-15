@@ -1,21 +1,16 @@
 # Changelog
 
-## 0.4.0
-
-- Added opt-in log-length attention temperature scaling, rotary position
-  embeddings, ALiBi biases, causal streaming masks, and a bounded inference KV
-  cache with attention sinks.
-- Updated the benchmark's optional corrected initialization and added a
-  resumable, matched-seed length-generalization evaluation runner.
-- Recorded the 500-step matched-seed result: attention-only, initialization-
-  only, and the combined variant have higher loss than baseline; see
-  [benchmark results](./benchmarks/RESULTS.md).
-- Added measured scheduler-equivalence and distractor-mass regression tests.
-- New attention length scaling and positional encodings remain opt-in; no
-  length-generalization or broad training improvement is claimed.
-
 ## Unreleased
 
+## 0.5.0
+
+- Published `NonCollapsingAttention.forward_streaming` as a public exact
+  sink/window attention path with optional ALiBi and log-length scaling.
+- Added dense-equivalence output and gradient coverage across long contexts,
+  decode-style inputs, window/sink settings, ALiBi, and chunk sizes; added a
+  32,768-token forward finiteness smoke test.
+- Extended the optional mutation checker with sink, window-boundary, decode
+  alignment, and ALiBi-sign regressions.
 - Added golden-value tests for RoPE linear/NTK scaling and ALiBi slopes, plus
   an opt-in full-suite mutation checker for targeted regressions.
 - Consolidated duplicate extended-validation benchmark sections and added a
@@ -29,6 +24,20 @@
   reached within 2%.
 - `smoke_test.py` is lint-clean and now covered by the CI lint step.
 - Documented that `calibrate_gain` equalises batch norm, not per-sample norm.
+
+## 0.4.0
+
+- Added opt-in log-length attention temperature scaling, rotary position
+  embeddings, ALiBi biases, causal streaming masks, and a bounded inference KV
+  cache with attention sinks.
+- Updated the benchmark's optional corrected initialization and added a
+  resumable, matched-seed length-generalization evaluation runner.
+- Recorded the 500-step matched-seed result: attention-only, initialization-
+  only, and the combined variant have higher loss than baseline; see
+  [benchmark results](./benchmarks/RESULTS.md).
+- Added measured scheduler-equivalence and distractor-mass regression tests.
+- New attention length scaling and positional encodings remain opt-in; no
+  length-generalization or broad training improvement is claimed.
 
 ## 0.3.0
 
