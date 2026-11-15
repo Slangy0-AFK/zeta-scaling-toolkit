@@ -21,6 +21,9 @@ def test_grid_reports_matched_seeds_and_all_configurations():
             "--seeds",
             "3",
             "4",
+            "--learning-rates",
+            "0.001",
+            "0.00075",
             "--attention-values",
             "0",
             "1",
@@ -33,16 +36,17 @@ def test_grid_reports_matched_seeds_and_all_configurations():
         text=True,
     )
     records = [json.loads(line) for line in result.stdout.splitlines()]
-    assert [record["config"] for record in records] == list("AB BCCDDDD".replace(" ", ""))
+    assert [record["config"] for record in records] == list("ABBCCDDDDE" * 2)
     assert all(record["seeds"] == [3, 4] for record in records)
     assert all(len(record["evaluation_losses"]) == 2 for record in records)
     assert all(math.isfinite(record["mean_evaluation_loss"]) for record in records)
-    baseline = records[0]
     zero_attention = next(
         record for record in records if record["config"] == "C" and record["A_attn"] == 0
     )
-    for expected, actual in zip(baseline["evaluation_losses"], zero_attention["evaluation_losses"]):
-        assert math.isclose(expected, actual, rel_tol=1e-6, abs_tol=1e-6)
+    one_attention = next(
+        record for record in records if record["config"] == "C" and record["A_attn"] == 1
+    )
+    assert zero_attention["evaluation_losses"] == one_attention["evaluation_losses"]
     low_floor = next(
         record for record in records if record["config"] == "B" and record["floor_ratio"] == 0.01
     )
@@ -50,6 +54,17 @@ def test_grid_reports_matched_seeds_and_all_configurations():
         record for record in records if record["config"] == "B" and record["floor_ratio"] == 1
     )
     assert low_floor["evaluation_losses"] != high_floor["evaluation_losses"]
+    constant = next(record for record in records if record["config"] == "E")
+    assert constant["scheduler"] == "constant"
+    assert constant["learning_rate"] == 0.00075
+    matching_constant = next(
+        record
+        for record in records
+        if record["config"] == "B"
+        and record["floor_ratio"] == 1
+        and record["learning_rate"] == constant["learning_rate"]
+    )
+    assert constant["evaluation_losses"] == matching_constant["evaluation_losses"]
 
 
 def test_grid_rejects_invalid_floor():

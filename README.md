@@ -7,17 +7,24 @@ and self-run toy experiment below do not establish training benefits.
 
 ## Components
 
-- `NonCollapsingAttention` divides attention logits by
-  `sqrt(d_k) * (1 + A_attn / ln(N))`, with `A_attn=1.0` by default.
-- `AsymptoticLRScheduler` starts at the base learning rate and scales it by
-  `max(ln(2) / ln(T), floor_ratio)`, with a default floor of 1% of the base.
-- `get_scale_invariant_vit_coords` produces polar coordinates with radius
-  `sqrt((ln(T) + A_coords) / pi)`; `A_coords` defaults to zero.
-- `make_corrected_linear` creates a linear layer with Kaiming normal weights
-  and zero bias.
+- `NonCollapsingAttention` normalizes queries and keys and multiplies each by
+  a learnable scalar initialized to `d_k ** -0.25` before computing logits.
+  `A_attn` remains available for API compatibility but has no effect.
+- `AsymptoticLRScheduler` uses cosine decay from the base learning rate to
+  `floor_ratio` of the base over `total_steps` (default 300), then stays there.
+- `get_scale_invariant_vit_coords` returns radius and angle for normalized
+  pixel coordinates; `T` and `A_coords` are retained but unused.
+- `make_corrected_linear` creates a linear layer with orthogonal weights and
+  zero bias; `bias=False` is supported and `nonlinearity` is retained but unused.
 
 These are formulas to evaluate, not guarantees against attention collapse,
-training stagnation, or image distortion.
+training stagnation, or image distortion. The attention logits are bounded by
+the product of the current scale magnitudes for finite inputs and scales, but
+the scales themselves are unconstrained and can grow during training. With
+the specified PyTorch normalization defaults, float16 zero vectors can produce
+NaNs; use float32 for attention when zero vectors are possible. Orthogonal
+weights preserve norms for square linear maps, not across ReLU activations or
+all rectangular maps.
 
 ## Installation
 
@@ -49,10 +56,13 @@ scheduler.step()
 coords = get_scale_invariant_vit_coords(height=224, width=224, T=256)
 ```
 
-The corrected API replaces the old global `A0`: use `A_attn` for attention,
-`floor_ratio` for the scheduler, and `A_coords` for coordinates. Attention
-infers `N` from `Q`, and `make_corrected_linear` replaces
-`CorrectedVarianceLinear`.
+The corrected API replaces the old global `A0`: `A_attn` is retained as an
+unused compatibility attribute and `floor_ratio` controls the scheduler.
+The scheduler's third positional argument is now `total_steps`; pass the
+previous `last_epoch` argument by keyword. Attention supports single-token sequences.
+The new learned attention scales add parameters to its state dict; old
+checkpoints require initialization of those parameters when loading.
+`make_corrected_linear` replaces `CorrectedVarianceLinear`.
 
 ## Testing
 
@@ -71,14 +81,16 @@ python benchmarks/toy_copy_task.py
 ```
 
 The CPU benchmark runs 300 steps of sequence-copy training per transformer,
-using identical initial parameters and batches. It compares standard attention
+using identical initial shared parameters and batches. It compares standard attention
 with cosine decay to corrected attention with the asymptotic scheduler, prints
 the final batch losses, and writes `loss_curves.png` in the current directory.
 It also trains two 30-layer MLPs for 300 steps on an identity regression task
 and prints their last hidden-layer activation standard deviations on the same
 held-out inputs. Both MLPs use the same seed and training data.
 
-One run used seed 42 and AdamW with a base learning rate of 0.001:
+The following historical run used the previous logarithmic attention and LR
+formulas and Kaiming initialization, seed 42 and AdamW with a base learning
+rate of 0.001. Its corrected results do not describe the current implementations:
 
 | Variant | Final batch loss | 30-layer MLP activation std |
 |---|---:|---:|
@@ -87,9 +99,9 @@ One run used seed 42 and AdamW with a base learning rate of 0.001:
 
 The corrected transformer performed substantially worse on this task. The
 comparison changes both attention and scheduler, so it cannot attribute the
-difference to either individually. After 300 scheduler steps, the asymptotic
-rate is about 0.12 times the base rate; cosine is 0.5 at step 150 and zero
-after step 300. Both attention variants use four heads and the same input and
+difference to either individually. In that historical run, after 300 scheduler
+steps the old asymptotic rate was about 0.12 times the base rate; cosine was
+0.5 at step 150 and zero after step 300. Both attention variants use four heads and the same input and
 output projection architecture. This is one task and one run, not external
 validation. The tuning script below also runs a 2×2 attention/scheduler
 ablation.
@@ -102,7 +114,7 @@ python benchmarks/tune_copy_task.py > tuning-results.jsonl
 
 This runs all four attention/scheduler combinations and a standard-attention
 constant-LR control (E) over five matched seeds,
-using the same initial weights and training batches for each configuration.
+using the same initial shared weights and training batches for each configuration.
 It prints one JSON record per grid point with per-seed final training-batch
 and held-out toy-batch losses and their means. Compare D against C with the
 same `learning_rate` and `A_attn`, and A against the other configurations
@@ -113,27 +125,27 @@ to change the grid, steps, or seeds.
 To use your own task, replace `train_trial` with your model, data, and training
 loop, preserving the attention/scheduler switches and seed matching.
 
-`A_attn` changes the attention divisor `1 + A_attn / ln(N)`; zero recovers
-ordinary scaled dot-product attention in this benchmark. The scheduler's
+`A_attn` is recorded and assigned for compatibility but does not change
+QK-normalized attention. Consequently, grid points differing only in
+`A_attn` repeat the same experiment; zero does not recover standard attention.
+The scheduler's
 `floor_ratio` is a fraction of the optimizer's base learning rate, not an
-absolute rate. Its decay depends on scheduler steps, so call `step()` after
-each optimizer update. A higher floor becomes effective only once the
-logarithmic factor falls below it. With 300 steps, the default 0.01 floor
-never activates: the logarithmic factor is still about 0.12. Both the decay
-and choice of floor can affect finite-run results and should be tuned for the
-task and training duration. In this toy benchmark, `A_attn=1` slightly
-increased the mean loss compared with `A_attn=0`; it may degrade performance
-on other small tasks and needs task-specific evaluation. The script also
-searches base learning rates if supplied via `--learning-rates`. There is no
+absolute rate. Call `step()` after each optimizer update. The cosine curve
+reaches the floor at `total_steps` and remains there. The tuning script uses
+the default 300 scheduler steps even when its `--steps` argument differs.
+Both the decay and choice of floor can affect finite-run results and should
+be tuned for the task and training duration. The script also searches base learning rates if
+supplied via `--learning-rates`. There is no
 global `A0` in the current API, and the attention and scheduler do not require
 corrected linear initialization; this transformer's linear layers use PyTorch defaults.
 These toy results cannot guarantee a particular ranking or real-task benefit.
 
 ### Empirical benchmark and status
 
-The following self-run toy copy-task results use 300 steps, batch size 32,
-seeds 42–46 and base LR 0.001. The evaluation loss is averaged over one
-held-out batch per seed; this is not a real-world benchmark.
+The following historical self-run toy copy-task results used the previous
+logarithmic attention and LR formulas, 300 steps, batch size 32, seeds 42–46
+and base LR 0.001. They do not measure the current implementations. The evaluation loss is
+averaged over one held-out batch per seed; this is not a real-world benchmark.
 
 | Config | Attention and LR schedule | Settings | Mean evaluation loss |
 |---|---|---|---:|
@@ -153,9 +165,8 @@ attention with cosine decay on this task.
 
 Development on this line of research is paused at these results. Standard
 attention and established LR schedules are recommended unless the experimental
-components have been evaluated for the intended task. To reproduce the
-high-floor run, use `floor_ratio=0.75`; it is not a universally recommended
-minimum, and higher values require their own evaluation.
+components have been evaluated for the intended task. The historical
+high-floor run cannot be reproduced with the current scheduler formula.
 
 ## Requirements and license
 

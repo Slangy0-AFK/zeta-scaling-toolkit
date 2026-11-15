@@ -56,11 +56,11 @@ tests/
 ### Test Groups
 
 #### 1. NonCollapsingAttention Tests
-- Checks the attention temperature formula and invalid sequence length
+- Checks QK normalization, learned scales, zero vectors, and sequence length one
 
 #### 2. AsymptoticLRScheduler Tests
 - Validates learning rate decay schedule
-- Verifies the starting rate, logarithmic decay, and configured floor
+- Verifies the starting rate, cosine decay, and configured floor
 
 #### 3. Scale-Invariant Vision Coords Tests
 - Tests coordinate scaling for different image sizes
@@ -69,9 +69,9 @@ tests/
 
 #### 4. Linear Initialization Tests
 ```python
-test_linear_uses_kaiming_variance
+test_linear_uses_orthogonal_weights
 ```
-- Checks Kaiming initialization and zero bias
+- Checks orthogonal initialization and zero bias
 
 ## Running Specific Tests
 
@@ -82,7 +82,7 @@ pytest tests/test_zeta_toolkit.py -k attention -v
 
 ### Run a Specific Test
 ```bash
-pytest tests/test_zeta_toolkit.py::test_attention_uses_mild_temperature -v
+pytest tests/test_zeta_toolkit.py::test_attention_uses_qk_normalization -v
 ```
 
 ### Run Tests Matching a Pattern

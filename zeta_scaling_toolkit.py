@@ -21,9 +21,9 @@ if __name__ == "__main__":
     attn = NonCollapsingAttention(d_k=32)
     out = attn(Q, K, V)
     assert out.shape == (1, 8, 64, 32), out.shape
-    N = Q.shape[-2]
-    W = 1 + 1.0 / math.log(N)
-    logits = Q @ K.transpose(-2, -1) / (math.sqrt(32) * W)
+    q_norm = F.normalize(Q, dim=-1) * attn.q_scale
+    k_norm = F.normalize(K, dim=-1) * attn.k_scale
+    logits = q_norm @ k_norm.transpose(-2, -1)
     weight_std = F.softmax(logits, dim=-1).std().item()
     results.append(("attention weights not uniform (std > 1e-4)", weight_std > 1e-4))
 
@@ -43,14 +43,15 @@ if __name__ == "__main__":
     )
 
     coords = get_scale_invariant_vit_coords(32, 32, T=1024.0)
-    max_abs = coords.abs().max().item()
-    results.append((f"coords max_abs = {max_abs:.2f} < 3.0", max_abs < 3.0))
+    max_radius = coords[..., 0].max().item()
+    results.append((f"coords max radius = {max_radius:.2f} < 1.0", max_radius < 1.0))
 
     x = torch.randn(64, 128)
+    original_norm = x.norm().item()
     for _ in range(30):
-        x = F.relu(make_corrected_linear(128, 128)(x))
-    std = x.std().item()
-    results.append((f"30-layer activation std = {std:.3f} in [0.3, 3.0]", 0.3 <= std <= 3.0))
+        x = make_corrected_linear(128, 128)(x)
+    norm_ratio = x.norm().item() / original_norm
+    results.append((f"30-layer linear norm ratio = {norm_ratio:.3f}", abs(norm_ratio - 1) < 1e-4))
 
     print("Smoke tests:")
     for name, ok in results:
