@@ -201,11 +201,35 @@ quadratic work in sequence length; practical full training at this length was
 not measured here.
 
 The full 500/2000-step variant and initialization/scheduler matrix, separate
-hyperparameter sweep, and matched-seed needle and successor evaluations have
-not been completed. No component meets the stated recommendation rule on this
-evidence; new options remain opt-in with no measured general training benefit.
+hyperparameter sweep and matched-seed successor evaluation have not been
+completed. No component meets the stated recommendation rule on this evidence;
+new options remain opt-in with no measured general training benefit.
 The benchmark uses a dense streaming mask, not the separate bounded inference
 KV cache, so it does not measure constant-memory streaming.
+
+### Exploratory needle retrieval (500 steps)
+
+```bash
+python benchmarks/length_generalization.py --task needle --variants rope rope-log --steps 500 --seeds 42 43 44 45 46 47 48 49 50 51 --init-modes baseline --schedulers toolkit --eval-samples 1 --output /tmp/length-generalization-needle500.jsonl
+```
+
+All 20 matched trial records are preserved in
+[length-generalization-needle500.jsonl](./length-generalization-needle500.jsonl).
+Exact retrieval accuracy was zero for both variants at every tested length.
+Each seed/length contributes one evaluation query, so these accuracies are
+coarse and do not estimate small nonzero success rates reliably. Paired
+candidate-minus-RoPE differences are all zero (10 matched seeds); this is a
+negative result, not evidence that the variants are equivalent in general.
+
+| Length | RoPE accuracy | RoPE + log accuracy | Paired accuracy difference [95% CI] | Seeds with higher candidate accuracy |
+|---:|---:|---:|---:|---:|
+| 64 | 0/10 | 0/10 | 0.00 [0.00, 0.00] | 0/10 |
+| 128 | 0/10 | 0/10 | 0.00 [0.00, 0.00] | 0/10 |
+| 256 | 0/10 | 0/10 | 0.00 [0.00, 0.00] | 0/10 |
+| 512 | 0/10 | 0/10 | 0.00 [0.00, 0.00] | 0/10 |
+| 1024 | 0/10 | 0/10 | 0.00 [0.00, 0.00] | 0/10 |
+| 4096 | 0/10 | 0/10 | 0.00 [0.00, 0.00] | 0/10 |
+| 16384 | 0/10 | 0/10 | 0.00 [0.00, 0.00] | 0/10 |
 
 ## Mutation sanity
 
