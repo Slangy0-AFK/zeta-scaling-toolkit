@@ -3,18 +3,16 @@
 These tests verify invariants that should hold for any valid input.
 """
 
-import pytest
-import torch
-from hypothesis import given, settings, HealthCheck
 import hypothesis.strategies as st
+import torch
+from hypothesis import HealthCheck, given, settings
 
 from zeta_scaling_toolkit import (
-    NonCollapsingAttention,
     AsymptoticLRScheduler,
-    make_corrected_linear,
+    NonCollapsingAttention,
     get_isotropic_coords,
+    make_corrected_linear,
 )
-
 
 # Hypothesis settings for reproducibility in CI
 hypothesis_settings = settings(
@@ -51,11 +49,11 @@ def embedding_dims():
 def test_attention_output_shape(B, Lq, Lk, d):
     """Attention output shape must match query shape."""
     attn = NonCollapsingAttention(d)
-    
+
     q = torch.randn(B, Lq, d)
     k = torch.randn(B, Lk, d)
     v = torch.randn(B, Lk, d)
-    
+
     out = attn(q, k, v)
     assert out.shape == (B, Lq, d), f"Expected {(B, Lq, d)}, got {out.shape}"
 
@@ -69,11 +67,11 @@ def test_attention_output_shape(B, Lq, Lk, d):
 def test_attention_output_finite(B, L, d):
     """Attention output must be finite for finite inputs."""
     attn = NonCollapsingAttention(d)
-    
+
     q = torch.randn(B, L, d)
     k = torch.randn(B, L, d)
     v = torch.randn(B, L, d)
-    
+
     out = attn(q, k, v)
     assert torch.isfinite(out).all(), "Output contains NaN/Inf"
 
@@ -87,22 +85,21 @@ def test_attention_output_finite(B, L, d):
 def test_attention_weights_sum_to_one(B, L, d):
     """Rows of attention weights must sum to 1 (within numerical tolerance)."""
     attn = NonCollapsingAttention(d)
-    
+
     q = torch.randn(B, L, d)
     k = torch.randn(B, L, d)
-    v = torch.randn(B, L, d)
-    
+
     # Manually compute attention weights to check
     q_norm = torch.nn.functional.normalize(q, dim=-1)
     k_norm = torch.nn.functional.normalize(k, dim=-1)
-    
+
     # logits shape (B, L, L)
     logits = torch.einsum("bqd,bkd->bqk", q_norm, k_norm)
     logits = attn.tau * logits
-    
+
     weights = torch.softmax(logits, dim=-1)
     row_sums = weights.sum(dim=-1)
-    
+
     # Each row should sum to 1
     assert torch.allclose(row_sums, torch.ones_like(row_sums), atol=1e-5)
 
@@ -116,15 +113,15 @@ def test_attention_weights_sum_to_one(B, L, d):
 def test_scale_invariance_large_norms(B, L, d):
     """Attention weights should be invariant to positive scaling of q and k when ||x|| >= 1e-2."""
     attn = NonCollapsingAttention(d)
-    
+
     # Ensure large norms
     q = torch.randn(B, L, d) * 10
     k = torch.randn(B, L, d) * 10
     v = torch.randn(B, L, d) * 10
-    
+
     out1 = attn(q, k, v)
     out2 = attn(q * 2, k * 2, v)  # Scale only q and k
-    
+
     # Attention pattern should be the same, so outputs should be identical
     assert torch.allclose(out1, out2, atol=1e-4), "Attention pattern changed with q/k scaling"
 
@@ -138,15 +135,15 @@ def test_scale_invariance_large_norms(B, L, d):
 def test_attention_gradients_finite(B, L, d):
     """Gradients must be finite for finite inputs."""
     attn = NonCollapsingAttention(d)
-    
+
     q = torch.randn(B, L, d, requires_grad=True)
     k = torch.randn(B, L, d, requires_grad=True)
     v = torch.randn(B, L, d, requires_grad=True)
-    
+
     out = attn(q, k, v)
     loss = out.sum()
     loss.backward()
-    
+
     assert torch.isfinite(q.grad).all(), "q gradient is not finite"
     assert torch.isfinite(k.grad).all(), "k gradient is not finite"
     assert torch.isfinite(v.grad).all(), "v gradient is not finite"
@@ -162,7 +159,7 @@ def test_scheduler_output_range(total_steps, floor_ratio, warmup_steps):
     """Scheduler LR must be in [floor, 1.0] after warmup and before end."""
     if warmup_steps >= total_steps:
         return  # Skip invalid parameter combinations
-    
+
     param = torch.tensor([1.0], requires_grad=True)
     scheduler = AsymptoticLRScheduler(
         torch.optim.SGD([param], lr=1.0),
@@ -170,11 +167,11 @@ def test_scheduler_output_range(total_steps, floor_ratio, warmup_steps):
         floor_ratio=floor_ratio,
         warmup_steps=warmup_steps,
     )
-    
+
     # Move past warmup to check steady-state behavior
     for _ in range(warmup_steps + 2):
         scheduler.step()
-    
+
     # Check a few more steps after warmup
     for _ in range(min(5, total_steps - warmup_steps - 2)):
         lr = scheduler.optimizer.param_groups[0]["lr"]
@@ -216,7 +213,7 @@ def test_coordinates_radius_bounded(h, w):
     coords = get_isotropic_coords(h, w)
     radius = torch.sqrt((coords**2).sum(dim=-1))
     max_radius = radius.max()
-    
+
     # Theoretical max is sqrt(2)/2 ≈ 0.707
     assert max_radius <= 0.707 + 1e-4, f"Max radius {max_radius} exceeds sqrt(2)/2"
 
@@ -229,7 +226,7 @@ def test_coordinates_radius_bounded(h, w):
 def test_coordinates_equal_pixel_distance_equal_coord_distance(h, w):
     """Equal pixel distances should map to equal coordinate distances in x and y."""
     coords = get_isotropic_coords(h, w)
-    
+
     # Check horizontal step - sample rows instead of checking all
     if w > 1:
         x_step = (coords[0, 1, 0] - coords[0, 0, 0]).abs()
@@ -237,7 +234,7 @@ def test_coordinates_equal_pixel_distance_equal_coord_distance(h, w):
         for i in [0, h // 2, h - 1]:
             step = (coords[i, 1, 0] - coords[i, 0, 0]).abs()
             assert torch.allclose(step, x_step, atol=1e-5), "Horizontal steps not uniform"
-    
+
     # Check vertical step - sample columns instead of checking all
     if h > 1:
         y_step = (coords[1, 0, 1] - coords[0, 0, 1]).abs()
@@ -255,7 +252,7 @@ def test_coordinates_equal_pixel_distance_equal_coord_distance(h, w):
 def test_orthogonal_init_preserves_shape(in_features, out_features):
     """Orthogonal initialization should preserve layer shape."""
     layer = make_corrected_linear(in_features, out_features, nonlinearity="linear")
-    
+
     assert layer.weight.shape == (out_features, in_features)
     assert torch.isfinite(layer.weight).all(), "Weights contain NaN/Inf"
 
@@ -269,7 +266,7 @@ def test_orthogonal_init_near_orthogonality(in_features, out_features):
     """Weight matrix should be approximately orthogonal (W^T W ≈ λI)."""
     layer = make_corrected_linear(in_features, out_features, nonlinearity="linear")
     W = layer.weight
-    
+
     # For square matrices, compute W^T W
     if in_features == out_features:
         WTW = W.T @ W

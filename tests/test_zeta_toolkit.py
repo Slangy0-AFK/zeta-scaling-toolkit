@@ -1,7 +1,6 @@
 """Adversarial regression tests: each one pins a failure found in the v0.1 audit."""
 
 import math
-import warnings
 
 import pytest
 import torch
@@ -352,19 +351,19 @@ def test_scale_invariance_holds_above_1e_minus_2():
     """Scale invariance is exact for ||x|| >= 1e-2, documented limitation below."""
     torch.manual_seed(42)
     attn = NonCollapsingAttention(32)
-    
+
     # Large scale (well above threshold)
     q_large = torch.randn(1, 16, 32) * 10.0
     k_large = torch.randn(1, 16, 32) * 10.0
     v_large = torch.randn(1, 16, 32)
-    
+
     # Scaled down
     q_small = q_large / 10.0  # This has norm ~ [1e-2, 1e-1]
     k_small = k_large / 10.0
-    
+
     out_large = attn(q_large, k_large, v_large)
     out_small = attn(q_small, k_small, v_large / 10.0)
-    
+
     # Should be close (allowing for floating point precision)
     torch.testing.assert_close(out_large, out_small * 10.0, atol=1e-4, rtol=1e-3)
 
@@ -373,19 +372,19 @@ def test_scale_invariance_boundary_very_small_vectors():
     """Below ~1e-2 norm, scale invariance breaks due to numerical regularization (eps=1e-6)."""
     torch.manual_seed(42)
     attn = NonCollapsingAttention(32)
-    
+
     # Very small vectors (below boundary)
     q = torch.randn(1, 4, 32) * 1e-5
     k = torch.randn(1, 4, 32) * 1e-5
     v = torch.randn(1, 4, 32) * 1e-5
-    
+
     q_scaled = q * 2.0
     k_scaled = k * 2.0
     v_scaled = v * 2.0
-    
+
     out = attn(q, k, v)
     out_scaled = attn(q_scaled, k_scaled, v_scaled)
-    
+
     # These should NOT be equal; scale invariance breaks
     # Check they're different
     max_diff = (out - out_scaled).abs().max()
@@ -490,11 +489,11 @@ def test_attention_with_float_mask_add():
     q = torch.randn(1, 4, 8)
     k = torch.randn(1, 4, 8)
     v = torch.randn(1, 4, 8)
-    
+
     # Float mask that penalizes certain positions
     mask = torch.zeros(1, 4, 4)
     mask[0, 0, 1] = -1e9  # Penalize position 1 from position 0
-    
+
     out = attn(q, k, v, attn_mask=mask)
     assert torch.isfinite(out).all()
 
@@ -503,7 +502,7 @@ def test_calibrate_gain_zero_norm_input_raises():
     """calibrate_gain should raise if sample_input has zero norm."""
     model = torch.nn.Linear(8, 8)
     zero_input = torch.zeros(2, 8)
-    
+
     with pytest.raises(ValueError, match="sample_input has zero norm"):
         calibrate_gain(model, zero_input)
 
@@ -513,13 +512,13 @@ def test_attention_state_dict_round_trip():
     """State dict should save and load correctly."""
     attn1 = NonCollapsingAttention(16, tau0=15.0, tau_min=1.0, tau_max=50.0)
     state = attn1.state_dict()
-    
+
     attn2 = NonCollapsingAttention(16)
     attn2.load_state_dict(state)
-    
+
     # Check that raw_tau parameter matches (tau_min/max are not in state dict)
     assert torch.allclose(attn1.raw_tau, attn2.raw_tau)
-    
+
     # Check that forward pass produces same output when both use same bounds
     q = torch.randn(2, 4, 16)
     k = torch.randn(2, 4, 16)
@@ -533,19 +532,19 @@ def test_scheduler_state_dict_round_trip():
     """Scheduler state dict should restore state correctly."""
     optimizer = torch.optim.SGD([torch.randn(4, requires_grad=True)], lr=1.0)
     sched1 = AsymptoticLRScheduler(optimizer, total_steps=100, warmup_steps=10, floor_ratio=0.1)
-    
+
     # Take some steps
     for _ in range(25):
         sched1.step()
-    
+
     state = sched1.state_dict()
     step_at_save = sched1.last_epoch
-    
+
     # Create new scheduler and restore
     optimizer2 = torch.optim.SGD([torch.randn(4, requires_grad=True)], lr=1.0)
     sched2 = AsymptoticLRScheduler(optimizer2, total_steps=100, warmup_steps=10, floor_ratio=0.1)
     sched2.load_state_dict(state)
-    
+
     # Should be at same step
     assert sched1.last_epoch == sched2.last_epoch
     assert step_at_save == sched2.last_epoch
@@ -556,10 +555,10 @@ def test_attention_deepcopy():
     import copy
     attn1 = NonCollapsingAttention(16, tau0=12.0)
     attn2 = copy.deepcopy(attn1)
-    
+
     # Modify attn2
     attn2.raw_tau.data.fill_(0.5)
-    
+
     # attn1 should be unchanged
     assert not torch.allclose(attn1.raw_tau, attn2.raw_tau)
 
@@ -568,10 +567,10 @@ def test_attention_pickle():
     """Attention should be picklable."""
     import pickle
     attn1 = NonCollapsingAttention(16, tau0=12.0)
-    
+
     pickled = pickle.dumps(attn1)
     attn2 = pickle.loads(pickled)
-    
+
     # Check that it works
     q = torch.randn(2, 4, 16)
     k = torch.randn(2, 4, 16)
@@ -589,14 +588,14 @@ def test_attention_deterministic_with_manual_seed():
     k = torch.randn(2, 4, 16)
     v = torch.randn(2, 4, 16)
     out1 = attn(q, k, v)
-    
+
     torch.manual_seed(42)
     attn = NonCollapsingAttention(16)
     q = torch.randn(2, 4, 16)
     k = torch.randn(2, 4, 16)
     v = torch.randn(2, 4, 16)
     out2 = attn(q, k, v)
-    
+
     assert torch.allclose(out1, out2)
 
 
@@ -605,11 +604,11 @@ def test_linear_orthogonal_init_deterministic():
     torch.manual_seed(42)
     layer1 = make_corrected_linear(32, 32, nonlinearity="tanh")
     w1 = layer1.weight.clone()
-    
+
     torch.manual_seed(42)
     layer2 = make_corrected_linear(32, 32, nonlinearity="tanh")
     w2 = layer2.weight.clone()
-    
+
     assert torch.allclose(w1, w2)
 
 
@@ -619,7 +618,7 @@ def test_attention_with_batch_size_1():
     q = torch.randn(1, 4, 8)
     k = torch.randn(1, 4, 8)
     v = torch.randn(1, 4, 8)
-    
+
     out = attn(q, k, v)
     assert out.shape == (1, 4, 8)
     assert torch.isfinite(out).all()
@@ -631,7 +630,7 @@ def test_attention_with_single_token():
     q = torch.randn(2, 1, 8)
     k = torch.randn(2, 1, 8)
     v = torch.randn(2, 1, 8)
-    
+
     out = attn(q, k, v)
     assert out.shape == (2, 1, 8)
 
@@ -640,22 +639,22 @@ def test_scheduler_with_multiple_param_groups():
     """Scheduler should work with multiple param groups."""
     params1 = [torch.randn(4, requires_grad=True)]
     params2 = [torch.randn(8, requires_grad=True)]
-    
+
     optimizer = torch.optim.SGD(
         [{'params': params1, 'lr': 1.0}, {'params': params2, 'lr': 0.5}]
     )
-    
+
     scheduler = AsymptoticLRScheduler(
         optimizer,
         total_steps=50,
         warmup_steps=10,
         floor_ratio=0.1,
     )
-    
+
     # Take a few steps
     for _ in range(20):
         scheduler.step()
-    
+
     # Check that both param groups are updated
     assert len(optimizer.param_groups) == 2
     assert optimizer.param_groups[0]["lr"] > 0.1
