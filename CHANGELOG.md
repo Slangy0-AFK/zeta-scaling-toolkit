@@ -16,6 +16,10 @@
 
 ## Unreleased
 
+- Added golden-value tests for RoPE linear/NTK scaling and ALiBi slopes, plus
+  an opt-in full-suite mutation checker for targeted regressions.
+- Consolidated duplicate extended-validation benchmark sections and added a
+  table of contents; numeric tokens were checked before consolidation.
 - Tests: huge-finite-input attention (overflow rescale), softplus temperature
   parameterisation, `calibrate_gain` target and warning behaviour. Found by
   mutation testing: two previously undetected injected bugs are now caught.

@@ -142,6 +142,30 @@ def test_calibrate_gain_is_quiet_when_the_target_is_reached():
         calibrate_gain(_stack(nn.ReLU), x)
 
 
+def test_calibrate_gain_accepts_module_sequences_with_a_prefix_module():
+    torch.manual_seed(0)
+    layers = (nn.ReLU(), nn.Linear(4, 4))
+    sample = torch.randn(16, 4)
+    assert calibrate_gain(layers, sample, iters=1) is layers
+
+
+def test_calibrate_gain_rejects_overflowing_scale_and_bias():
+    weight_overflow = nn.Sequential(nn.Linear(2, 2))
+    with torch.no_grad():
+        weight_overflow[0].weight.fill_(1e-38)
+        weight_overflow[0].bias.zero_()
+    with pytest.raises(ValueError, match="non-finite or non-positive scale"):
+        calibrate_gain(weight_overflow, torch.ones(2, 2), target_ratio=1e308)
+
+    bias_overflow = nn.Sequential(nn.Linear(1, 1, dtype=torch.float64))
+    with torch.no_grad():
+        bias_overflow[0].weight.fill_(-0.9999999999999999)
+        bias_overflow[0].bias.fill_(1e300)
+    sample = torch.tensor([[1e300]], dtype=torch.float64)
+    with pytest.raises(ValueError, match="non-finite layer bias"):
+        calibrate_gain(bias_overflow, sample)
+
+
 def test_known_limitation_silu_calibration_does_not_equalise_per_row_norms():
     """Characterisation test: the batch norm is preserved but the median row collapses.
     If this starts failing, the code improved: update the README limitation."""

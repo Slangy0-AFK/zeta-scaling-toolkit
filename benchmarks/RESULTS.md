@@ -4,6 +4,27 @@ This is a small, CPU-only char-level language-model comparison. It is an
 experiment on one dataset, architecture, and training budget—not evidence that
 any component improves other tasks or large-scale training.
 
+## Contents
+
+- [Exact run](#exact-run)
+- [Results](#results)
+  - [100-step early-optimisation only](#100-step-early-optimisation-only)
+  - [500-step matched-seed run](#500-step-matched-seed-run)
+  - [1000-step, 20-seed matched run](#1000-step-20-seed-matched-run)
+  - [Attention runtime and memory profile](#attention-runtime-and-memory-profile)
+  - [Synthetic vision task](#synthetic-vision-task)
+- [Sparse attention optimization](#sparse-attention-optimization)
+  - [Supporting numerical checks](#supporting-numerical-checks)
+- [Exploratory length evaluation](#exploratory-length-evaluation-incomplete-gate)
+  - [Exploratory 2000-step paired comparison](#exploratory-2000-step-paired-comparison)
+  - [16k-token numerical smoke checks](#16k-token-numerical-smoke-checks)
+  - [Exploratory needle retrieval](#exploratory-needle-retrieval-500-steps)
+- [Mutation sanity](#mutation-sanity)
+- [Extended validation](#extended-validation)
+  - [Attention profiling](#attention-profiling)
+  - [Synthetic vision](#synthetic-vision)
+  - [Tiny Shakespeare at 1000 steps](#tiny-shakespeare-at-1000-steps)
+
 ## Exact run
 
 The historical 100- and 500-step results in this section were run at commit
@@ -389,84 +410,7 @@ selection failed on an assertion, with no surviving mutation:
 | Flip ALiBi sign | Failed |
 | Use naive dilution formula | Failed |
 
-## Extended validation (branch `extended-validation`)
-
-### Attention profiling
-
-Command: `python benchmarks/profile_overhead.py --iterations 5`.
-Environment: Python 3.14.2; PyTorch 2.15.0+cu132; Linux
-6.8.0-1070-azure-x86_64; AMD EPYC 7763; CPU, one thread. Batch 2, width 64,
-four heads, two warmup passes, then five measured forward/backward passes.
-Each backend/sequence-length case ran in a fresh process. CPU memory is process
-peak RSS and includes Python/PyTorch startup; it is not incremental
-attention-only allocation. On CUDA the script reports
-`torch.cuda.max_memory_allocated`.
-
-| Sequence length | Backend | Forward (ms) | Backward (ms) | Peak memory (MB) |
-|---:|---|---:|---:|---:|
-| 64 | Standard `nn.MultiheadAttention` | 0.461 | 0.954 | 545.6 |
-| 64 | Toolkit attention block | 1.265 | 1.761 | 583.8 |
-| 256 | Standard `nn.MultiheadAttention` | 2.422 | 4.603 | 547.6 |
-| 256 | Toolkit attention block | 2.818 | 6.047 | 586.3 |
-| 1024 | Standard `nn.MultiheadAttention` | 22.307 | 59.363 | 556.7 |
-| 1024 | Toolkit attention block | 23.631 | 63.555 | 595.1 |
-
-On this CPU profile the toolkit block is slower and uses higher process RSS at
-all measured lengths. This attention-block microbenchmark is not a full
-transformer throughput comparison or a GPU profile.
-
-### Synthetic vision
-
-Command: `python benchmarks/tiny_vit.py --steps 500 --seeds 42 43 44 45 46 47 48 49 50 51 --device auto`.
-The synthetic task classifies 16x16 grayscale images by the location of a
-bright 4x4 tile, with seeded noise. The ViT uses patch embeddings and
-`get_scale_invariant_vit_coords`; it is not CIFAR-10. Environment: CPU, Python
-3.14.2, PyTorch 2.15.0+cu132; batch size 64, 128 training and 32 evaluation
-examples per class. Paired differences are corrected init minus standard init
-with 10,000 bootstrap resamples. Ten per-seed records and the summary are in
-[tiny-vit-500.jsonl](./tiny-vit-500.jsonl).
-
-| Metric | Standard mean ± SD | Corrected mean ± SD | Paired difference [95% CI] | Seeds favoring corrected |
-|---|---:|---:|---:|---:|
-| Cross-entropy loss | 0.005452 ± 0.008682 | 0.006570 ± 0.002834 | +0.001117 [-0.004393, +0.004719] | 1/10 |
-| Accuracy | 0.999688 ± 0.000988 | 1.000000 ± 0.000000 | +0.000313 [+0.000000, +0.000938] | 1/10 |
-
-Both initializations nearly solve this simple task; corrected initialization
-does not improve paired loss. The accuracy ceiling makes this a weak test of
-vision generalization.
-
-### Tiny Shakespeare at 1000 steps
-
-Command executed:
-
-```bash
-python benchmarks/tiny_shakespeare.py --steps 1000 --seeds 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 --device auto
-```
-
-The launcher also accepts `--seeds 20` as shorthand for seeds 42–61. This run
-uses the same 90/10 tiny Shakespeare split, SHA-256, 64-token context, batch
-size 32, and 16 evaluation batches per seed as the existing benchmark.
-Environment: Python 3.14.2; PyTorch 2.15.0+cu132; Linux
-6.8.0-1070-azure-x86_64; AMD EPYC 7763; CPU, one thread; CUDA unavailable.
-All 100 component/seed records and the final summary are preserved in
-[tiny-shakespeare-1000.jsonl](./tiny-shakespeare-1000.jsonl). Means and SDs are
-over 20 seeds. Paired candidate-minus-baseline intervals use 10,000 bootstrap
-resamples with seed 0; negative loss differences favor the candidate.
-
-| Variant | Evaluation loss: mean ± SD [95% CI] | Paired loss difference [95% CI] | Seeds with lower loss |
-|---|---:|---:|---:|
-| Baseline | 2.509060 ± 0.008279 [2.505421, 2.512512] | — | — |
-| Attention only | 2.523690 ± 0.008614 [2.519839, 2.527316] | +0.014630 [+0.012299, +0.016914] | 0/20 |
-| Schedule only | 2.491991 ± 0.008270 [2.488274, 2.495369] | -0.017070 [-0.017894, -0.016205] | 20/20 |
-| Initialization only | 2.510488 ± 0.012162 [2.505358, 2.515830] | +0.001427 [-0.003189, +0.006408] | 11/20 |
-| All components | 2.510019 ± 0.011445 [2.505258, 2.514954] | +0.000959 [-0.003359, +0.005490] | 11/20 |
-
-Only the scheduler-only variant improves evaluation loss with a paired interval
-excluding zero. Attention-only is worse, while initialization-only and
-all-components are inconclusive. This supports a narrow 1,000-step
-character-level LM validation, not a general training claim.
-
-## Extended validation (commit base `719bfb7`)
+## Extended validation
 
 ### Attention profiling
 
@@ -541,76 +485,3 @@ Only the scheduler-only variant has a paired interval excluding zero in the
 beneficial direction. Attention-only is worse, while initialization-only and
 all-components are inconclusive. This supports a narrow 1,000-step
 character-level LM validation, not a general training claim.
-
-## Extended validation (branch `extended-validation`)
-
-### Attention profiling
-
-Command: `python benchmarks/profile_overhead.py --iterations 5`.
-Environment: Python 3.14.2, PyTorch 2.15.0+cu132, AMD EPYC 7763 CPU,
-single-threaded, batch 2, width 64, four heads. Timings are mean per forward
-and backward pass after two warmup iterations. Each backend/length ran in a
-fresh process. CPU memory is process peak RSS and includes interpreter and
-PyTorch startup, not just attention allocations. CUDA peak allocated memory is
-used when a CUDA device is available.
-
-| Length | Backend | Forward (ms) | Backward (ms) | Peak memory (MB) |
-|---:|---|---:|---:|---:|
-| 64 | Standard `nn.MultiheadAttention` | 0.461 | 0.954 | 545.6 |
-| 64 | Toolkit attention block | 1.265 | 1.761 | 583.8 |
-| 256 | Standard `nn.MultiheadAttention` | 2.422 | 4.603 | 547.6 |
-| 256 | Toolkit attention block | 2.818 | 6.047 | 586.3 |
-| 1024 | Standard `nn.MultiheadAttention` | 22.307 | 59.363 | 556.7 |
-| 1024 | Toolkit attention block | 23.631 | 63.555 | 595.1 |
-
-This CPU profile shows a higher process RSS and slower runtime for the toolkit
-block at these measured settings. It is an attention-block microbenchmark, not
-a full transformer or GPU profile.
-
-### Synthetic vision
-
-Command: `python benchmarks/tiny_vit.py --steps 500 --seeds 42 43 44 45 46 47 48 49 50 51 --device auto`.
-The procedural task classifies 16x16 grayscale images by the location of a
-bright 4x4 tile, with seeded noise. The ViT uses patch embeddings and
-`get_scale_invariant_vit_coords`; this is not CIFAR-10. Environment: CPU,
-Python 3.14.2, PyTorch 2.15.0+cu132, batch size 64, 128 training and 32
-evaluation examples per class. Paired differences are corrected init minus
-standard init, with 10,000 bootstrap resamples.
-
-| Metric | Standard mean ± SD | Corrected mean ± SD | Paired difference [95% CI] | Seeds favoring corrected |
-|---|---:|---:|---:|---:|
-| Cross-entropy loss | 0.005452 ± 0.008682 | 0.006570 ± 0.002834 | +0.001117 [-0.004393, +0.004719] | 1/10 |
-| Accuracy | 0.999688 ± 0.000988 | 1.000000 ± 0.000000 | +0.000313 [+0.000000, +0.000938] | 1/10 |
-
-Both initializations nearly solve this simple task; corrected initialization
-does not improve paired loss. The accuracy ceiling limits its value as a vision
-generalization test.
-
-### 1,000-step tiny Shakespeare
-
-Command:
-
-```bash
-python benchmarks/tiny_shakespeare.py --steps 1000 --seeds 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 --device auto
-```
-
-`--seeds 20` is accepted as shorthand for seeds 42–61. The full 100 per-variant
-trial records and final summary are preserved in
-[tiny-shakespeare-1000.jsonl](./tiny-shakespeare-1000.jsonl). This run uses the
-same 90/10 tiny Shakespeare split and dataset SHA-256 recorded above. It ran
-on CPU (AMD EPYC 7763, one PyTorch thread), Python 3.14.2, PyTorch 2.15.0+cu132;
-CUDA was unavailable. Mean ± SD are over 20 seeds; paired intervals use 10,000
-bootstrap resamples. Loss differences are candidate minus baseline.
-
-| Variant | Evaluation loss: mean ± SD [95% CI] | Paired loss difference [95% CI] | Seeds with lower loss |
-|---|---:|---:|---:|
-| Baseline | 2.509060 ± 0.008279 [2.505421, 2.512512] | — | — |
-| Attention only | 2.523690 ± 0.008614 [2.519839, 2.527316] | +0.014630 [+0.012299, +0.016914] | 0/20 |
-| Schedule only | 2.491991 ± 0.008270 [2.488274, 2.495369] | -0.017070 [-0.017894, -0.016205] | 20/20 |
-| Initialization only | 2.510488 ± 0.012162 [2.505358, 2.515830] | +0.001427 [-0.003189, +0.006408] | 11/20 |
-| All components | 2.510019 ± 0.011445 [2.505258, 2.514954] | +0.000959 [-0.003359, +0.005490] | 11/20 |
-
-Only the scheduler-only variant improves evaluation loss with a paired interval
-excluding zero. Attention-only is worse; initialization-only and all-components
-are inconclusive. This does not meet the two-budget-plus-extrapolation rule for
-adopting a default. No large-scale foundation model was tested.
