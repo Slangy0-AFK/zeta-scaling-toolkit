@@ -288,3 +288,30 @@ def test_calibrate_gain_rejects_grad_input():
     x = torch.randn(8, 32, requires_grad=True)
     with pytest.raises(ValueError, match="must not require grad"):
         calibrate_gain(model, x)
+
+
+def test_fully_masked_attention_row_returns_zeros_not_nan():
+    """Fully masked rows should return zeros, not NaN."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(1, 4, 8)
+    k = torch.randn(1, 4, 8)
+    v = torch.randn(1, 4, 8)
+    # First row fully masked (all False)
+    mask = torch.tensor([[[False, False, False, False], [True, True, True, True], [True, True, True, True], [True, True, True, True]]])
+    out = attn(q, k, v, attn_mask=mask)
+    assert not torch.isnan(out).any(), "Output contains NaN"
+    assert (out[0, 0] == 0).all(), "First (fully masked) row should be zeros"
+
+
+def test_fully_masked_attention_row_gradients_are_finite():
+    """Fully masked rows should still have finite gradients."""
+    attn = NonCollapsingAttention(8)
+    q = torch.randn(1, 4, 8, requires_grad=True)
+    k = torch.randn(1, 4, 8, requires_grad=True)
+    v = torch.randn(1, 4, 8, requires_grad=True)
+    mask = torch.tensor([[[False, False, False, False], [True, True, True, True], [True, True, True, True], [True, True, True, True]]])
+    out = attn(q, k, v, attn_mask=mask)
+    out.sum().backward()
+    assert torch.isfinite(q.grad).all() and (q.grad.abs() < 1e5).all(), "q gradient not bounded"
+    assert torch.isfinite(k.grad).all() and (k.grad.abs() < 1e5).all(), "k gradient not bounded"
+    assert torch.isfinite(v.grad).all() and (v.grad.abs() < 1e5).all(), "v gradient not bounded"

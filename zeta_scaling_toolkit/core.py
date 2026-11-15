@@ -67,10 +67,13 @@ class NonCollapsingAttention(nn.Module):
         logits = (_unit(q.float()) @ _unit(k.float()).transpose(-2, -1)) * self.tau
         if attn_mask is not None:  # bool: True = keep; float: added to logits
             if attn_mask.dtype == torch.bool:
-                logits = logits.masked_fill(~attn_mask, float("-inf"))  # fully masked row -> NaN
+                logits = logits.masked_fill(~attn_mask, float("-inf"))
             else:
                 logits = logits + attn_mask.float()
-        return (F.softmax(logits, dim=-1) @ v.float()).to(v.dtype)
+        weights = F.softmax(logits, dim=-1)
+        # Fully masked rows (all NaN) -> replace with zeros (uniform attention impossible)
+        weights = torch.where(torch.isnan(weights), torch.zeros_like(weights), weights)
+        return (weights @ v.float()).to(v.dtype)
 
     def _load_from_state_dict(self, state_dict, prefix, *args, **kwargs):
         legacy = [prefix + "q_scale", prefix + "k_scale"]
