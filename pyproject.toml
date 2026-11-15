@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zeta-scaling-toolkit"
+version = "0.1.0"
+description = "Self-Normalizing Scaling Utilities for AI Pipelines using the W(T) = 1 + A0/ln(T) framework"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Zeta Scaling Toolkit Contributors"}
+]
+keywords = [
+    "machine-learning",
+    "deep-learning",
+    "transformers",
+    "attention",
+    "scaling",
+    "pytorch",
+    "numerical-stability"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+dependencies = [
+    "torch>=2.0.0",
+    "numpy>=1.21.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+    "build>=1.0.0",
+    "twine>=4.0.0"
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/Slangy0-AFK/zeta-scaling-toolkit"
+Documentation = "https://github.com/Slangy0-AFK/zeta-scaling-toolkit#readme"
+Repository = "https://github.com/Slangy0-AFK/zeta-scaling-toolkit.git"
+"Bug Tracker" = "https://github.com/Slangy0-AFK/zeta-scaling-toolkit/issues"
+
+[tool.setuptools]
+packages = ["zeta_scaling_toolkit"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E", "F", "W", "I", "N", "UP"]
+ignore = ["E501"]  # Line length handled by black
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-v --cov=zeta_scaling_toolkit --cov-report=term-missing --cov-report=html"
