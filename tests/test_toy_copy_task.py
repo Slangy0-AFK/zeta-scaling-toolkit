@@ -25,7 +25,7 @@ def test_corrected_attention_uses_same_initial_parameters_and_projections():
     assert set(corrected_state) - set(standard_state) == {
         f"blocks.{index}.corrected_attention.{scale}"
         for index in range(len(corrected.blocks))
-        for scale in ("q_scale", "k_scale")
+        for scale in ("raw_tau",)
     }
     tokens = torch.randint(benchmark.VOCAB_SIZE, (2, benchmark.SEQ_LEN))
     assert torch.isfinite(standard(tokens)).all()
