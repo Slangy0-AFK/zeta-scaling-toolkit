@@ -8,13 +8,15 @@ on large-scale tasks.
 ## Components
 
 - **`NonCollapsingAttention`** computes `softmax(tau * cos(q, k)) @ v`, where
-  `tau` is learnable, starts at 10, and is clamped to `[tau_min, tau_max]`
-  (defaults 1 and 50). Its normalization and softmax calculations use at least
-  float32, and the result is cast to `v.dtype`. Boolean masks use `True` to
-  retain a position; floating masks are added to the logits. Fully masked query
-  rows return zeros. Shapes, dtypes, devices, and optional finite-value checks
-  are validated; an empty key sequence raises `ValueError`, while empty query
-  sequences and batches are supported. See [attention property tests](./tests/test_properties.py),
+  `tau` is learnable, starts at `tau0` (default 10), and is bounded to `[tau_min, tau_max]`
+  (defaults 1 and 50) using a logit-sigmoid parameterization. This parameterization
+  ensures non-zero gradients throughout the bounded range, allowing the temperature
+  parameter to recover if perturbed beyond the bounds. Its normalization and softmax
+  calculations use at least float32, and the result is cast to `v.dtype`. Boolean
+  masks use `True` to retain a position; floating masks are added to the logits.
+  Fully masked query rows return zeros. Shapes, dtypes, devices, and optional
+  finite-value checks are validated; an empty key sequence raises `ValueError`,
+  while empty query sequences and batches are supported. See [attention property tests](./tests/test_properties.py),
   [edge-case tests](./tests/test_edge_cases.py), and
   [regression tests](./tests/test_hardening_regressions.py).
 - **`AsymptoticLRScheduler`** is the retained public class name for a schedule
@@ -148,9 +150,11 @@ included zero. These results apply to the measured model and dataset only.
 
 - The epsilon in normalization makes scale invariance approximate near zero;
   its relative effect becomes small for vector norms around `1e-2` and larger.
-- Attention temperature is bounded by `tau_min` and `tau_max`; a clamp can
-  produce zero temperature gradients while the parameter is outside that
-  interval.
+- Attention temperature is bounded to `[tau_min, tau_max]` via a logit-sigmoid
+  parameterization; at extreme raw_tau values, sigmoid saturation may produce zero
+  gradients, but the parameter can recover for finite perturbations.
+- Fixed-temperature configurations (where tau_min == tau_max) are not supported;
+  tau bounds must have tau_min < tau_max.
 - GELU/SiLU require data-dependent `calibrate_gain`; fixed `calculate_gain`
   does not support them.
 - An all-masked attention row returns zeros, not a probability distribution.
@@ -166,6 +170,8 @@ included zero. These results apply to the measured model and dataset only.
   0.5). See `test_known_limitation_silu_calibration_*`.
 - `calibrate_gain` emits a `RuntimeWarning` when its target ratio is not reached
   within 2% (for example, bounded activations such as tanh cannot reach 1.0).
+- `calibrate_gain` is now transactional: if validation fails on any layer, all
+  parameters revert to their original values.
 - Nothing here has been validated on large-scale training runs.
 
 ## License and support

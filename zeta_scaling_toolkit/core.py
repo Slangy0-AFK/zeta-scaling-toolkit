@@ -94,6 +94,11 @@ class NonCollapsingAttention(nn.Module):
                 "need 0 <= tau_min <= tau0 <= tau_max and tau0 > 0, "
                 f"got tau_min={tau_min}, tau0={tau0}, tau_max={tau_max}"
             )
+        if tau_min >= tau_max:
+            raise ValueError(
+                f"tau_min must be strictly less than tau_max, "
+                f"got tau_min={tau_min}, tau_max={tau_max}"
+            )
         if not isinstance(check_finite, bool):
             raise TypeError("check_finite must be a bool")
         if length_scaling not in ("none", "log"):
@@ -613,6 +618,8 @@ def calibrate_gain(
     modules. Each layer's output norm is adjusted toward ``target_ratio`` times
     its input norm. Calibration runs without gradients, preserves module
     training flags and CPU/CUDA RNG state, and mutates linear layer weights.
+
+    Calibration is transactional: if any validation fails, no parameters are modified.
     """
     if not isinstance(sample_input, torch.Tensor) or not sample_input.is_floating_point():
         raise TypeError("sample_input must be a floating-point torch.Tensor")
@@ -643,6 +650,13 @@ def calibrate_gain(
     training_flags = [module.training for module in modules]
     cpu_rng = torch.random.get_rng_state()
     cuda_rng = torch.cuda.get_rng_state_all() if torch.cuda.is_available() else None
+
+    linear_modules = [layer for layer in layers if isinstance(layer, nn.Linear)]
+    parameter_snapshots = [
+        (layer, layer.weight.detach().clone(), layer.bias.detach().clone() if layer.bias is not None else None)
+        for layer in linear_modules
+    ]
+
     activation_types = (nn.ReLU, nn.LeakyReLU, nn.GELU, nn.SiLU, nn.Tanh, nn.Sigmoid)
     worst_deviation = 0.0
     try:
@@ -700,6 +714,13 @@ def calibrate_gain(
                         worst_deviation, abs(float(achieved) / float(target_ratio) - 1.0)
                     )
                     index += 1
+    except Exception:
+        with torch.no_grad():
+            for layer, orig_weight, orig_bias in parameter_snapshots:
+                layer.weight.copy_(orig_weight)
+                if orig_bias is not None and layer.bias is not None:
+                    layer.bias.copy_(orig_bias)
+        raise
     finally:
         for module, training in zip(modules, training_flags):
             module.training = training
