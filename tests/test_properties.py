@@ -275,7 +275,7 @@ def test_log_length_attention_noisy_needle_beats_top_distractor(key_length):
             queries, keys, values, attn_mask=mask
         )[0, 0]
 
-    assert scores[0] == pytest.approx(0.7, abs=1e-5)
+    assert float(scores[0]) == pytest.approx(0.7, abs=1e-5)
     assert weights[0] > weights[1]
     assert weights[0] - weights[1] > 0.1
 
