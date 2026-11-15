@@ -446,6 +446,51 @@ def make_summaries(records: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
     return results
 
 
+def make_measurements(records: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
+    grouped: dict[tuple[Any, ...], list[tuple[int, float]]] = {}
+    for record in records:
+        for metric, value in record["metrics"].items():
+            if value is None:
+                continue
+            key = (
+                record["task"],
+                record["variant"],
+                record["init_mode"],
+                record["scheduler"],
+                record["steps"],
+                record["tau0"],
+                record["rope_base"],
+                metric,
+            )
+            grouped.setdefault(key, []).append((record["seed"], value))
+
+    measurements = []
+    for key, observations in grouped.items():
+        if len(observations) < 10:
+            continue
+        values = [value for _, value in observations]
+        low, high = bootstrap_interval(values)
+        task, variant, init_mode, scheduler, steps, tau0, rope_base, metric = key
+        measurements.append(
+            {
+                "task": task,
+                "variant": variant,
+                "init_mode": init_mode,
+                "scheduler": scheduler,
+                "steps": steps,
+                "tau0": tau0,
+                "rope_base": rope_base,
+                "metric": metric,
+                "n": len(values),
+                "seeds": sorted(seed for seed, _ in observations),
+                "mean": statistics.mean(values),
+                "std": statistics.stdev(values) if len(values) > 1 else 0.0,
+                "bootstrap_95pct_ci": [low, high],
+            }
+        )
+    return measurements
+
+
 def run_key(record: dict[str, Any]) -> tuple[Any, ...]:
     return tuple(
         record[field]
@@ -652,9 +697,15 @@ def main() -> None:
                 break
 
     summaries = make_summaries(records)
+    measurements = make_measurements(records)
     print(
         json.dumps(
-            {"new_runs": pending, "total_records": len(records), "summaries": summaries},
+            {
+                "new_runs": pending,
+                "total_records": len(records),
+                "measurements": measurements,
+                "summaries": summaries,
+            },
             sort_keys=True,
         )
     )

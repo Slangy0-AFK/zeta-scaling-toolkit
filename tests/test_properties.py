@@ -11,7 +11,12 @@ from hypothesis import strategies as st
 from torch.optim import SGD
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
-from benchmarks.length_generalization import SequenceLM, make_summaries, needle_batch
+from benchmarks.length_generalization import (
+    SequenceLM,
+    make_measurements,
+    make_summaries,
+    needle_batch,
+)
 from benchmarks.real_task import MODEL_WIDTH, TransformerBlock
 from zeta_scaling_toolkit import (
     AsymptoticLRScheduler,
@@ -474,6 +479,28 @@ def test_evaluation_summaries_require_ten_pairs_and_match_hyperparameters():
     assert summaries[0]["mean_difference"] == -1.0
     assert summaries[0]["paired_95pct_bootstrap_ci"] == [-1.0, -1.0]
     assert summaries[0]["seeds_better"] == 10
+
+
+def test_evaluation_measurements_report_seeded_sweep_statistics():
+    records = [
+        {
+            "task": "char",
+            "variant": "rope-log",
+            "init_mode": "corrected",
+            "scheduler": "toolkit",
+            "steps": 500,
+            "seed": seed,
+            "tau0": 2.5,
+            "rope_base": 500000.0,
+            "metrics": {"64": float(seed)},
+        }
+        for seed in range(100, 110)
+    ]
+    measurements = make_measurements(records)
+    assert len(measurements) == 1
+    assert measurements[0]["seeds"] == list(range(100, 110))
+    assert measurements[0]["mean"] == pytest.approx(104.5)
+    assert measurements[0]["n"] == 10
 
 
 @pytest.mark.parametrize("variant", ["rope", "rope-log", "alibi", "rope-log-stream"])
