@@ -1,6 +1,8 @@
 import json
 import sys
 
+import pytest
+
 from benchmarks import context_char, context_char_tuned, context_needle_tuned, context_successor
 
 
@@ -95,6 +97,56 @@ def test_successor_runner_keeps_original_defaults_and_resumes_with_candidate_two
     context_successor.main()
     context_successor.main()
     assert [json.loads(line)["candidate"] for line in output.read_text().splitlines()] == [0, 1, 2]
+
+
+@pytest.mark.parametrize("tuning", [True, False])
+def test_successor_runner_rejects_candidate_three_for_unsupported_methods(
+    tmp_path, monkeypatch, tuning
+):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "context_successor",
+            *(["--tuning"] if tuning else []),
+            "--methods",
+            "alibi",
+            "--candidates",
+            "3",
+            "--output",
+            str(tmp_path / "successor.jsonl"),
+        ],
+    )
+    with pytest.raises(SystemExit):
+        context_successor.main()
+
+
+def test_successor_runner_records_candidate_three(tmp_path, monkeypatch):
+    output = tmp_path / "successor.jsonl"
+    monkeypatch.setattr(context_successor, "train_successor", lambda *args: None)
+    monkeypatch.setattr(context_successor, "evaluate_successor", lambda *args, **kwargs: {})
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "context_successor",
+            "--tuning",
+            "--steps",
+            "1",
+            "--methods",
+            "rope-log-window",
+            "--seeds",
+            "100",
+            "--candidates",
+            "3",
+            "--output",
+            str(output),
+        ],
+    )
+    context_successor.main()
+    record = json.loads(output.read_text())
+    assert record["candidate"] == 3
+    assert record["settings"]["tau0"] == 2.0
 
 
 def test_character_tuning_runner_resumes_completed_candidate(tmp_path, monkeypatch):

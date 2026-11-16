@@ -32,16 +32,18 @@ def test_successor_candidate_adds_extended_tuning_options_without_changing_origi
     }
     assert successor_candidate("rope-linear", 2)["rope_scale"] == 8.0
     assert successor_candidate("rope-log-full", 2)["tau0"] == 15.0
+    assert successor_candidate("rope-log-window", 3)["tau0"] == 2.0
     with pytest.raises(ValueError, match="unknown method or candidate"):
         successor_candidate("alibi", 3)
 
 
 def test_extended_successor_candidate_trains():
-    settings = successor_candidate("alibi", 2)
-    model = train_successor("alibi", seed=100, steps=1, batch_size=2, settings=settings)
-    assert model.variant == "alibi"
-    with torch.no_grad():
-        assert torch.isfinite(model(torch.zeros(1, 16, dtype=torch.long))).all()
+    for method, index in (("alibi", 2), ("rope-log-window", 3)):
+        settings = successor_candidate(method, index)
+        model = train_successor(method, seed=100, steps=1, batch_size=2, settings=settings)
+        assert model.variant == method
+        with torch.no_grad():
+            assert torch.isfinite(model(torch.zeros(1, 16, dtype=torch.long))).all()
 
 
 def test_successor_tuning_selects_from_every_complete_candidate():
@@ -69,3 +71,20 @@ def test_successor_tuning_selects_from_every_complete_candidate():
         select_candidates(records[10:], ["alibi"], 500)
     with pytest.raises(ValueError, match="incomplete tuning seeds"):
         select_candidates(records[:-1], ["alibi"], 500)
+
+
+def test_successor_tuning_can_select_low_temperature_candidate():
+    records = [
+        {
+            "method": "rope-log-window",
+            "candidate": index,
+            "seed": seed,
+            "steps": 500,
+            "metrics": {
+                "4_digit_held_out": {"4096": {"1024_4095": {"correct": correct, "total": 10}}}
+            },
+        }
+        for index, correct in ((0, 5), (1, 6), (3, 7))
+        for seed in range(100, 110)
+    ]
+    assert select_candidates(records, ["rope-log-window"], 500) == {"rope-log-window": 3}

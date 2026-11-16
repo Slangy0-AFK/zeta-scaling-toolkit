@@ -55,6 +55,10 @@ def candidate(method: str, index: int) -> dict[str, float]:
 def successor_candidate(method: str, index: int) -> dict[str, float]:
     if index in (0, 1):
         return candidate(method, index)
+    if index == 3 and method in ("rope-log-full", "rope-log-window"):
+        settings = candidate(method, 0)
+        settings["tau0"] = 2.0
+        return settings
     if method not in METHODS or index != 2:
         raise ValueError("unknown method or candidate")
     settings = candidate(method, 0)
@@ -205,7 +209,7 @@ def main() -> None:
     parser.add_argument("--lengths", nargs="+", type=positive_int, default=list(LENGTHS))
     parser.add_argument("--methods", nargs="+", choices=METHODS, default=list(METHODS))
     parser.add_argument("--seeds", nargs="+", type=int, default=list(range(100, 110)))
-    parser.add_argument("--candidates", nargs="+", type=int, choices=(0, 1, 2), default=[0, 1])
+    parser.add_argument("--candidates", nargs="+", type=int, choices=(0, 1, 2, 3), default=[0, 1])
     parser.add_argument("--tuning-records", type=Path)
     parser.add_argument("--tuning", action="store_true")
     parser.add_argument("--max-runs", type=positive_int)
@@ -222,6 +226,12 @@ def main() -> None:
         parser.error("seeds must be distinct and nonnegative")
     if len(set(args.lengths)) != len(args.lengths) or max(args.lengths) + 1 >= 7200:
         parser.error("contexts must be distinct and shorter than the evaluation streams")
+    if (
+        args.tuning_records is None
+        and 3 in args.candidates
+        and any(method not in ("rope-log-full", "rope-log-window") for method in args.methods)
+    ):
+        parser.error("candidate 3 is only available for rope-log-full and rope-log-window")
     if args.tuning and args.tuning_records is not None:
         parser.error("tuning and selected-candidate reporting are separate runs")
     selected = None

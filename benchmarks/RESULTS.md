@@ -160,8 +160,53 @@ The successor runner also offers candidate 2 in new tuning runs via
 `--candidates 0 1 2`: learning rate 0.0015 for methods tuned by learning rate,
 initial temperature 15 for cosine+log, and position scale 8 for linear and NTK
 RoPE. The default remains candidates 0 and 1. The hosted results above used
-only candidates 0 and 1; candidate 2 has not been evaluated and is not
-evidence of an improvement.
+only candidates 0 and 1; candidate 2 has not been evaluated in a complete
+tuning run and is not evidence of an improvement.
+Successor candidate 3 is an opt-in initial temperature of 2 for
+`rope-log-full` and `rope-log-window`; it cannot be used with other methods.
+To test it, pass `--methods rope-log-window --candidates 3 --tuning`.
+The original default candidates and the historical Stage 1 decision are
+unchanged.
+
+#### Exploratory successor temperature comparison
+
+On local CPU, matched seeds 100–109 were used to compare `rope-log-window`
+candidate 3 (temperature 2) with candidate 0 (temperature 5). At context
+4096, positions 1024–4095 on the four-digit stream, mean accuracy was 0.4799
+versus 0.4358: a paired difference of +0.0441, 95% seed-bootstrap CI
+[+0.0239, +0.0641]. Candidate 3 improved 9 of 10 seeds. These are tuning
+results, not an independent reporting-seed test; the first two tuning seeds
+also informed the choice of the lower temperature. On the same seeds the
+previously selected ALiBi candidate 0 averaged 0.5220, exceeding candidate 3
+on all ten seeds; the paired difference was -0.0421, 95% CI
+[-0.0576, -0.0287]. This local run did not retune all baselines. It does not
+establish a Stage 1 pass or measure the training-length perplexity gate. The
+original retrieval sanity gate remains failed.
+
+Two-seed probes on seeds 100–101 also tried temperatures 1.3 and 1.6 at
+learning rate 0.001; both had lower 4096-token accuracy than temperature 2
+on both seeds. At temperature 2, rates 0.0015 and 0.002 had substantially
+higher 256-token perplexity on both seeds than rate 0.001, although 0.002
+slightly increased 4096-token accuracy. These probes are not complete tuning
+runs and do not rule out other settings.
+
+The local runs used Python 3.14.2, PyTorch 2.15.0+cu132 on CPU, one PyTorch
+thread per run, and an AMD EPYC 7763 host. Their records are kept separate
+from the hosted runs and can be reproduced with:
+
+```bash
+python benchmarks/context_successor.py --tuning --steps 500 --batch-size 16 --samples 8 \
+  --methods rope-log-window --seeds 100 101 102 103 104 105 106 107 108 109 \
+  --candidates 0 --output benchmarks/context-successor-temperature-control-tuning500.jsonl
+python benchmarks/context_successor.py --tuning --steps 500 --batch-size 16 --samples 8 \
+  --methods rope-log-window --seeds 100 101 102 103 104 105 106 107 108 109 \
+  --candidates 3 --output benchmarks/context-successor-low-temperature-tuning500.jsonl
+python benchmarks/context_successor.py --tuning --steps 500 --batch-size 16 --samples 8 \
+  --methods alibi --seeds 100 101 102 103 104 105 106 107 108 109 \
+  --candidates 0 --output benchmarks/context-successor-alibi-tuning500.jsonl
+```
+
+### Hosted candidate selection
 
 The selected candidate indices, with candidates ordered as listed above, are:
 
