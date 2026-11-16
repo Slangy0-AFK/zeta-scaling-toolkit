@@ -132,6 +132,11 @@ MUTANTS = (
         'block.rope_scale = settings["rope_scale"]',
         "block.rope_scale = 1.0",
     ),
+    (
+        "benchmarks/length_generalization.py",
+        "rotary_embedding(q[..., -1:, :], positions[-1:], base=self.rope_base)",
+        "rotary_embedding(q[..., -1:, :], positions[:1], base=self.rope_base)",
+    ),
 )
 
 

@@ -1,0 +1,137 @@
+name: Stage 1 context ability 500
+
+on:
+  push:
+    branches:
+      - copilot/context-ability-parallel-20261116
+
+permissions:
+  contents: read
+
+jobs:
+  needle-sanity:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        seed: [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/context-cpu
+      - name: Run 3000-step retrieval sanity check
+        run: |
+          python benchmarks/context_ability.py --steps 3000 --train-length 256 --batch-size 16 --eval-queries 200 --seeds "${{ matrix.seed }}" --output "results/needle-sanity-${{ matrix.seed }}.jsonl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: needle-sanity-${{ matrix.seed }}
+          path: results/
+          if-no-files-found: error
+
+  character-control:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [rope-full, rope-window, rope-log-full, rope-log-window]
+        seed: [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/context-cpu
+      - name: Run matched character control
+        run: |
+          python benchmarks/context_char.py --steps 500 --train-length 256 --window 64 --sinks 4 --variants "${{ matrix.variant }}" --seeds "${{ matrix.seed }}" --output "results/character-${{ matrix.variant }}-${{ matrix.seed }}.jsonl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: character-${{ matrix.variant }}-${{ matrix.seed }}
+          path: results/
+          if-no-files-found: error
+
+  successor-tuning:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        method: [abs, rope-full, rope-linear, rope-ntk, alibi, rope-log-full, rope-window, rope-log-window]
+        seed: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/context-cpu
+      - name: Tune successor baseline
+        run: |
+          python benchmarks/context_successor.py --tuning --steps 500 --batch-size 16 --samples 8 --methods "${{ matrix.method }}" --seeds "${{ matrix.seed }}" --candidates 0 1 --output "results/successor-tuning-${{ matrix.method }}-${{ matrix.seed }}.jsonl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: successor-tuning-${{ matrix.method }}-${{ matrix.seed }}
+          path: results/
+          if-no-files-found: error
+
+  character-tuning:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        method: [abs, rope-full, rope-linear, rope-ntk, alibi, rope-log-full, rope-window, rope-log-window]
+        seed: [100, 101, 102, 103, 104, 105, 106, 107, 108, 109]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/context-cpu
+      - name: Tune character baseline
+        run: |
+          python benchmarks/context_char_tuned.py --tuning --steps 500 --methods "${{ matrix.method }}" --seeds "${{ matrix.seed }}" --candidates 0 1 --output "results/character-tuning-${{ matrix.method }}-${{ matrix.seed }}.jsonl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: character-tuning-${{ matrix.method }}-${{ matrix.seed }}
+          path: results/
+          if-no-files-found: error
+
+  successor-report:
+    needs: successor-tuning
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        method: [abs, rope-full, rope-linear, rope-ntk, alibi, rope-log-full, rope-window, rope-log-window]
+        seed: [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/context-cpu
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: successor-tuning-${{ matrix.method }}-*
+          path: tuning
+          merge-multiple: true
+      - name: Evaluate selected successor baseline
+        run: |
+          cat tuning/successor-tuning-*.jsonl > tuning/merged.jsonl
+          python benchmarks/context_successor.py --steps 500 --batch-size 16 --samples 8 --methods "${{ matrix.method }}" --seeds "${{ matrix.seed }}" --tuning-records tuning/merged.jsonl --output "results/successor-report-${{ matrix.method }}-${{ matrix.seed }}.jsonl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: successor-report-${{ matrix.method }}-${{ matrix.seed }}
+          path: results/
+          if-no-files-found: error
+
+  character-report:
+    needs: character-tuning
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        method: [abs, rope-full, rope-linear, rope-ntk, alibi, rope-log-full, rope-window, rope-log-window]
+        seed: [42, 43, 44, 45, 46, 47, 48, 49, 50, 51]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/context-cpu
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: character-tuning-${{ matrix.method }}-*
+          path: tuning
+          merge-multiple: true
+      - name: Evaluate selected character baseline
+        run: |
+          cat tuning/character-tuning-*.jsonl > tuning/merged.jsonl
+          python benchmarks/context_char_tuned.py --steps 500 --methods "${{ matrix.method }}" --seeds "${{ matrix.seed }}" --tuning-records tuning/merged.jsonl --output "results/character-report-${{ matrix.method }}-${{ matrix.seed }}.jsonl"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: character-report-${{ matrix.method }}-${{ matrix.seed }}
+          path: results/
+          if-no-files-found: error

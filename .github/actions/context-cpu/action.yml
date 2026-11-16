@@ -1,0 +1,14 @@
+name: Prepare CPU experiment
+description: Install the pinned CPU environment and record runner hardware.
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.14"
+    - shell: bash
+      run: |
+        python -m pip install --index-url https://download.pytorch.org/whl/cpu 'torch==2.15.0+cpu'
+        python -m pip install --no-deps -e .
+        mkdir -p results
+        lscpu > results/cpu.txt
