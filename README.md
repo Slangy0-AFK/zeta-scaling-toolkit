@@ -100,6 +100,11 @@ part of the default CI matrix.
 
 CI runs the CPU test matrix and a nightly Hypothesis profile. CUDA coverage is
 skipped when no CUDA device is available. See [TESTING.md](./TESTING.md).
+The toolkit includes CUDA-compatible operations and an optional CUDA smoke
+test, but CUDA behavior is only covered when that test runs on a CUDA-enabled
+host. The Stage 1 context-ability benchmark in
+[benchmarks/RESULTS.md](./benchmarks/RESULTS.md) was run on CPU; its GPU
+execution and performance have not been validated.
 Reviewers can see the passing full GitHub Actions matrix at commit
 [719bfb7](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/commit/719bfb73f97e350087cfefa9617f94571a9d02d1).
 
