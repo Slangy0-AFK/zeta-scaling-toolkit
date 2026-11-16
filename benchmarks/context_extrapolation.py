@@ -8,6 +8,7 @@ import json
 import math
 import platform
 import statistics
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -302,7 +303,12 @@ def evaluate_streams(
 def load_model(path: Path, method: str, candidate: int) -> SequenceLM:
     settings = extrapolation_candidate(method, candidate)
     model = SequenceLM(11, method, False, 256, settings["tau0"], 10000.0, rope_scale=4.0)
-    model.load_state_dict(torch.load(path, map_location="cpu", weights_only=True))
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore", message=r"TypedStorage is deprecated\.", category=UserWarning
+        )
+        state_dict = torch.load(path, map_location="cpu", weights_only=True)
+    model.load_state_dict(state_dict)
     model.eval()
     return model
 
