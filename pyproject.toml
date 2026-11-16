@@ -89,6 +89,7 @@ python_files = ["test_*.py", "*_test.py"]
 addopts = "-v --strict-config --strict-markers"
 filterwarnings = [
     "error",
+    "ignore:TypedStorage is deprecated:UserWarning",
     "ignore:Failed to initialize NumPy:UserWarning",
 ]
 markers = [
