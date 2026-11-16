@@ -185,7 +185,5 @@ def load_checkpoint(path: Path) -> TrialCheckpoint:
     with open(path, "rb") as f:
         checkpoint = pickle.load(f)
         if not isinstance(checkpoint, TrialCheckpoint):
-            raise TypeError(
-                f"Expected TrialCheckpoint, got {type(checkpoint).__name__}"
-            )
+            raise TypeError(f"Expected TrialCheckpoint, got {type(checkpoint).__name__}")
         return checkpoint

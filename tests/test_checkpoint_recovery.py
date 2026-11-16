@@ -38,7 +38,7 @@ class SimpleModel(nn.Module):
         self.fc2 = nn.Linear(hidden_size, output_size)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.fc2(F.relu(self.fc1(x)))
+        return self.fc2(F.relu(self.fc1(x)))  # type: ignore
 
 
 def deterministic_training_step(
@@ -51,7 +51,7 @@ def deterministic_training_step(
     optimizer.zero_grad(set_to_none=True)
     logits = model(batch_x)
     loss = F.cross_entropy(logits, batch_y)
-    loss.backward()
+    loss.backward()  # type: ignore
     optimizer.step()
     return loss.item()
 
