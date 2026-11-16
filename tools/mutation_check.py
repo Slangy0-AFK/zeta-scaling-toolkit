@@ -187,6 +187,7 @@ MUTANTS = (
         "rotary_embedding(q[..., -1:, :], positions[-1:], base=self.rope_base)",
         "rotary_embedding(q[..., -1:, :], positions[:1], base=self.rope_base)",
     ),
+    ("benchmarks/length_generalization.py", "digits.reverse()", "digits.sort()"),
 )
 
 

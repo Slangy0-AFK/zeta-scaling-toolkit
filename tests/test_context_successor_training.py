@@ -111,6 +111,53 @@ def test_successor_metadata_distinguishes_carry_and_last_digits():
     assert carry[14].item() == -1
 
 
+def test_digit_axis_streams_encode_numbers_least_significant_digit_first():
+    assert encode_successors(12, 14, least_significant_digit_first=True).tolist() == [
+        2,
+        1,
+        10,
+        3,
+        1,
+        10,
+    ]
+    assert extrapolation_streams("digit_4")["unseen"][:10].tolist() == [
+        0,
+        0,
+        0,
+        1,
+        10,
+        1,
+        0,
+        0,
+        1,
+        10,
+    ]
+    assert extrapolation_streams("digit_5")["unseen"][:12].tolist() == [
+        0,
+        0,
+        0,
+        0,
+        1,
+        10,
+        1,
+        0,
+        0,
+        0,
+        1,
+        10,
+    ]
+
+
+def test_lsf_successor_metadata_marks_ones_place_and_carry_digits():
+    data = encode_successors(1098, 1102, least_significant_digit_first=True)
+    roles, ones_digits, carry = successor_metadata(data, least_significant_digit_first=True)
+    assert roles[:15].tolist() == [1, 2, 3, 4, 0] * 3
+    assert ones_digits.nonzero().flatten().tolist() == [0, 5, 10, 15]
+    assert carry[:5].tolist() == [-1] * 5
+    assert carry[5:9].tolist() == [0, 0, 0, 0]
+    assert carry[10:14].tolist() == [0, 1, 1, 0]
+
+
 def test_successor_diagnostics_counts_roles_and_same_window_rules():
     data = encode_successors(1000, 1010)
     starts = torch.tensor([0])
@@ -184,9 +231,18 @@ def test_extrapolation_streams_keep_number_and_context_axes_separate(
     streams = extrapolation_streams(axis)
     decoded = {}
     for name in ("train", "unseen"):
-        decoded[name] = "".join(
-            "|" if token == 10 else str(token) for token in streams[name].tolist()
-        )
+        parts = []
+        number = []
+        for token in streams[name].tolist():
+            if token == 10:
+                if axis in ("digit_4", "digit_5"):
+                    number.reverse()
+                parts.extend(map(str, number))
+                parts.append("|")
+                number = []
+            else:
+                number.append(token)
+        decoded[name] = "".join(parts)
     assert decoded["train"].startswith(train_first + "|")
     assert decoded["train"].endswith(train_last + "|")
     assert decoded["unseen"].startswith(unseen_first + "|")

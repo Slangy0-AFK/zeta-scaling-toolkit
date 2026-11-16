@@ -84,7 +84,7 @@ def test_runner_sanity_resumes_and_tuning_requires_complete_gate(tmp_path, monke
     monkeypatch.setattr(
         runner,
         "evaluate_extrapolation_stream",
-        lambda *args: {"accuracy": 0.9, "perplexity": 1.5},
+        lambda *args, **kwargs: {"accuracy": 0.9, "perplexity": 1.5},
     )
     args = [
         "context_extrapolation",
@@ -207,17 +207,18 @@ def test_reporting_uses_tuning_baseline_and_never_ranks_undertrained_methods():
 def test_evaluate_streams_respects_context_and_digit_lengths(monkeypatch):
     calls = []
 
-    def evaluate(model, data, partition, seed, length, samples):
-        calls.append((data, partition, seed, length, samples))
+    def evaluate(model, data, partition, seed, length, samples, *, least_significant_digit_first):
+        calls.append((data, partition, seed, length, samples, least_significant_digit_first))
         return {"length": length}
 
     monkeypatch.setattr(runner, "evaluate_extrapolation_stream", evaluate)
     streams = {"seen": "seen_data", "unseen": "unseen_data"}
     result = runner.evaluate_streams(None, streams, "context", 100, 8)
     assert set(result["seen"]) == {"256", "512", "1024", "4096"}
-    assert calls[0] == ("seen_data", "sanity", 100, 256, 8)
-    assert calls[-1] == ("unseen_data", "unseen", 100, 4096, 8)
+    assert calls[0] == ("seen_data", "sanity", 100, 256, 8, False)
+    assert calls[-1] == ("unseen_data", "unseen", 100, 4096, 8, False)
     assert set(runner.evaluate_streams(None, streams, "digit_5", 100, 8)["unseen"]) == {"256"}
+    assert calls[-1][-1]
 
 
 def test_load_model_restores_requested_evaluation_variant(tmp_path):
@@ -283,7 +284,9 @@ def test_runner_tuning_checks_checkpoints_and_reporting_uses_frozen_seed_set(
     calls = []
     monkeypatch.setattr(runner, "train_extrapolation", lambda *args: calls.append(args) or None)
     monkeypatch.setattr(
-        runner, "evaluate_extrapolation_stream", lambda *args: {"accuracy": 0.96, "perplexity": 1.0}
+        runner,
+        "evaluate_extrapolation_stream",
+        lambda *args, **kwargs: {"accuracy": 0.96, "perplexity": 1.0},
     )
     monkeypatch.setattr(sys, "argv", args[:2] + ["report"] + args[3:])
     runner.main()
@@ -344,7 +347,9 @@ def test_2000_step_phase_requires_prior_gates_and_uses_frozen_candidates(tmp_pat
     calls = []
     monkeypatch.setattr(runner, "train_extrapolation", lambda *args: calls.append(args) or Model())
     monkeypatch.setattr(
-        runner, "evaluate_extrapolation_stream", lambda *args: {"accuracy": 0.96, "perplexity": 1.0}
+        runner,
+        "evaluate_extrapolation_stream",
+        lambda *args, **kwargs: {"accuracy": 0.96, "perplexity": 1.0},
     )
     runner.main()
     record = json.loads((tmp_path / "context-2000-sanity.jsonl").read_text())

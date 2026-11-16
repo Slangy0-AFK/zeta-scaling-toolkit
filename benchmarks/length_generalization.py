@@ -80,10 +80,15 @@ def dataset_info(path: Path) -> tuple[str, str]:
     return text, digest
 
 
-def encode_successors(start: int, stop: int) -> torch.Tensor:
+def encode_successors(
+    start: int, stop: int, *, least_significant_digit_first: bool = False
+) -> torch.Tensor:
     tokens: list[int] = []
     for number in range(start, stop):
-        tokens.extend(int(digit) for digit in str(number))
+        digits = [int(digit) for digit in str(number)]
+        if least_significant_digit_first:
+            digits.reverse()
+        tokens.extend(digits)
         tokens.append(10)
     return torch.tensor(tokens, dtype=torch.long)
 

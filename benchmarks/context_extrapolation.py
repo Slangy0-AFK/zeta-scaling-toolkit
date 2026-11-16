@@ -292,6 +292,7 @@ def evaluate_streams(
                 seed,
                 length,
                 samples,
+                least_significant_digit_first=axis in ("digit_4", "digit_5"),
             )
             for length in lengths
         }
@@ -416,7 +417,13 @@ def main() -> None:
                             method, args.axis, seed, args.steps, args.batch_size, settings
                         )
                         in_distribution = evaluate_extrapolation_stream(
-                            model, streams["train"], "sanity", seed, 256, args.samples
+                            model,
+                            streams["train"],
+                            "sanity",
+                            seed,
+                            256,
+                            args.samples,
+                            least_significant_digit_first=args.axis in ("digit_4", "digit_5"),
                         )
                         if args.phase == "sanity":
                             temporary = checkpoint.with_suffix(".tmp")

@@ -57,11 +57,11 @@ def extrapolation_streams(axis: str) -> dict[str, torch.Tensor]:
         train = encode_successors(100, 700)
         unseen = encode_successors(700, 1000)
     elif axis == "digit_4":
-        train = encode_successors(0, 1000)
-        unseen = encode_successors(1000, 3000)
+        train = encode_successors(0, 1000, least_significant_digit_first=True)
+        unseen = encode_successors(1000, 3000, least_significant_digit_first=True)
     elif axis == "digit_5":
-        train = encode_successors(0, 10000)
-        unseen = encode_successors(10000, 30000)
+        train = encode_successors(0, 10000, least_significant_digit_first=True)
+        unseen = encode_successors(10000, 30000, least_significant_digit_first=True)
     else:
         raise ValueError(f"unknown extrapolation axis: {axis}")
     return {"train": train, "seen": train, "unseen": unseen}
@@ -220,30 +220,39 @@ def score_successor_batch(
     return scores
 
 
-def successor_metadata(data: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+def successor_metadata(
+    data: torch.Tensor, *, least_significant_digit_first: bool = False
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     roles = torch.zeros_like(data)
-    last_digits = torch.zeros_like(data, dtype=torch.bool)
+    ones_digits = torch.zeros_like(data, dtype=torch.bool)
     carry = torch.full_like(data, -1)
     previous: list[int] = []
     number: list[int] = []
     start = 0
+
+    def decode_number(digits: list[int]) -> int:
+        ordered_digits = reversed(digits) if least_significant_digit_first else digits
+        return int("".join(map(str, ordered_digits)))
+
     for position, token in enumerate(data.tolist()):
         if token != 10:
             number.append(token)
             continue
         if number:
             roles[start:position] = torch.arange(1, len(number) + 1)
-            last_digits[position - 1] = True
+            ones_position = start if least_significant_digit_first else position - 1
+            ones_digits[ones_position] = True
             if (
                 len(number) == len(previous)
-                and int("".join(map(str, number))) == int("".join(map(str, previous))) + 1
+                and decode_number(number) == decode_number(previous) + 1
             ):
                 for index, (digit, old_digit) in enumerate(zip(number, previous)):
-                    carry[start + index] = int(index < len(number) - 1 and digit != old_digit)
+                    is_not_ones = index != (0 if least_significant_digit_first else len(number) - 1)
+                    carry[start + index] = int(is_not_ones and digit != old_digit)
         previous = number
         number = []
         start = position + 1
-    return roles, last_digits, carry
+    return roles, ones_digits, carry
 
 
 def successor_diagnostics(
@@ -253,7 +262,7 @@ def successor_diagnostics(
     metadata: tuple[torch.Tensor, torch.Tensor, torch.Tensor],
 ) -> dict[str, dict[str, dict[str, int]]]:
     positions = starts[:, None] + torch.arange(targets.shape[1])[None, :] + 1
-    roles, last_digits, carry = (values[positions] for values in metadata)
+    roles, ones_digits, carry = (values[positions] for values in metadata)
     correct = predictions == targets
     results: dict[str, dict[str, dict[str, int]]] = {}
     for start, end in BUCKETS:
@@ -285,7 +294,7 @@ def successor_diagnostics(
             actual = targets[:, rule_start:rule_end]
             copied = targets[:, rule_start - 5 : rule_end - 5]
             incremented = torch.where(
-                last_digits[:, rule_start:rule_end], (copied + 1) % 10, copied
+                ones_digits[:, rule_start:rule_end], (copied + 1) % 10, copied
             )
             majority = sum(int(torch.bincount(row, minlength=11).max()) for row in actual)
             counts["majority_per_window_oracle"] = {"correct": majority, "total": actual.numel()}
@@ -305,10 +314,13 @@ def evaluate_extrapolation_stream(
     seed: int,
     length: int,
     samples: int,
+    least_significant_digit_first: bool = False,
 ) -> dict[str, Any]:
     generator = torch.Generator().manual_seed(seed + length + 110000)
     repeated = data.repeat(math.ceil((len(data) + length + 1) / len(data)))
-    metadata = successor_metadata(repeated)
+    metadata = successor_metadata(
+        repeated, least_significant_digit_first=least_significant_digit_first
+    )
     totals: dict[str, dict[str, float | int]] = {}
     diagnostics: dict[str, dict[str, dict[str, int]]] = {}
     with torch.no_grad():

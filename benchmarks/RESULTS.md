@@ -1375,51 +1375,90 @@ bootstrap lower bound against the strongest equally tuned baseline, and an
 absolute relative training-length perplexity difference no greater than 1%.
 All bootstrap intervals use 10,000 paired seed resamples.
 
-The sanity sweep was paused after 43 of 480 trials. Incomplete records are not
-a completed gate. Environment: AMD EPYC 7763, two visible CPU cores,
-Linux 6.8.0-1070-azure, Python 3.14.2, PyTorch 2.15.0+cu132, CPU, one
-PyTorch thread, no CUDA. The work directory stores resumable JSONL and
-checkpoints and binds them to a source-code hash.
+The 500-step sanity sweep completed all 480 trials: two candidates for each of
+eight methods on ten tuning seeds, for each of the context, four-digit, and
+five-digit axes. Each cell below gives mean in-distribution accuracy and the
+number of tuning seeds at or above 0.95. Context-axis ALiBi candidate 1 and
+windowed RoPE candidate 1 passed the 8-of-10 gate; no candidate passed either
+digit-axis gate. Environment: AMD EPYC 7763, two visible CPU cores, Linux
+6.8.0-1070-azure, Python 3.14.2, PyTorch 2.15.0+cu132, CPU, one PyTorch
+thread, no CUDA.
 
-For the context axis, these complete tuning-seed candidate groups all failed
-the in-distribution gate and are **undertrained**. The confidence intervals
-are 10,000-resample seed-bootstrap intervals for each mean, not paired
-comparisons. The `rope-linear` candidate 0 has only three seeds and is not
-included in the table.
+**Context axis:**
 
-| Method | Candidate | In-distribution accuracy [95% CI] | Seeds ≥ 0.95 |
-|---|---:|---:|---:|
-| NoPE | 0 | 0.6058 [0.5942, 0.6167] | 0/10 |
-| NoPE | 1 | 0.6410 [0.6359, 0.6459] | 0/10 |
-| RoPE | 0 | 0.8119 [0.7732, 0.8476] | 0/10 |
-| RoPE | 1 | 0.9441 [0.9258, 0.9603] | 5/10 |
+| Method | Candidate 0: mean / seeds ≥ 0.95 | Candidate 1: mean / seeds ≥ 0.95 |
+|---|---:|---:|
+| NoPE | 0.6058 / 0 | 0.6410 / 0 |
+| RoPE | 0.8119 / 0 | 0.9441 / 5 |
+| Linear RoPE | 0.4290 / 0 | 0.3817 / 0 |
+| NTK RoPE | 0.6565 / 0 | 0.7615 / 0 |
+| ALiBi | 0.9147 / 3 | 0.9702 / 8 |
+| Windowed RoPE | 0.9113 / 0 | 0.9644 / 9 |
+| Full RoPE+log | 0.8503 / 0 | 0.9131 / 0 |
+| Windowed RoPE+log | 0.9123 / 0 | 0.9453 / 2 |
 
-The [paused checkpoint](./context-extrapolation-checkpoint-20261116.tar.gz)
-contains the 43 JSONL records and their matching model weights. SHA-256:
-`a0ff702f9857a24596c409abe6dc76a1639dcec3fdd706a154c4d0084db838a1`.
-To resume in the same software environment from the repository root:
+**Four-digit axis:**
 
-```bash
-mkdir -p benchmarks/context-extrapolation-resume
-tar -xzf benchmarks/context-extrapolation-checkpoint-20261116.tar.gz -C benchmarks/context-extrapolation-resume
-python -u benchmarks/context_extrapolation.py --phase sanity --axis context --steps 500 --batch-size 16 --samples 8 --work-dir benchmarks/context-extrapolation-resume
-python -u benchmarks/context_extrapolation.py --phase sanity --axis digit_4 --steps 500 --batch-size 16 --samples 8 --work-dir benchmarks/context-extrapolation-resume
-python -u benchmarks/context_extrapolation.py --phase sanity --axis digit_5 --steps 500 --batch-size 16 --samples 8 --work-dir benchmarks/context-extrapolation-resume
-```
+| Method | Candidate 0: mean / seeds ≥ 0.95 | Candidate 1: mean / seeds ≥ 0.95 |
+|---|---:|---:|
+| NoPE | 0.5510 / 0 | 0.6029 / 0 |
+| RoPE | 0.7628 / 0 | 0.9237 / 3 |
+| Linear RoPE | 0.4285 / 0 | 0.3938 / 0 |
+| NTK RoPE | 0.6601 / 0 | 0.7917 / 0 |
+| ALiBi | 0.8058 / 0 | 0.9361 / 5 |
+| Windowed RoPE | 0.8384 / 0 | 0.9336 / 4 |
+| Full RoPE+log | 0.7686 / 0 | 0.8681 / 0 |
+| Windowed RoPE+log | 0.8510 / 0 | 0.9070 / 0 |
 
-The original commands used the session work directory below:
+**Five-digit axis:**
+
+| Method | Candidate 0: mean / seeds ≥ 0.95 | Candidate 1: mean / seeds ≥ 0.95 |
+|---|---:|---:|
+| NoPE | 0.4388 / 0 | 0.4637 / 0 |
+| RoPE | 0.6347 / 0 | 0.8428 / 0 |
+| Linear RoPE | 0.3315 / 0 | 0.3031 / 0 |
+| NTK RoPE | 0.5865 / 0 | 0.7464 / 0 |
+| ALiBi | 0.6692 / 0 | 0.8389 / 0 |
+| Windowed RoPE | 0.8307 / 0 | 0.9139 / 1 |
+| Full RoPE+log | 0.6746 / 0 | 0.8293 / 0 |
+| Windowed RoPE+log | 0.7800 / 0 | 0.8804 / 0 |
+
+The context candidates that passed tuning sanity were evaluated from their
+saved checkpoints. On independent reporting seeds 42–51, ALiBi candidate 1
+passed the reporting sanity threshold on 7/10 seeds (mean 0.9562) and is
+therefore labelled `undertrained`. Windowed RoPE candidate 1 passed on 8/10
+(mean 0.9574); its descriptive accuracy at unseen positions 1024–4095 of a
+4096-token sequence was 0.4286. The baseline failed the reporting gate, so no
+protocol-valid paired extrapolation comparison is available and the toolkit
+candidate is not ranked against it. These results do not authorize a 2000-step
+run.
+
+The digit-axis streams in this completed sweep used most-significant-digit-
+first encoding. A subsequent pipeline change makes the digit_4 and digit_5
+axes least-significant-digit-first; the old digit-axis results and checkpoints
+are not evidence for the changed representation and must not be resumed under
+the new source hash. The context axis retains its prior encoding. LSF encoding
+and digit-role/carry metadata are covered by focused regression tests; the
+mutation suite now includes a digit-reversal mutant. No new digit-axis training
+run has been performed with LSF encoding.
+
+The [initial paused checkpoint](./context-extrapolation-checkpoint-20261116.tar.gz)
+contains the original 43 JSONL records. The completed sanity snapshot is
+[context-extrapolation-after-sanity-20261116.tar.gz](./context-extrapolation-after-sanity-20261116.tar.gz)
+(SHA-256 `f41430ca7c8b23b18295032b12f4905f5c113d0e3be502a2992137364d45a5fe`).
+The completed context tuning and reporting records are in
+[context-extrapolation-after-context-report-20261116.tar.gz](./context-extrapolation-after-context-report-20261116.tar.gz)
+(SHA-256 `1f7230a1557f1d13e0029ae67da6a144ac2a304bbe6a3c50464d1c3e816f8ec5`).
+The latter archive contains the full 486-file work directory; model weights
+for the sanity runs are hash-checked against their JSONL records.
 
 The follow-up code passed `ruff check .`, `ruff format --check .`,
 `mypy --strict zeta_scaling_toolkit`, and
 `pytest -q -o addopts= --cov=zeta_scaling_toolkit --cov-fail-under=95`
 (591 passed, one skipped, 99.17% package coverage). In a separate worktree,
-`python tools/mutation_check.py` killed 37 of 37 mutants.
-
-```bash
-python -u benchmarks/context_extrapolation.py --phase sanity --axis context --steps 500 --batch-size 16 --samples 8 --work-dir /home/codespace/.copilot/session-state/2815fe1d-1d49-4d1f-904f-aecbf511499d/files/context-extrapolation
-python -u benchmarks/context_extrapolation.py --phase sanity --axis digit_4 --steps 500 --batch-size 16 --samples 8 --work-dir /home/codespace/.copilot/session-state/2815fe1d-1d49-4d1f-904f-aecbf511499d/files/context-extrapolation
-python -u benchmarks/context_extrapolation.py --phase sanity --axis digit_5 --steps 500 --batch-size 16 --samples 8 --work-dir /home/codespace/.copilot/session-state/2815fe1d-1d49-4d1f-904f-aecbf511499d/files/context-extrapolation
-```
+`python tools/mutation_check.py` killed 37 of 37 mutants. The new
+least-significant-first reversal mutant was separately run and killed by the
+regression suite (38 total mutations in the current checker).
 
 The exact re-analysis command, run from the repository root, was:
 
