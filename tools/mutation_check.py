@@ -87,6 +87,51 @@ MUTANTS = (
         "bias = -slope_values * distances",
         "bias = slope_values * distances",
     ),
+    (
+        "zeta_scaling_toolkit/core.py",
+        "counts = torch.tensor(window + sink_tokens, dtype=q.dtype, device=q.device)",
+        "counts = torch.tensor(window, dtype=q.dtype, device=q.device)",
+    ),
+    (
+        "benchmarks/length_generalization.py",
+        "queries[:, None] - window + 1",
+        "queries[:, None] - window",
+    ),
+    (
+        "benchmarks/context_ability.py",
+        "tokens[rows, positions + 1] = values",
+        "tokens[rows, positions] = values",
+    ),
+    (
+        "benchmarks/context_char.py",
+        "selected = losses[:, start:end]",
+        "selected = losses[:, start + 1 : end]",
+    ),
+    (
+        "benchmarks/context_successor.py",
+        "digits = selected != 10",
+        "digits = selected == 10",
+    ),
+    (
+        "benchmarks/context_needle_tuned.py",
+        'return sum(record["correct"] / record["total"] >= 0.9 for record in records) >= 8',
+        'return sum(record["correct"] / record["total"] >= 0.9 for record in records) >= 7',
+    ),
+    (
+        "benchmarks/context_char_tuned.py",
+        "selected[method] = min((0, 1), key=lambda index: losses[index])",
+        "selected[method] = max((0, 1), key=lambda index: losses[index])",
+    ),
+    (
+        "benchmarks/context_report.py",
+        "values[seed] - baseline[seed] for seed in SEEDS",
+        "values[seed] - baseline[42] for seed in SEEDS",
+    ),
+    (
+        "benchmarks/context_reuse.py",
+        'block.rope_scale = settings["rope_scale"]',
+        "block.rope_scale = 1.0",
+    ),
 )
 
 

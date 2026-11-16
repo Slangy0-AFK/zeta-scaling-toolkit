@@ -11,13 +11,35 @@ from hypothesis import strategies as st
 from torch.optim import SGD
 from torch.optim.lr_scheduler import CosineAnnealingLR
 
+from benchmarks.context_ability import (
+    KEY_TOKENS,
+    NOISE_TOKENS,
+    QUERY_TOKEN,
+    VALUE_TOKENS,
+    VOCABULARY_SIZE,
+    evaluate_needle_sanity,
+    planted_needle_batch,
+)
+from benchmarks.context_char import bucket_losses, context_benefit, evaluate_char_contexts
+from benchmarks.context_char_tuned import select_candidates as select_char_candidates
+from benchmarks.context_successor import (
+    candidate as successor_candidate,
+)
+from benchmarks.context_successor import (
+    evaluate_successor,
+    score_successor_batch,
+    select_candidates,
+)
 from benchmarks.length_generalization import (
+    WINDOW_VARIANTS,
     SequenceLM,
     make_measurements,
     make_summaries,
     needle_batch,
+    windowed_dot_product,
 )
 from benchmarks.real_task import MODEL_WIDTH, TransformerBlock
+from benchmarks.window_speed import full_causal
 from zeta_scaling_toolkit import (
     AsymptoticLRScheduler,
     NonCollapsingAttention,
@@ -25,13 +47,115 @@ from zeta_scaling_toolkit import (
     get_scale_invariant_vit_coords,
     make_corrected_linear,
 )
-from zeta_scaling_toolkit.core import _unit
+from zeta_scaling_toolkit.core import _unit, _unit_bounded_cpu
 from zeta_scaling_toolkit.positions import (
     StreamingKVCache,
     alibi_bias,
     rotary_embedding,
     streaming_mask,
 )
+
+
+def test_character_position_loss_buckets_include_only_existing_positions():
+    losses = torch.arange(1100, dtype=torch.float32).repeat(2, 1)
+    buckets = bucket_losses(losses)
+    assert buckets == {
+        "0_63": 31.5,
+        "64_255": 159.5,
+        "256_1023": 639.5,
+        "1024_4095": 1061.5,
+    }
+
+
+def test_character_context_benefit_scores_the_next_token_at_late_positions():
+    class Successor(torch.nn.Module):
+        positions = None
+
+        def forward(self, inputs):
+            return F.one_hot((inputs + 1) % 11, num_classes=11).float() * 20
+
+    data = torch.arange(4000) % 11
+    model = Successor()
+    benefit = context_benefit(model, data, 42)
+    assert set(benefit) == {"16", "32", "64", "128", "256", "512", "1024"}
+    assert max(benefit.values()) < 1e-5
+    evaluation = evaluate_char_contexts(model, data, 42, [64, 256], 2)
+    assert evaluation["perplexity"]["64"] == pytest.approx(1.0, abs=1e-5)
+    assert set(evaluation["position_nll"]["64"]) == {"0_63"}
+    assert set(evaluation["position_nll"]["256"]) == {"0_63", "64_255"}
+
+
+def test_successor_scoring_counts_digits_delimiters_and_positions_separately():
+    targets = torch.tensor([[2] * 64 + [10, 3]])
+    predictions = targets.clone()
+    predictions[0, 0] = 9
+    predictions[0, 64] = 9
+    logits = F.one_hot(predictions, num_classes=11).float() * 20
+    scores = score_successor_batch(logits, targets)
+    assert scores["0_63"]["correct"] == 63
+    assert scores["0_63"]["digit_correct"] == 63
+    assert scores["64_255"]["correct"] == 1
+    assert scores["64_255"]["total"] == 2
+    assert scores["64_255"]["digit_correct"] == 1
+    assert scores["64_255"]["digit_total"] == 1
+    assert scores["64_255"]["nll_sum"] == pytest.approx(20.0)
+
+
+def test_successor_tuning_candidates_and_absolute_length_limit():
+    assert (
+        successor_candidate("rope-linear", 0)["rope_scale"]
+        != successor_candidate("rope-linear", 1)["rope_scale"]
+    )
+    assert (
+        successor_candidate("rope-log-full", 0)["tau0"]
+        != successor_candidate("rope-log-full", 1)["tau0"]
+    )
+    with pytest.raises(ValueError):
+        successor_candidate("rope-full", 2)
+
+    model = SequenceLM(11, "abs", False, 256, 10.0, 10000.0).eval()
+    results = evaluate_successor(model, 42, [256, 512], 1)
+    for digit_length in results.values():
+        assert set(digit_length) == {"256"}
+        assert digit_length["256"]["0_63"]["total"] == 64
+    held_out = evaluate_successor(model, 42, [256], 1, held_out_only=True)
+    assert set(held_out) == {"4_digit_held_out"}
+
+
+def test_successor_tuning_requires_all_separate_seeds_and_selects_accuracy():
+    records = []
+    for seed in range(100, 110):
+        for index in (0, 1):
+            scores = {"correct": 5 + index, "total": 10}
+            records.append(
+                {
+                    "method": "rope-full",
+                    "candidate": index,
+                    "steps": 500,
+                    "seed": seed,
+                    "metrics": {"4_digit_held_out": {"4096": {"1024_4095": scores}}},
+                }
+            )
+    assert select_candidates(records, ["rope-full"], 500) == {"rope-full": 1}
+    with pytest.raises(ValueError, match="incomplete tuning seeds"):
+        select_candidates(records[:-1], ["rope-full"], 500)
+
+
+def test_character_tuning_selects_lower_late_context_nll():
+    records = [
+        {
+            "method": "rope-ntk",
+            "candidate": index,
+            "steps": 500,
+            "seed": seed,
+            "tuning_nll": 1.0 - 0.1 * index,
+        }
+        for seed in range(100, 110)
+        for index in (0, 1)
+    ]
+    assert select_char_candidates(records, ["rope-ntk"], 500) == {"rope-ntk": 1}
+    with pytest.raises(ValueError, match="incomplete character tuning seeds"):
+        select_char_candidates(records[:-1], ["rope-ntk"], 500)
 
 
 @given(
@@ -524,6 +648,84 @@ def test_streaming_attention_decode_matches_dense_outputs_and_gradients():
         torch.testing.assert_close(sparse_gradient, dense_gradient, atol=1e-5, rtol=1e-5)
 
 
+@pytest.mark.parametrize("scaling", ["none", "log"])
+def test_streaming_reused_masks_match_dense_float32_gradients(scaling):
+    torch.manual_seed(281)
+    q = torch.randn(1, 2, 350, 8, requires_grad=True)
+    k = torch.randn(1, 2, 380, 8, requires_grad=True)
+    v = torch.randn(1, 2, 380, 6, requires_grad=True)
+    attention = NonCollapsingAttention(8, length_scaling=scaling, train_length=4, tau_eff_max=12)
+    streaming = attention.forward_streaming(q, k, v, window=32, sink_tokens=4, chunk_size=47)
+    dense = attention(q, k, v, attn_mask=streaming_mask(350, 380, 32, 4))
+    torch.testing.assert_close(streaming, dense, atol=1e-5, rtol=1e-5)
+    targets = (q, k, v, attention.raw_tau)
+    stream_grads = torch.autograd.grad(streaming.square().mean(), targets, retain_graph=True)
+    dense_grads = torch.autograd.grad(dense.square().mean(), targets)
+    for actual, expected in zip(stream_grads, dense_grads):
+        torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("window,sinks", [(1, 0), (64, 4), (256, 4)])
+@pytest.mark.parametrize("scaling", ["none", "log"])
+def test_batched_cpu_streaming_matches_unbatched_outputs_and_gradients(window, sinks, scaling):
+    torch.manual_seed(286)
+    q = torch.randn(1, 2, 4101, 32, requires_grad=True)
+    k = torch.randn_like(q, requires_grad=True)
+    v = torch.randn(1, 2, 4101, 19, requires_grad=True)
+    attention = NonCollapsingAttention(32, length_scaling=scaling, train_length=16)
+    batched = attention.forward_streaming(q, k, v, window, sinks, chunk_size=128)
+    unbatched = attention.forward_streaming(q, k, v, window, sinks, chunk_size=127)
+    torch.testing.assert_close(batched, unbatched, atol=1e-5, rtol=1e-5)
+    weight = torch.randn_like(batched)
+    targets = (q, k, v, attention.raw_tau)
+    batched_grads = torch.autograd.grad((batched * weight).mean(), targets, retain_graph=True)
+    unbatched_grads = torch.autograd.grad((unbatched * weight).mean(), targets)
+    for actual, expected in zip(batched_grads, unbatched_grads):
+        torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("magnitude", [0.0, 1e-8, 1.0, 10000.0, 1e30])
+def test_bounded_cpu_normalization_matches_stable_outputs_and_gradients(magnitude):
+    torch.manual_seed(287)
+    x = (torch.rand(4, 64) * magnitude).requires_grad_()
+    weight = torch.randn_like(x)
+    bounded = _unit_bounded_cpu(x)
+    stable = _unit(x)
+    torch.testing.assert_close(bounded, stable, atol=1e-6, rtol=1e-6)
+    actual = torch.autograd.grad((bounded * weight).sum(), x, retain_graph=True)[0]
+    expected = torch.autograd.grad((stable * weight).sum(), x)[0]
+    torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+
+
+def test_full_causal_speed_reference_matches_dense_outputs_and_gradients():
+    torch.manual_seed(282)
+    q = torch.randn(1, 2, 90, 8, requires_grad=True)
+    k = torch.randn_like(q, requires_grad=True)
+    v = torch.randn_like(q, requires_grad=True)
+    attention = NonCollapsingAttention(8, length_scaling="log", train_length=16)
+    actual = full_causal(attention, q, k, v)
+    mask = torch.ones(90, 90, dtype=torch.bool).tril()
+    expected = attention(q, k, v, attn_mask=mask)
+    torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+    targets = (q, k, v, attention.raw_tau)
+    actual_grads = torch.autograd.grad(actual.square().mean(), targets, retain_graph=True)
+    expected_grads = torch.autograd.grad(expected.square().mean(), targets)
+    for actual_grad, expected_grad in zip(actual_grads, expected_grads):
+        torch.testing.assert_close(actual_grad, expected_grad, atol=1e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("dtype", [torch.float64, torch.float16, torch.bfloat16])
+def test_full_causal_speed_reference_preserves_attention_precision(dtype):
+    torch.manual_seed(285)
+    q, k, v = (torch.randn(1, 2, 80, 8, dtype=dtype) for _ in range(3))
+    attention = NonCollapsingAttention(8, length_scaling="log", train_length=16)
+    actual = full_causal(attention, q, k, v)
+    expected = attention(q, k, v, attn_mask=torch.ones(80, 80, dtype=torch.bool).tril())
+    assert actual.dtype == dtype
+    tolerance = 1e-10 if dtype == torch.float64 else 1e-3
+    torch.testing.assert_close(actual, expected, atol=tolerance, rtol=tolerance)
+
+
 @torch.no_grad()
 def test_streaming_attention_is_finite_at_length_32768():
     """Forward-only CPU smoke test; the generous runtime budget is 120 seconds."""
@@ -766,6 +968,37 @@ def test_needle_batch_contains_one_matching_random_query_key_per_example():
     assert torch.equal(values[matches], targets)
 
 
+@pytest.mark.parametrize("length", [4, 256])
+def test_planted_needle_has_disjoint_noise_and_one_matching_pair(length):
+    tokens, targets = planted_needle_batch(128, length, torch.Generator().manual_seed(7))
+    prefix = tokens[:, :-2]
+    query = tokens[:, -1]
+    assert torch.all(tokens[:, -2] == QUERY_TOKEN)
+    assert torch.all((query >= NOISE_TOKENS) & (query < NOISE_TOKENS + KEY_TOKENS))
+    matches = prefix == query[:, None]
+    assert torch.all(matches.sum(dim=1) == 1)
+    positions = matches.int().argmax(dim=1)
+    assert torch.equal(prefix[torch.arange(len(tokens)), positions + 1], targets)
+    assert torch.all(
+        (targets >= NOISE_TOKENS + KEY_TOKENS)
+        & (targets < NOISE_TOKENS + KEY_TOKENS + VALUE_TOKENS)
+    )
+    assert torch.all((prefix < NOISE_TOKENS).sum(dim=1) == length - 4)
+
+
+def test_needle_sanity_counts_every_query_with_partial_final_batch():
+    class Oracle(torch.nn.Module):
+        def forward(self, tokens):
+            matches = tokens[:, :-2] == tokens[:, -1, None]
+            positions = matches.int().argmax(dim=1)
+            targets = tokens[torch.arange(tokens.shape[0]), positions + 1]
+            logits = torch.zeros(tokens.shape[0], tokens.shape[1], VOCABULARY_SIZE)
+            logits[torch.arange(tokens.shape[0]), -1, targets] = 1
+            return logits
+
+    assert evaluate_needle_sanity(Oracle(), 42, 256, 23, 8) == (23, 23)
+
+
 def test_evaluation_summaries_require_ten_pairs_and_match_hyperparameters():
     records = []
     for seed in range(10):
@@ -792,6 +1025,65 @@ def test_evaluation_summaries_require_ten_pairs_and_match_hyperparameters():
     assert summaries[0]["seeds_better"] == 10
 
 
+@pytest.mark.parametrize("variant", list(WINDOW_VARIANTS))
+def test_window_evaluation_summaries_compare_paired_full_log_baseline(variant):
+    records = []
+    for seed in range(42, 52):
+        for name, value in (("rope-log", float(seed)), (variant, float(seed) + 2.0)):
+            records.append(
+                {
+                    "task": "char",
+                    "variant": name,
+                    "init_mode": "baseline",
+                    "scheduler": "toolkit",
+                    "steps": 500,
+                    "seed": seed,
+                    "tau0": 10.0,
+                    "rope_base": 10000.0,
+                    "metrics": {"4096": value},
+                }
+            )
+    summaries = make_summaries(records)
+    assert len(summaries) == 1
+    assert summaries[0]["comparison"] == "window_vs_full_rope_log"
+    assert summaries[0]["mean_difference"] == 2.0
+    assert summaries[0]["paired_95pct_bootstrap_ci"] == [2.0, 2.0]
+
+
+@pytest.mark.parametrize("variant", list(WINDOW_VARIANTS))
+def test_window_evaluation_variant_matches_dense_window(variant, monkeypatch):
+    torch.manual_seed(283)
+    model = SequenceLM(19, variant, False, 64, 10.0, 10000.0).eval()
+    tokens = torch.randint(0, 19, (1, 300))
+    with torch.no_grad():
+        actual = model(tokens)
+
+    def dense_window(attention, q, k, v, window, sink_tokens):
+        assert (window, sink_tokens) == (WINDOW_VARIANTS[variant][0], 4)
+        mask = streaming_mask(q.shape[-2], k.shape[-2], window, sink_tokens)
+        return attention(q, k, v, attn_mask=mask)
+
+    monkeypatch.setattr(NonCollapsingAttention, "forward_streaming", dense_window)
+    with torch.no_grad():
+        expected = model(tokens)
+    torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("variant", list(WINDOW_VARIANTS))
+def test_paired_window_evaluation_reuses_full_model_at_training_length(variant):
+    torch.manual_seed(284)
+    model = SequenceLM(19, "rope-log", False, 64, 10.0, 10000.0).eval()
+    tokens = torch.randint(0, 19, (1, 64))
+    with torch.no_grad():
+        baseline = model(tokens)
+        model.set_window_evaluation_variant(variant)
+        actual = model(tokens)
+        model.set_window_evaluation_variant("rope-log")
+        restored = model(tokens)
+    torch.testing.assert_close(actual, baseline, atol=1e-5, rtol=1e-5)
+    torch.testing.assert_close(restored, baseline)
+
+
 def test_evaluation_measurements_report_seeded_sweep_statistics():
     records = [
         {
@@ -814,7 +1106,9 @@ def test_evaluation_measurements_report_seeded_sweep_statistics():
     assert measurements[0]["n"] == 10
 
 
-@pytest.mark.parametrize("variant", ["rope", "rope-log", "alibi", "rope-log-stream"])
+@pytest.mark.parametrize(
+    "variant", ["rope", "rope-log", "alibi", "rope-log-stream", *WINDOW_VARIANTS]
+)
 def test_evaluation_chunked_attention_respects_causal_prefix(variant):
     torch.manual_seed(79)
     model = SequenceLM(19, variant, False, 64, 10.0, 10000.0).eval()
@@ -823,6 +1117,69 @@ def test_evaluation_chunked_attention_respects_causal_prefix(variant):
         full = model(tokens)
         prefix = model(tokens[:, :129])
     torch.testing.assert_close(full[:, :129], prefix, atol=2e-6, rtol=2e-6)
+
+
+def test_fused_full_rope_matches_existing_causal_model_and_gradients():
+    torch.manual_seed(288)
+    original = SequenceLM(19, "rope", False, 256, 10.0, 10000.0)
+    fused = SequenceLM(19, "rope-full", False, 256, 10.0, 10000.0)
+    fused.load_state_dict(original.state_dict())
+    tokens = torch.randint(0, 19, (2, 256))
+    expected = original(tokens)
+    actual = fused(tokens)
+    torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+    actual.square().mean().backward()
+    expected.square().mean().backward()
+    for candidate, baseline in zip(fused.parameters(), original.parameters()):
+        torch.testing.assert_close(candidate.grad, baseline.grad, atol=1e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("window,sinks", [(1, 0), (64, 4), (256, 4)])
+def test_dot_product_window_matches_dense_mask_outputs_and_gradients(window, sinks):
+    torch.manual_seed(289)
+    q, k, v = (torch.randn(1, 2, 259, 8, requires_grad=True) for _ in range(3))
+    actual = windowed_dot_product(q, k, v, window, sinks)
+    expected = F.scaled_dot_product_attention(
+        q, k, v, attn_mask=streaming_mask(259, 259, window, sinks)
+    )
+    torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+    actual_grads = torch.autograd.grad(actual.square().mean(), (q, k, v), retain_graph=True)
+    expected_grads = torch.autograd.grad(expected.square().mean(), (q, k, v))
+    for candidate, baseline in zip(actual_grads, expected_grads):
+        torch.testing.assert_close(candidate, baseline, atol=1e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("prefix", ["rope", "rope-log"])
+def test_training_window_control_and_inference_intervention(prefix):
+    torch.manual_seed(290)
+    full = SequenceLM(19, f"{prefix}-full", False, 256, 10.0, 10000.0).eval()
+    window = SequenceLM(19, f"{prefix}-window", False, 256, 10.0, 10000.0).eval()
+    window.load_state_dict(full.state_dict())
+    tokens = torch.randint(0, 19, (1, 256))
+    with torch.no_grad():
+        full_output = full(tokens)
+        window_output = window(tokens)
+        torch.testing.assert_close(full_output[:, :64], window_output[:, :64], atol=1e-5, rtol=1e-5)
+        assert not torch.allclose(full_output[:, 128:], window_output[:, 128:])
+        window.set_attention_evaluation("full")
+        torch.testing.assert_close(window(tokens), full_output, atol=1e-5, rtol=1e-5)
+        full.set_attention_evaluation("window")
+        torch.testing.assert_close(full(tokens), window_output, atol=1e-5, rtol=1e-5)
+
+
+@pytest.mark.parametrize("variant", ["rope-linear", "rope-ntk"])
+def test_rope_scaling_variants_use_the_selected_scale(variant):
+    torch.manual_seed(291)
+    baseline = SequenceLM(19, "rope-full", False, 256, 10.0, 10000.0).eval()
+    scaled = SequenceLM(19, variant, False, 256, 10.0, 10000.0, rope_scale=1.0).eval()
+    scaled.load_state_dict(baseline.state_dict())
+    tokens = torch.randint(0, 19, (1, 128))
+    with torch.no_grad():
+        expected = baseline(tokens)
+        torch.testing.assert_close(scaled(tokens), expected, atol=1e-5, rtol=1e-5)
+        for block in scaled.blocks:
+            block.rope_scale = 4.0
+        assert not torch.allclose(scaled(tokens), expected)
 
 
 @pytest.mark.parametrize("offset", [0, 2**11, 2**20])

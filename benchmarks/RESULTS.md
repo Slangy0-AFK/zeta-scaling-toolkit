@@ -4,6 +4,123 @@ This is a small, CPU-only char-level language-model comparison. It is an
 experiment on one dataset, architecture, and training budget—not evidence that
 any component improves other tasks or large-scale training.
 
+## Stage 1 context-ability gate
+
+**Decision: pending.** The 500-step matched character controls, separately
+seeded successor tuning, and the 3,000-step planted-needle sanity gate are in
+progress. No Stage 2 work is authorized while this decision is pending.
+Character perplexity alone is not evidence that a model uses distant context.
+
+The base checked was `f924538e7aef263b6dec9ea24850ab31bf6fa34e` in an
+isolated worktree. On that base, `pytest --cov-fail-under=95` passed with
+457 passed and 1 skipped; `pytest --cov=zeta_scaling_toolkit
+--cov-fail-under=95` passed with 457 passed, 1 skipped and 99.11% coverage.
+`ruff check .`, `ruff format --check .`, and `mypy --strict
+zeta_scaling_toolkit` passed. `python tools/mutation_check.py` killed 17 of 17
+mutants, with none surviving, missing or errored. These are base checks, not
+final validation of the uncommitted changes.
+
+The Stage 1 runners persist each completed training trial as JSONL and reject
+incompatible resume configurations. The current runs use batch size 16 and
+one CPU thread. The character control run trains at length 256 and evaluates
+each trained model both with full attention and with a 64-token window plus
+four sinks. These runs differ from the 64-token training control below.
+
+```bash
+python benchmarks/context_char.py --steps 500 --train-length 256 --window 64 --sinks 4 \
+  --seeds 42 43 44 45 46 47 48 49 50 51 \
+  --output benchmarks/context-ability-char500.jsonl
+python benchmarks/context_ability.py --steps 3000 --train-length 256 --batch-size 16 \
+  --eval-queries 200 --seeds 42 43 44 45 46 47 48 49 50 51 \
+  --output benchmarks/context-ability-needle-sanity.jsonl
+python benchmarks/context_successor.py --tuning --steps 500 --batch-size 16 --samples 8 \
+  --seeds 100 101 102 103 104 105 106 107 108 109 --candidates 0 1 \
+  --output benchmarks/context-ability-successor-tuning500.jsonl
+python benchmarks/context_successor.py --steps 500 --batch-size 16 --samples 8 \
+  --seeds 42 43 44 45 46 47 48 49 50 51 \
+  --tuning-records benchmarks/context-ability-successor-tuning500.jsonl \
+  --output benchmarks/context-ability-successor500.jsonl
+python benchmarks/context_char_tuned.py --tuning --steps 500 \
+  --seeds 100 101 102 103 104 105 106 107 108 109 --candidates 0 1 \
+  --output benchmarks/context-ability-char-tuning500.jsonl
+python benchmarks/context_char_tuned.py --steps 500 \
+  --seeds 42 43 44 45 46 47 48 49 50 51 \
+  --tuning-records benchmarks/context-ability-char-tuning500.jsonl \
+  --output benchmarks/context-ability-char-baselines500.jsonl
+```
+
+If the retrieval sanity gate passes, the queued 500-step comparison is:
+
+```bash
+python benchmarks/context_needle_tuned.py --tuning --steps 500 \
+  --seeds 100 101 102 103 104 105 106 107 108 109 \
+  --output benchmarks/context-ability-needle-tuning500.jsonl
+python benchmarks/context_needle_tuned.py --steps 500 \
+  --seeds 42 43 44 45 46 47 48 49 50 51 \
+  --tuning-records benchmarks/context-ability-needle-tuning500.jsonl \
+  --output benchmarks/context-ability-needle500.jsonl
+```
+
+Successor tuning chooses among two candidates per method using four-digit
+held-out accuracy at positions 1024–4095 in a 4096-token sequence. Absolute
+positions cannot run at 4096, so that method is tuned on its 256-token
+accuracy instead. Three-digit successor evaluations use a cyclic repetition
+of the training-range numbers 100–999, and are not held-out-number results.
+Four-digit successor evaluations use the held-out numbers 1000–2999. The
+reports will distinguish digit-only accuracy from accuracy including
+separators.
+
+The tuned character runs select the candidate with the lowest late-position
+NLL using a 1024-token prefix; absolute positions instead use 256-token
+perplexity because they cannot be evaluated beyond their position table. Each
+method, including the trained window variants, has two candidate configurations
+and ten tuning seeds. Identical full-RoPE training runs are reused within a
+process when linear or NTK scaling changes only inference positions; each
+reused model has the same seed, data, optimizer and update count as an
+independently trained model. The reporting
+seeds are disjoint from tuning seeds. The character context-benefit curve is
+a sanity check, not by itself a Stage 1 GO criterion. It scores eight target
+positions from 1024 through 1920 per seed; each prefix is truncated before
+the forward pass. A windowed model's sink positions therefore refer to the
+beginning of that truncated prefix, not to the start of the original document.
+For a 64-token window plus four sinks trained at length 256, the current log
+scaling factor remains one because at most 68 keys are visible.
+The two tuning candidates use initial temperatures 5 and 10 for cosine+log,
+position scale factors 4 and 16 for linear and NTK RoPE, and learning rates
+0.0007 and 0.001 for methods without either tunable quantity. Other candidate
+learning rates are 0.001. Linear and NTK scaling are applied at evaluation
+time to models trained with unscaled RoPE.
+Once the required 500-step records are complete, paired tables can be generated
+with:
+
+```bash
+python benchmarks/context_report.py benchmarks/context-ability-char500.jsonl \
+  --successor-records benchmarks/context-ability-successor500.jsonl \
+  --successor-tuning benchmarks/context-ability-successor-tuning500.jsonl \
+  --char-baselines benchmarks/context-ability-char-baselines500.jsonl \
+  --char-tuning benchmarks/context-ability-char-tuning500.jsonl
+```
+
+The reporting script requires every specified method and all ten reporting
+seeds; it does not calculate paired intervals from partial runs. It uses 10,000
+seed-paired bootstrap resamples.
+
+### Related work
+
+| Technique | Earlier work |
+|---|---|
+| Length-dependent attention-logit scaling | [Chiang and Cholak, section 5.3](https://arxiv.org/abs/2202.12172); [SSMax](https://arxiv.org/abs/2501.19399) |
+| Local attention | [Longformer](https://arxiv.org/abs/2004.05150) |
+| Attention sinks with a rolling window | [StreamingLLM](https://arxiv.org/abs/2309.17453) |
+| Rotary positions | [RoPE](https://arxiv.org/abs/2104.09864) |
+| Linear attention-position biases | [ALiBi](https://arxiv.org/abs/2108.12409) |
+| Position interpolation | [Position Interpolation](https://arxiv.org/abs/2306.15595) |
+| NTK-aware interpolation and extensions | [YaRN](https://arxiv.org/abs/2309.00071) |
+
+These are existing ideas. This repository contributes tested implementations
+and evaluation tools; the present evidence does not establish a new method or
+long-context ability.
+
 ## Contents
 
 - [Exact run](#exact-run)
@@ -24,6 +141,7 @@ any component improves other tasks or large-scale training.
   - [Attention profiling](#attention-profiling)
   - [Synthetic vision](#synthetic-vision)
   - [Tiny Shakespeare at 1000 steps](#tiny-shakespeare-at-1000-steps)
+- [Windowed attention versus full causal attention](#windowed-attention-versus-full-causal-attention)
 
 ## Exact run
 
@@ -494,3 +612,132 @@ Only the scheduler-only variant has a paired interval excluding zero in the
 beneficial direction. Attention-only is worse, while initialization-only and
 all-components are inconclusive. This supports a narrow 1,000-step
 character-level LM validation, not a general training claim.
+
+## Windowed attention versus full causal attention
+
+This experiment was not present on any of the ten GitHub branches checked at the
+start of the Stage 1 work. The harness and records below were recreated locally;
+they are not evidence of a published experiment on a remote branch.
+
+The quality experiment trains a 32-wide, two-layer character model with four
+heads (head dimension 8) and full causal RoPE + log attention for 500 steps on
+each of seeds 42–51. It then evaluates the same weights using full attention or
+each window, so the paired differences measure an inference-time change, not
+separately trained models. Training contexts are 64 tokens; with a window of
+64 or 256 and four sinks, the training visibility is full causal, and log
+scaling is one. Evaluation uses two held-out sequences per seed and context.
+Differences are windowed minus full-attention perplexity, with 10,000 paired
+bootstrap resamples over seeds. Positive values mean worse perplexity.
+
+The timing benchmark measures a single attention operation on random fp32
+Q/K/V, with one CPU thread, batch 1, four heads and head dimension 8. It excludes
+RoPE, projection, and other model work. Its exact full causal reference includes
+QK normalization and per-query log scaling; the windowed cases include QK
+normalization and the specified scaling. Forward timing disables autograd;
+forward+backward includes the backward pass of the mean squared output.
+Timings are medians after one warm-up. These attention-only measurements are
+not end-to-end language-model speedups. The longer contexts are included so
+that a latency result is not paired with quality measured at another length.
+
+The earlier 500-step full-attention needle trial did not satisfy the requested
+training-length learning gate, so no windowed needle-retrieval comparison is
+reported here. No acceptable perplexity-loss tolerance was specified.
+
+Environment: AMD EPYC 7763 CPU, PyTorch 2.15.0+cu132, Python 3.14.2, one
+thread, no CUDA. The shared host showed substantial timing variation; raw
+individual samples are retained. The quality dataset is the 90/10 tiny
+Shakespeare split with SHA-256
+`86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed`.
+
+```bash
+python benchmarks/length_generalization.py --task char \
+  --variants rope-log rope-window64 rope-log-window64 rope-window256 rope-log-window256 \
+  --paired-window-eval --steps 500 --seeds 42 43 44 45 46 47 48 49 50 51 \
+  --init-modes baseline --schedulers toolkit \
+  --char-lengths 64 128 256 512 1024 4096 8192 16384 \
+  --output benchmarks/window-quality.jsonl
+python benchmarks/window_speed.py --head-dimension 8 \
+  --lengths 64 128 256 512 1024 4096 8192 16384 \
+  --windows 64 256 --repeats 5 > benchmarks/window-speed-d8.json
+```
+
+The [per-seed quality records](./window-quality.jsonl) and
+[timing samples](./window-speed-d8.json) are included. Both speed columns are
+ratios of exact full causal RoPE + log attention time to windowed attention time
+for the indicated mode and context; the RoPE transformation itself is omitted
+from both timings. Full and window perplexities are means over the same ten
+seeds; the bracketed interval is the paired 95% confidence interval.
+
+| Context | Window | Scaling | Full PPL | Window PPL | Difference [95% CI] | Forward ratio | Forward+backward ratio |
+|---:|---:|---|---:|---:|---:|---:|---:|
+| 64 | 64 | none | 10.52 | 10.52 | +0.00 [+0.00, +0.00] | 0.75 | 1.33 |
+| 64 | 64 | log | 10.52 | 10.52 | +0.00 [+0.00, +0.00] | 0.72 | 1.33 |
+| 64 | 256 | none | 10.52 | 10.52 | +0.00 [+0.00, +0.00] | 0.73 | 1.28 |
+| 64 | 256 | log | 10.52 | 10.52 | +0.00 [+0.00, +0.00] | 0.54 | 1.17 |
+| 128 | 64 | none | 10.83 | 10.70 | -0.13 [-0.18, -0.07] | 0.64 | 0.89 |
+| 128 | 64 | log | 10.83 | 10.70 | -0.13 [-0.18, -0.08] | 0.66 | 1.17 |
+| 128 | 256 | none | 10.83 | 10.86 | +0.03 [+0.01, +0.05] | 1.04 | 1.37 |
+| 128 | 256 | log | 10.83 | 10.83 | +0.00 [+0.00, +0.00] | 0.92 | 1.03 |
+| 256 | 64 | none | 11.70 | 11.15 | -0.55 [-0.64, -0.45] | 0.69 | 0.94 |
+| 256 | 64 | log | 11.70 | 11.14 | -0.55 [-0.65, -0.46] | 0.62 | 0.73 |
+| 256 | 256 | none | 11.70 | 11.78 | +0.08 [+0.02, +0.13] | 0.75 | 1.45 |
+| 256 | 256 | log | 11.70 | 11.70 | +0.00 [+0.00, +0.00] | 0.62 | 0.91 |
+| 512 | 64 | none | 13.02 | 11.49 | -1.54 [-1.77, -1.32] | 1.01 | 1.93 |
+| 512 | 64 | log | 13.02 | 11.48 | -1.54 [-1.77, -1.32] | 1.32 | 1.87 |
+| 512 | 256 | none | 13.02 | 12.65 | -0.37 [-0.51, -0.23] | 1.01 | 1.34 |
+| 512 | 256 | log | 13.02 | 12.58 | -0.44 [-0.54, -0.33] | 0.66 | 1.12 |
+| 1024 | 64 | none | 13.89 | 11.34 | -2.56 [-2.88, -2.28] | 2.34 | 2.50 |
+| 1024 | 64 | log | 13.89 | 11.33 | -2.56 [-2.88, -2.28] | 2.31 | 2.65 |
+| 1024 | 256 | none | 13.89 | 12.83 | -1.06 [-1.38, -0.78] | 1.59 | 1.89 |
+| 1024 | 256 | log | 13.89 | 12.79 | -1.11 [-1.42, -0.83] | 1.36 | 1.75 |
+| 4096 | 64 | none | 16.05 | 11.65 | -4.40 [-4.93, -3.89] | 5.62 | 4.44 |
+| 4096 | 64 | log | 16.05 | 11.64 | -4.40 [-4.93, -3.89] | 7.90 | 6.93 |
+| 4096 | 256 | none | 16.05 | 13.42 | -2.63 [-3.22, -2.07] | 5.72 | 4.47 |
+| 4096 | 256 | log | 16.05 | 13.36 | -2.69 [-3.27, -2.14] | 5.63 | 4.55 |
+| 8192 | 64 | none | 16.36 | 11.55 | -4.81 [-5.47, -4.17] | 13.01 | 12.63 |
+| 8192 | 64 | log | 16.36 | 11.54 | -4.82 [-5.47, -4.18] | 12.86 | 12.81 |
+| 8192 | 256 | none | 16.36 | 13.26 | -3.10 [-3.83, -2.41] | 8.02 | 7.26 |
+| 8192 | 256 | log | 16.36 | 13.22 | -3.14 [-3.85, -2.46] | 7.21 | 7.56 |
+| 16384 | 64 | none | 16.69 | 11.61 | -5.07 [-5.81, -4.39] | 26.30 | 20.11 |
+| 16384 | 64 | log | 16.69 | 11.61 | -5.08 [-5.81, -4.40] | 23.57 | 20.92 |
+| 16384 | 256 | none | 16.69 | 13.42 | -3.27 [-4.06, -2.55] | 15.92 | 14.88 |
+| 16384 | 256 | log | 16.69 | 13.36 | -3.32 [-4.09, -2.61] | 15.47 | 13.86 |
+
+Against exact full causal RoPE + log attention, the first tested length at
+which both forward and forward+backward exceed 9x is 8,192 for window 64 and
+16,384 for window 256, with either scaling setting. This is a grid-based
+break-even observation, not a guarantee between tested lengths. On this small
+task the long-context perplexity differences favor the windowed variants,
+but that does not establish a general quality benefit or long-range retrieval.
+In particular, full attention at 16,384 tokens is far outside its 64-token
+training distribution, and window-64 perplexity is approximately flat beyond
+128 tokens. Neither observation establishes use of distant information.
+
+### Optimization against the original streaming path
+
+The following forward-only timings compare the current implementation against
+the original streaming implementation at `f924538`, not against full
+attention. They use batch 1, four heads, head dimension 64, fp32, four sinks,
+one CPU thread and the same host; each value is the median of 21 alternating
+measurements. [Raw samples](./window-streaming-comparison.json) include both
+scaling modes and retain the earlier seven-sample measurements separately.
+
+| Length | Window | Scaling | Original ms | Current ms | Original/current |
+|---:|---:|---|---:|---:|---:|
+| 8192 | 64 | none | 80.80 | 56.01 | 1.44 |
+| 8192 | 64 | log | 89.92 | 54.87 | 1.64 |
+| 8192 | 256 | none | 111.59 | 92.00 | 1.21 |
+| 8192 | 256 | log | 132.63 | 90.91 | 1.46 |
+| 16384 | 64 | none | 145.18 | 98.67 | 1.47 |
+| 16384 | 64 | log | 175.54 | 97.02 | 1.81 |
+| 16384 | 256 | none | 252.43 | 176.58 | 1.43 |
+| 16384 | 256 | log | 275.04 | 175.75 | 1.56 |
+
+The requested 1.3x optimization target relative to the original streaming path
+was **not met consistently**: the window-256 case without log scaling at 8,192
+fell short in this run. At both long lengths and both windows, output differences versus the
+original streaming implementation were at most `3.58e-6` in fp32; a separate
+1,024-token check found maximum Q/K/V/temperature gradient differences below
+`1.5e-8` for a mean-squared-output loss. At both long lengths, the maximum
+Q/K/V/temperature gradient difference was below `2.5e-10` for a random
+weighted-mean output.
