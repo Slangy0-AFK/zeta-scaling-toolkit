@@ -1,0 +1,2592 @@
+{
+  "character-report-abs-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-abs-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-abs-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-abs-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-abs-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-abs-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-abs-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-abs-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-abs-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-abs-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "character-report-alibi-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-alibi-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-alibi-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-alibi-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-alibi-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-alibi-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-alibi-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-alibi-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-alibi-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-alibi-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-full-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-full-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-full-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-full-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-full-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-full-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-full-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-full-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-full-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-full-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-linear-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-linear-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-linear-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-linear-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-linear-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-linear-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-linear-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-linear-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-linear-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-linear-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-full-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-full-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-full-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-full-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-full-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-full-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-full-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-full-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-full-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-full-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-window-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-window-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-window-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-window-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-window-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-window-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-window-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-window-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-window-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-log-window-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-ntk-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6973P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-ntk-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-ntk-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-ntk-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-ntk-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-ntk-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-ntk-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-ntk-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-ntk-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-ntk-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-window-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-window-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-window-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-window-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-window-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-window-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-window-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-window-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-window-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-report-rope-window-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-full-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-full-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-full-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-full-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-full-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-full-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-full-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-full-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-full-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-full-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-full-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-full-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-full-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-full-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-full-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-full-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-full-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-full-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-full-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-full-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-window-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-window-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-window-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-window-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-window-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-window-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-window-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-window-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-window-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-log-window-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-window-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-window-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-window-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-window-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-window-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-window-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-window-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-window-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-window-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-rope-window-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6973P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-abs-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-abs-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-abs-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-abs-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-abs-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-abs-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-abs-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-abs-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-abs-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-abs-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-alibi-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-alibi-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-alibi-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-alibi-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-alibi-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-alibi-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-alibi-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-alibi-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-alibi-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-alibi-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-full-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-full-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-full-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-full-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-full-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-full-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-full-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-full-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-full-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-full-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-linear-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-linear-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-linear-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-linear-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-linear-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-linear-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-linear-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-linear-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-linear-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-linear-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-full-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-full-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-full-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-full-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-full-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-full-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-full-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-full-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-full-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-full-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-window-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-window-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-window-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-window-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-window-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-window-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-window-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-window-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-window-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-log-window-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-ntk-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-ntk-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-ntk-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-ntk-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-ntk-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-ntk-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-ntk-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-ntk-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-ntk-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-ntk-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-window-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-window-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-window-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-window-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-window-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-window-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-window-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-window-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-window-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "character-tuning-rope-window-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "needle-sanity-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "needle-sanity-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "needle-sanity-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "needle-sanity-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "needle-sanity-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "needle-sanity-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "needle-sanity-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "needle-sanity-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "needle-sanity-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "needle-sanity-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-abs-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-abs-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-abs-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-abs-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-abs-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-abs-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-abs-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-abs-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-abs-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-abs-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-alibi-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-alibi-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-alibi-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-alibi-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-alibi-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-alibi-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-alibi-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-alibi-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-alibi-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-alibi-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6973P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-full-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-full-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-full-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-full-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-full-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-full-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-full-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-full-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-full-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-full-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-linear-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-linear-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-linear-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-linear-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-linear-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-linear-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-linear-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-linear-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-linear-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-linear-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-full-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-full-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-full-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-full-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-full-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-full-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-full-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-full-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-full-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-full-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-window-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-window-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-window-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-window-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-window-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-window-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-window-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-window-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-window-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-log-window-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-ntk-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6973P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-ntk-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-ntk-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-ntk-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-ntk-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-ntk-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-ntk-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-ntk-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-ntk-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-ntk-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-window-42": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-window-43": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-window-44": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-window-45": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-window-46": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-window-47": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-window-48": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-window-49": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-window-50": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-report-rope-window-51": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-abs-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-abs-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-abs-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-abs-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-abs-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-abs-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-abs-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-abs-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-abs-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-abs-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-alibi-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-alibi-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-alibi-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-alibi-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-alibi-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-alibi-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-alibi-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-alibi-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-alibi-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-alibi-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-full-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-full-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-full-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-full-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-full-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-full-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-full-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-full-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-full-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-full-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-linear-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-linear-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-linear-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-linear-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-linear-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-linear-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-linear-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-linear-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-linear-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-linear-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-full-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-full-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-full-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-full-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-full-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-full-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-full-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-full-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-full-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-full-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-window-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-window-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-window-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-window-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-window-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-window-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-window-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-window-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-window-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-log-window-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-ntk-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-ntk-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-ntk-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-ntk-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-ntk-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-ntk-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-ntk-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-ntk-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-ntk-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-ntk-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-window-100": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-window-101": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-window-102": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-window-103": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-window-104": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-window-105": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "Intel(R) Xeon(R) 6975P-C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-window-106": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-window-107": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 7763 64-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-window-108": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V74 80-Core Processor",
+    "Thread(s) per core": "2"
+  },
+  "successor-tuning-rope-window-109": {
+    "Architecture": "x86_64",
+    "CPU(s)": "4",
+    "Core(s) per socket": "2",
+    "Model name": "AMD EPYC 9V45 96-Core Processor",
+    "Thread(s) per core": "2"
+  }
+}

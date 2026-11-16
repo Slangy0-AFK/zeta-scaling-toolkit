@@ -140,9 +140,14 @@ included zero. These results apply to the measured model and dataset only.
   still use quadratic memory when constructed for a full sequence. None of
   these mechanisms provide unbounded recall. `forward_streaming` bounds
   per-chunk forward work, not total autograd memory: saved activations grow
-  with query length. For ALiBi, its default assumes the last broadcast batch
+  with query length. Some CPU inputs process up to 16 chunks at once. For
+  ALiBi, its default assumes the last broadcast batch
   dimension is heads when there are at least two batch dimensions; set
   `head_axis` explicitly for other layouts, e.g. `head_axis=0` for `(H, Q, D)`.
+  The matched-context attention timings and perplexity measurements are in
+  [benchmarks/RESULTS.md](./benchmarks/RESULTS.md#windowed-attention-versus-full-causal-attention).
+  The context-use experiments and their negative result are summarized in
+  [docs/REPORT.md](./docs/REPORT.md).
 - RoPE angles are computed in float64 from int64 positions before casting back
   to the input type. Large positions should not be converted directly to
   float16 or bfloat16; the precision behavior is tested in
