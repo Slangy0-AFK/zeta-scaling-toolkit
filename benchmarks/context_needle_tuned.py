@@ -30,7 +30,13 @@ def sanity_passed(records: list[dict[str, Any]]) -> bool:
         record["variant"] != "rope-full"
         or record["train_length"] != 256
         or record["steps"] != 3000
+        or record.get("batch_size") != 16
+        or type(record.get("eval_queries")) is not int
+        or record["eval_queries"] != record["total"]
+        or type(record["total"]) is not int
         or record["total"] < 200
+        or type(record.get("correct")) is not int
+        or not 0 <= record["correct"] <= record["total"]
         for record in records
     ):
         raise ValueError("retrieval sanity records do not match the specified gate")

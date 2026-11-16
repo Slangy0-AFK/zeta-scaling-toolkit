@@ -78,6 +78,10 @@ queries. The recorded correct counts for seeds 42–51 were 187, 133, 200,
 69, 108, 198, 180, 150, 200, and 191 respectively. The raw records are in
 `context-ability-needle-sanity-hosted.jsonl`.
 
+Each example has only one planted key-value pair and one value token, so a
+model can find the value without matching the query key. Even a passed sanity
+gate would not establish key-dependent associative retrieval.
+
 The hosted jobs used one PyTorch thread, Python 3.14.10, and PyTorch
 2.15.0+cpu. The virtual machines reported four logical CPUs and included AMD
 EPYC 7763, AMD EPYC 9V74, Intel Xeon Platinum 8573C, and Intel Xeon 6975P-C
@@ -126,7 +130,9 @@ held-out accuracy at positions 1024–4095 in a 4096-token sequence. Absolute
 positions cannot run at 4096, so that method is tuned on its 256-token
 accuracy instead. Three-digit successor evaluations use a cyclic repetition
 of the training-range numbers 100–999, and are not held-out-number results.
-Four-digit successor evaluations use the held-out numbers 1000–2999. The
+Four-digit successor evaluations use numbers 1000–2999, held out from model
+training but shared by tuning and reporting; disjoint reporting seeds do not
+make the number ranges independent. The
 reports distinguish digit-only accuracy from accuracy including
 separators.
 

@@ -138,6 +138,8 @@ def test_needle_runner_resumes_only_after_sanity_gate(tmp_path, monkeypatch):
                     "variant": "rope-full",
                     "train_length": 256,
                     "steps": 3000,
+                    "batch_size": 16,
+                    "eval_queries": 200,
                     "correct": 180,
                     "total": 200,
                 }

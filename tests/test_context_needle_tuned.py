@@ -14,6 +14,8 @@ def test_needle_sanity_gate_requires_ten_seeds_and_eight_learned_models():
             "variant": "rope-full",
             "train_length": 256,
             "steps": 3000,
+            "batch_size": 16,
+            "eval_queries": 200,
             "correct": 180 if seed < 50 else 179,
             "total": 200,
         }
@@ -25,6 +27,35 @@ def test_needle_sanity_gate_requires_ten_seeds_and_eight_learned_models():
     with pytest.raises(ValueError, match="exactly seeds"):
         sanity_passed(records[:-1])
     records[0]["total"] = 199
+    with pytest.raises(ValueError, match="specified gate"):
+        sanity_passed(records)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("batch_size", 32),
+        ("eval_queries", 201),
+        ("correct", -1),
+        ("correct", 201),
+        ("correct", 180.5),
+    ],
+)
+def test_needle_sanity_gate_rejects_incompatible_or_invalid_records(field, value):
+    records = [
+        {
+            "seed": seed,
+            "variant": "rope-full",
+            "train_length": 256,
+            "steps": 3000,
+            "batch_size": 16,
+            "eval_queries": 200,
+            "correct": 180,
+            "total": 200,
+        }
+        for seed in range(42, 52)
+    ]
+    records[0][field] = value
     with pytest.raises(ValueError, match="specified gate"):
         sanity_passed(records)
 

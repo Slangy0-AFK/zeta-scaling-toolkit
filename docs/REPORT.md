@@ -111,11 +111,15 @@ baseline, a 4.78% increase. Full cosine+log perplexity was 11.4062 versus
   Hosted jobs ran on different CPU models; their records are kept separate
   from local measurements.
 - The held-out successor test is synthetic. The additional three-digit stream
-  uses numbers seen during training.
+  uses numbers seen during training. Four-digit tuning and reporting use
+  different seeds but the same number range; the range is held out from
+  training, not from hyperparameter selection.
 - Many unadjusted 95% intervals are reported; the comparisons are exploratory.
 - A 64-token window plus four sinks exposes at most 68 keys, so its
   log-length factor remains one when trained at length 256.
 - The retrieval sanity failure prevents conclusions about long-range retrieval.
-  Character perplexity alone cannot establish long-context use.
+  Each example contains only one value, so even passing the sanity check would
+  not establish that the model matches the query key to a value. Character
+  perplexity alone cannot establish long-context use.
 - No 2,000-step confirmation, larger model, GPU performance, or generalization
   beyond these measured settings is claimed.
