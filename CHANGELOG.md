@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Add versioned mid-trial checkpoint/resume infrastructure:
+  - `TrialCheckpoint`: Atomic serialization of model, optimizer, scheduler, and RNG state (Python, PyTorch CPU, CUDA)
+  - Checkpoint recovery enables resumption from exact next training step without divergence
+  - `save_checkpoint_atomic`: Atomic writes via temporary file + replace to prevent corruption
+  - Format versioning for checkpoint compatibility across package versions
+  - Comprehensive checkpoint/restore and RNG restoration tests
+- Add experiment provenance tracking:
+  - `ExperimentManifest`: Immutable environment and configuration snapshot
+  - Records: Git commit SHA, complete source fingerprints (toolkit + benchmarks), Python/PyTorch versions, OS/CPU/GPU details, precision settings, random seeds, experiment config
+  - Manifest compatibility validation: strict (all fields must match) and non-strict (core requirements only)
+  - Deterministic source digest computation for reproducibility verification
+  - Protocol versioning for manifest schema evolution
+- Extend public API: exports `TrialCheckpoint`, `load_checkpoint`, `save_checkpoint_atomic`, `ExperimentManifest`, `compute_source_digest`, `compute_toolkit_source_digest`
+- Tests: 39 new tests covering checkpoint capture/restore, RNG state restoration, atomic writes, provenance creation, manifest compatibility, and source digests
+- Coverage: 96.73% (632 passed, 1 skipped); 95% coverage gate maintained
+- Quality: ruff lint, ruff format, and strict mypy all passing
 - Set the development version to 0.5.1 for changes after the 0.5.0 release.
 - Add resumable context-use experiments and paired reporting, with a
   training-length sanity gate for planted-needle retrieval.
