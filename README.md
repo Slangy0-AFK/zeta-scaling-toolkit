@@ -1,9 +1,39 @@
 # Zeta Scaling Toolkit
 
-Experimental PyTorch utilities for attention, learning-rate schedules,
-coordinates, and linear initialization. Numerical behavior is covered by the
-linked tests; none of these components is validated as a training improvement
-on large-scale tasks.
+**Experimental research software · Python / PyTorch · MIT License**
+
+A research-oriented collection of PyTorch utilities for attention, positional
+representations, learning-rate schedules, coordinate systems, and weight
+initialization. The repository pairs implementation code with property tests,
+regression tests, and small, reproducible experiments.
+
+The intended audience is researchers and research engineers who want to
+inspect numerical behavior, reproduce measurements, and evaluate components
+against their own models and data.
+
+> **Research status:** exploratory. The documented Stage 1 long-context
+> evaluation is **NO-GO**: the tested cosine-plus-log variants did not meet
+> the held-out successor gate, and the planted-needle sanity gate failed.
+> These experiments do not establish a general long-context improvement or
+> large-scale training benefit. See the [research overview](docs/RESEARCH_OVERVIEW.md)
+> and [full results](benchmarks/RESULTS.md).
+
+**Published release:** [v0.1.0](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/releases/tag/v0.1.0).
+The current default branch declares development version `0.5.1` in package
+metadata; this is not the same artifact as the published `v0.1.0` tag.
+Version alignment must be resolved before another release is published.
+
+## Research and engineering documentation
+
+- [Research overview](docs/RESEARCH_OVERVIEW.md) — scope, evidence, limitations,
+  and reproducibility notes
+- [Experimental report](docs/REPORT.md) — methods, comparisons, and negative
+  results
+- [Benchmark records and commands](benchmarks/RESULTS.md) — raw-record
+  references, seeds, environments, and reproduction commands
+- [Testing guide](TESTING.md) — property, regression, coverage, and CI checks
+- [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) ·
+  [Changelog](CHANGELOG.md)
 
 ## Components
 
