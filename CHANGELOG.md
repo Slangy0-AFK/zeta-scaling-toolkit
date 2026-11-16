@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Set the development version to 0.5.1 for changes after the 0.5.0 release.
+- Add resumable context-use experiments and paired reporting, with a
+  training-length sanity gate for planted-needle retrieval.
+- Add a batched CPU streaming-attention path with output and gradient checks.
+
 ## 0.5.0
 
 - Published `NonCollapsingAttention.forward_streaming` as a public exact

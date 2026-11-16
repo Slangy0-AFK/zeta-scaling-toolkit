@@ -23,11 +23,31 @@ from zeta_scaling_toolkit import (
     rotary_embedding,
 )
 
+if __package__:
+    from .window_speed import full_causal
+else:
+    from window_speed import full_causal
+
 DATA_URL = (
     "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
 )
 DATA_SHA256 = "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed"
-VARIANTS = ("abs", "rope", "rope-log", "alibi", "rope-log-stream")
+WINDOW_VARIANTS = {
+    "rope-window64": (64, "none"),
+    "rope-log-window64": (64, "log"),
+    "rope-window256": (256, "none"),
+    "rope-log-window256": (256, "log"),
+}
+DEFAULT_VARIANTS = ("abs", "rope", "rope-log", "alibi", "rope-log-stream")
+ABILITY_VARIANTS = (
+    "rope-full",
+    "rope-window",
+    "rope-log-full",
+    "rope-log-window",
+    "rope-linear",
+    "rope-ntk",
+)
+VARIANTS = (*DEFAULT_VARIANTS, *WINDOW_VARIANTS, *ABILITY_VARIANTS)
 CHAR_LENGTHS = (64, 128, 256, 512, 1024, 4096)
 NEEDLE_LENGTHS = (64, 128, 256, 512, 1024, 4096, 16384)
 SUCCESSOR_LENGTHS = (64, 128, 256, 512, 1024, 4096)
@@ -86,6 +106,36 @@ def needle_batch(
     return torch.cat((pairs, query), dim=-1), targets
 
 
+def windowed_dot_product(
+    q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, window: int, sinks: int
+) -> torch.Tensor:
+    length = q.shape[-2]
+    sink_end = min(sinks, length)
+    outputs = []
+    for start in range(0, length, 128):
+        end = min(start + 128, length)
+        recent_start = max(sink_end, start - window + 1)
+        recent_end = max(recent_start, end)
+        positions = torch.cat(
+            (
+                torch.arange(sink_end, device=q.device),
+                torch.arange(recent_start, recent_end, device=q.device),
+            )
+        )
+        queries = torch.arange(start, end, device=q.device)
+        keep = (positions[None, :] <= queries[:, None]) & (
+            (positions[None, :] < sinks) | (positions[None, :] >= queries[:, None] - window + 1)
+        )
+        keys = torch.cat((k[..., :sink_end, :], k[..., recent_start:recent_end, :]), dim=-2)
+        values = torch.cat((v[..., :sink_end, :], v[..., recent_start:recent_end, :]), dim=-2)
+        outputs.append(
+            F.scaled_dot_product_attention(
+                q[..., start:end, :], keys, values, attn_mask=keep, dropout_p=0.0
+            )
+        )
+    return torch.cat(outputs, dim=-2)
+
+
 class TransformerBlock(nn.Module):
     def __init__(
         self,
@@ -94,25 +144,39 @@ class TransformerBlock(nn.Module):
         train_length: int,
         tau0: float,
         rope_base: float,
+        window: int = 64,
+        sinks: int = 4,
+        rope_scale: float = 1.0,
     ) -> None:
         super().__init__()
         self.variant = variant
+        self.window = window
+        self.sinks = sinks
+        self.rope_scale = rope_scale
         self.norm_attention = nn.LayerNorm(WIDTH)
         self.qkv = self._linear(WIDTH, WIDTH * 3, corrected_init, "linear")
         self.projection = self._linear(WIDTH, WIDTH, corrected_init, "linear")
         self.norm_feedforward = nn.LayerNorm(WIDTH)
         self.feedforward_input = self._linear(WIDTH, WIDTH * 2, corrected_init, "relu")
         self.feedforward_output = self._linear(WIDTH * 2, WIDTH, corrected_init, "linear")
-        self.attention = (
-            NonCollapsingAttention(
+        self.attention = None
+        if (
+            variant
+            in (
+                "rope-log",
+                "rope-log-stream",
+                "rope-log-full",
+                "rope-log-window",
+            )
+            or variant in WINDOW_VARIANTS
+        ):
+            scaling = WINDOW_VARIANTS[variant][1] if variant in WINDOW_VARIANTS else "log"
+            self.attention = NonCollapsingAttention(
                 WIDTH // HEADS,
                 tau0=tau0,
-                length_scaling="log",
+                length_scaling=scaling,
                 train_length=train_length,
             )
-            if variant in ("rope-log", "rope-log-stream")
-            else None
-        )
         self.rope_base = rope_base
         if corrected_init:
             residual_scale = 1.0 / math.sqrt(2 * LAYERS)
@@ -134,36 +198,79 @@ class TransformerBlock(nn.Module):
             tensor.reshape(batch, sequence, HEADS, head_size).transpose(1, 2)
             for tensor in (q, k, v)
         )
-        if self.variant in ("rope", "rope-log", "rope-log-stream"):
+        if self.variant in ("rope", "rope-log", "rope-log-stream", *ABILITY_VARIANTS) or (
+            self.variant in WINDOW_VARIANTS
+        ):
             positions = torch.arange(sequence, dtype=torch.int64, device=x.device)
-            q = rotary_embedding(q, positions, base=self.rope_base)
-            k = rotary_embedding(k, positions, base=self.rope_base)
+            scaling = {"rope-linear": "linear", "rope-ntk": "ntk"}.get(self.variant)
+            q = rotary_embedding(
+                q, positions, base=self.rope_base, scaling=scaling, scale_factor=self.rope_scale
+            )
+            k = rotary_embedding(
+                k, positions, base=self.rope_base, scaling=scaling, scale_factor=self.rope_scale
+            )
 
-        outputs = []
-        key_positions = torch.arange(sequence, device=x.device)
-        for start in range(0, sequence, 128):
-            end = min(start + 128, sequence)
-            query_positions = torch.arange(start, end, device=x.device)
-            mask = key_positions[None, :] <= query_positions[:, None]
-            if self.variant == "rope-log-stream":
-                mask &= (key_positions[None, :] < 4) | (
-                    key_positions[None, :] >= query_positions[:, None] - 63
-                )
-            query = q[..., start:end, :]
-            if self.attention is not None:
-                output = self.attention(query, k, v, attn_mask=mask)
-            else:
-                logits = (query @ k.transpose(-2, -1)) / math.sqrt(head_size)
-                if self.variant == "alibi":
-                    heads = torch.arange(1, HEADS + 1, device=x.device, dtype=logits.dtype)
-                    slopes = torch.exp2(-8.0 * heads / HEADS)
-                    distances = (query_positions[:, None] - key_positions[None, :]).abs()
-                    logits = logits - slopes[None, :, None, None] * distances
-                output = torch.softmax(logits.masked_fill(~mask, float("-inf")), dim=-1) @ v
-            outputs.append(output)
-        attended = torch.cat(outputs, dim=-2)
+        if self.variant in ("rope-full", "rope-linear", "rope-ntk"):
+            attended = F.scaled_dot_product_attention(q, k, v, is_causal=True, dropout_p=0.0)
+        elif self.variant == "rope-window":
+            attended = windowed_dot_product(q, k, v, self.window, self.sinks)
+        elif self.variant == "rope-log-window":
+            assert self.attention is not None
+            attended = self.attention.forward_streaming(q, k, v, self.window, self.sinks)
+        elif self.variant == "rope-log-full":
+            assert self.attention is not None
+            attended = full_causal(self.attention, q, k, v)
+        elif self.variant in WINDOW_VARIANTS:
+            assert self.attention is not None
+            attended = self.attention.forward_streaming(
+                q, k, v, window=WINDOW_VARIANTS[self.variant][0], sink_tokens=4
+            )
+        elif self.variant == "rope-log" and not self.training:
+            assert self.attention is not None
+            attended = full_causal(self.attention, q, k, v)
+        else:
+            outputs = []
+            key_positions = torch.arange(sequence, device=x.device)
+            for start in range(0, sequence, 128):
+                end = min(start + 128, sequence)
+                query_positions = torch.arange(start, end, device=x.device)
+                mask = key_positions[None, :] <= query_positions[:, None]
+                if self.variant == "rope-log-stream":
+                    mask &= (key_positions[None, :] < 4) | (
+                        key_positions[None, :] >= query_positions[:, None] - 63
+                    )
+                query = q[..., start:end, :]
+                if self.attention is not None:
+                    output = self.attention(query, k, v, attn_mask=mask)
+                else:
+                    logits = (query @ k.transpose(-2, -1)) / math.sqrt(head_size)
+                    if self.variant == "alibi":
+                        heads = torch.arange(1, HEADS + 1, device=x.device, dtype=logits.dtype)
+                        slopes = torch.exp2(-8.0 * heads / HEADS)
+                        distances = (query_positions[:, None] - key_positions[None, :]).abs()
+                        logits = logits - slopes[None, :, None, None] * distances
+                    output = torch.softmax(logits.masked_fill(~mask, float("-inf")), dim=-1) @ v
+                outputs.append(output)
+            attended = torch.cat(outputs, dim=-2)
         attended = attended.transpose(1, 2).contiguous().view(batch, sequence, WIDTH)
         x = x + self.projection(attended)
+        hidden = self.feedforward_input(self.norm_feedforward(x)).relu()
+        return x + self.feedforward_output(hidden)
+
+    def forward_last_rope_full(self, x: torch.Tensor) -> torch.Tensor:
+        batch, sequence, _ = x.shape
+        q, k, v = self.qkv(self.norm_attention(x)).chunk(3, dim=-1)
+        head_size = WIDTH // HEADS
+        q, k, v = (
+            tensor.reshape(batch, sequence, HEADS, head_size).transpose(1, 2)
+            for tensor in (q, k, v)
+        )
+        positions = torch.arange(sequence, dtype=torch.int64, device=x.device)
+        q = rotary_embedding(q[..., -1:, :], positions[-1:], base=self.rope_base)
+        k = rotary_embedding(k, positions, base=self.rope_base)
+        attended = F.scaled_dot_product_attention(q, k, v, dropout_p=0.0)
+        attended = attended.transpose(1, 2).contiguous().view(batch, 1, WIDTH)
+        x = x[:, -1:] + self.projection(attended)
         hidden = self.feedforward_input(self.norm_feedforward(x)).relu()
         return x + self.feedforward_output(hidden)
 
@@ -177,6 +284,9 @@ class SequenceLM(nn.Module):
         train_length: int,
         tau0: float,
         rope_base: float,
+        window: int = 64,
+        sinks: int = 4,
+        rope_scale: float = 1.0,
     ) -> None:
         super().__init__()
         self.variant = variant
@@ -185,7 +295,16 @@ class SequenceLM(nn.Module):
         self.positions = nn.Embedding(train_length, WIDTH) if variant == "abs" else None
         self.blocks = nn.Sequential(
             *(
-                TransformerBlock(variant, corrected_init, train_length, tau0, rope_base)
+                TransformerBlock(
+                    variant,
+                    corrected_init,
+                    train_length,
+                    tau0,
+                    rope_base,
+                    window,
+                    sinks,
+                    rope_scale,
+                )
                 for _ in range(LAYERS)
             )
         )
@@ -204,6 +323,41 @@ class SequenceLM(nn.Module):
             positions = torch.arange(tokens.shape[1], device=tokens.device)
             x = x + self.positions(positions)
         return self.output(self.norm(self.blocks(x)))
+
+    def forward_last(self, tokens: torch.Tensor) -> torch.Tensor:
+        if self.variant != "rope-full":
+            return self(tokens)[:, -1]
+        x = self.tokens(tokens)
+        for block in list(self.blocks)[:-1]:
+            x = block(x)
+        x = self.blocks[-1].forward_last_rope_full(x)
+        return self.output(self.norm(x))[:, 0]
+
+    def set_window_evaluation_variant(self, variant: str) -> None:
+        if self.training or variant not in ("rope-log", *WINDOW_VARIANTS):
+            raise ValueError("window evaluation requires an eval-mode RoPE + log model")
+        for block in self.blocks:
+            if block.attention is None:
+                raise ValueError("window evaluation requires QK-normalized attention")
+            block.variant = variant
+            block.attention.length_scaling = (
+                WINDOW_VARIANTS[variant][1] if variant in WINDOW_VARIANTS else "log"
+            )
+        self.variant = variant
+
+    def set_attention_evaluation(self, mode: str) -> None:
+        if self.training or mode not in ("full", "window"):
+            raise ValueError("attention intervention requires evaluation mode and full or window")
+        for block in self.blocks:
+            if block.variant not in (
+                "rope-full",
+                "rope-window",
+                "rope-log-full",
+                "rope-log-window",
+            ):
+                raise ValueError("attention intervention requires a Stage 1 RoPE model")
+            block.variant = ("rope-log-" if block.attention is not None else "rope-") + mode
+        self.variant = self.blocks[0].variant
 
 
 def sample_text_batch(
@@ -267,9 +421,11 @@ def train_trial(
     return model.eval()
 
 
-def evaluate_char(model: SequenceLM, data: torch.Tensor, seed: int) -> dict[str, Optional[float]]:
+def evaluate_char(
+    model: SequenceLM, data: torch.Tensor, seed: int, lengths: Sequence[int] = CHAR_LENGTHS
+) -> dict[str, Optional[float]]:
     metrics: dict[str, Optional[float]] = {}
-    for context in CHAR_LENGTHS:
+    for context in lengths:
         if model.variant == "abs" and context > model.train_length:
             metrics[str(context)] = None
             continue
@@ -362,6 +518,13 @@ def make_summaries(records: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
             comparisons.append(
                 (
                     "streaming_mask",
+                    (task, "rope-log", init_mode, scheduler, steps, seed, tau0, rope_base),
+                )
+            )
+        if variant in WINDOW_VARIANTS:
+            comparisons.append(
+                (
+                    "window_vs_full_rope_log",
                     (task, "rope-log", init_mode, scheduler, steps, seed, tau0, rope_base),
                 )
             )
@@ -510,7 +673,7 @@ def run_key(record: dict[str, Any]) -> tuple[Any, ...]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--task", choices=("char", "needle", "successor"), default="char")
-    parser.add_argument("--variants", nargs="+", choices=VARIANTS, default=list(VARIANTS))
+    parser.add_argument("--variants", nargs="+", choices=VARIANTS, default=list(DEFAULT_VARIANTS))
     parser.add_argument("--steps", nargs="+", type=positive_int, default=[500, 2000])
     parser.add_argument("--seeds", nargs="+", type=int, default=list(range(42, 52)))
     parser.add_argument(
@@ -532,6 +695,18 @@ def main() -> None:
     )
     parser.add_argument("--eval-samples", type=positive_int, default=16)
     parser.add_argument(
+        "--paired-window-eval",
+        action="store_true",
+        help="train one full RoPE + log model per seed and evaluate each window on those weights",
+    )
+    parser.add_argument(
+        "--char-lengths",
+        nargs="+",
+        type=positive_int,
+        default=list(CHAR_LENGTHS),
+        help="character evaluation contexts; use a fresh output file for a different set",
+    )
+    parser.add_argument(
         "--data-path",
         type=Path,
         default=Path.home() / ".cache" / "zeta-scaling-toolkit" / "tinyshakespeare.txt",
@@ -549,6 +724,12 @@ def main() -> None:
         or args.rope_base <= 1
     ):
         parser.error("tau0 must be positive finite and rope-base must be finite > 1")
+    if args.paired_window_eval and (
+        args.task != "char"
+        or args.sweep
+        or any(variant not in ("rope-log", *WINDOW_VARIANTS) for variant in args.variants)
+    ):
+        parser.error("--paired-window-eval requires char and only RoPE + log/window variants")
     torch.set_num_threads(1)
 
     if args.sweep:
@@ -572,6 +753,16 @@ def main() -> None:
             for line in args.output.read_text(encoding="utf-8").splitlines()
             if line
         ]
+    for record in records:
+        paired = record.get("training_variant") == "rope-log"
+        if paired != args.paired_window_eval:
+            raise ValueError(
+                "cannot mix paired-window and independently trained runs in one output"
+            )
+        if record["task"] == "char" and set(record["metrics"]) != {
+            str(length) for length in args.char_lengths
+        }:
+            raise ValueError("existing character records have different evaluation contexts")
     completed = {run_key(record) for record in records}
 
     text: Optional[str] = None
@@ -603,6 +794,7 @@ def main() -> None:
         "dataset_sha256": digest,
     }
     pending = 0
+    paired_models: dict[tuple[Any, ...], SequenceLM] = {}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("a", encoding="utf-8") as output_file:
         for variant in args.variants:
@@ -625,19 +817,29 @@ def main() -> None:
                                     continue
                                 if args.task == "char":
                                     assert text is not None
-                                    model = train_trial(
-                                        args.task,
-                                        train_data,
-                                        vocabulary_size,
-                                        variant,
-                                        init_mode,
-                                        scheduler,
-                                        steps,
-                                        seed,
-                                        tau0,
-                                        rope_base,
+                                    model_key = (init_mode, scheduler, steps, seed, tau0, rope_base)
+                                    if args.paired_window_eval and model_key in paired_models:
+                                        model = paired_models[model_key]
+                                    else:
+                                        model = train_trial(
+                                            args.task,
+                                            train_data,
+                                            vocabulary_size,
+                                            "rope-log" if args.paired_window_eval else variant,
+                                            init_mode,
+                                            scheduler,
+                                            steps,
+                                            seed,
+                                            tau0,
+                                            rope_base,
+                                        )
+                                        if args.paired_window_eval:
+                                            paired_models[model_key] = model
+                                    if args.paired_window_eval:
+                                        model.set_window_evaluation_variant(variant)
+                                    metrics = evaluate_char(
+                                        model, evaluation_data, seed, args.char_lengths
                                     )
-                                    metrics = evaluate_char(model, evaluation_data, seed)
                                 elif args.task == "needle":
                                     model = train_trial(
                                         args.task,
@@ -678,6 +880,8 @@ def main() -> None:
                                     "metrics": metrics,
                                     "environment": environment,
                                 }
+                                if args.paired_window_eval:
+                                    record["training_variant"] = "rope-log"
                                 output_file.write(json.dumps(record, sort_keys=True) + "\n")
                                 output_file.flush()
                                 records.append(record)
