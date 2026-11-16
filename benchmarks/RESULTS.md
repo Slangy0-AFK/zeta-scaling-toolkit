@@ -150,6 +150,12 @@ position scale factors 4 and 16 for linear and NTK RoPE, and learning rates
 0.0007 and 0.001 for methods without either tunable quantity. Other candidate
 learning rates are 0.001. Linear and NTK scaling are applied at evaluation
 time to models trained with unscaled RoPE.
+The successor runner also offers candidate 2 in new tuning runs via
+`--candidates 0 1 2`: learning rate 0.0015 for methods tuned by learning rate,
+initial temperature 15 for cosine+log, and position scale 8 for linear and NTK
+RoPE. The default remains candidates 0 and 1. The hosted results above used
+only candidates 0 and 1; candidate 2 has not been evaluated and is not
+evidence of an improvement.
 
 The selected candidate indices, with candidates ordered as listed above, are:
 

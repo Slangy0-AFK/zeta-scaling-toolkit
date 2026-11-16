@@ -69,6 +69,34 @@ def test_successor_runner_resumes_completed_candidate(tmp_path, monkeypatch):
     assert len(calls) == 1
 
 
+def test_successor_runner_keeps_original_defaults_and_resumes_with_candidate_two(
+    tmp_path, monkeypatch
+):
+    output = tmp_path / "successor.jsonl"
+    monkeypatch.setattr(context_successor, "train_successor", lambda *args: None)
+    monkeypatch.setattr(context_successor, "evaluate_successor", lambda *args, **kwargs: {})
+    args = [
+        "context_successor",
+        "--tuning",
+        "--steps",
+        "1",
+        "--methods",
+        "alibi",
+        "--seeds",
+        "100",
+        "--output",
+        str(output),
+    ]
+    monkeypatch.setattr(sys, "argv", args)
+    context_successor.main()
+    assert [json.loads(line)["candidate"] for line in output.read_text().splitlines()] == [0, 1]
+
+    monkeypatch.setattr(sys, "argv", [*args, "--candidates", "0", "1", "2"])
+    context_successor.main()
+    context_successor.main()
+    assert [json.loads(line)["candidate"] for line in output.read_text().splitlines()] == [0, 1, 2]
+
+
 def test_character_tuning_runner_resumes_completed_candidate(tmp_path, monkeypatch):
     output = tmp_path / "char-tuning.jsonl"
     monkeypatch.setattr(context_char_tuned, "dataset_info", lambda path: ("abc" * 1000, "test"))

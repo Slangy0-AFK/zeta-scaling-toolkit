@@ -52,6 +52,21 @@ def candidate(method: str, index: int) -> dict[str, float]:
     }
 
 
+def successor_candidate(method: str, index: int) -> dict[str, float]:
+    if index in (0, 1):
+        return candidate(method, index)
+    if method not in METHODS or index != 2:
+        raise ValueError("unknown method or candidate")
+    settings = candidate(method, 0)
+    if method in ("abs", "rope-full", "alibi", "rope-window"):
+        settings["learning_rate"] = 0.0015
+    elif method in ("rope-linear", "rope-ntk"):
+        settings["rope_scale"] = 8.0
+    else:
+        settings["tau0"] = 15.0
+    return settings
+
+
 def train_successor(
     method: str, seed: int, steps: int, batch_size: int, settings: dict[str, float]
 ) -> SequenceLM:
@@ -148,8 +163,17 @@ def select_candidates(
 ) -> dict[str, int]:
     selected = {}
     for method in methods:
-        means = []
-        for index in (0, 1):
+        indices = sorted(
+            {
+                record["candidate"]
+                for record in records
+                if record["method"] == method and record["steps"] == steps
+            }
+        )
+        if not {0, 1}.issubset(indices):
+            raise ValueError(f"missing original tuning candidates for {method}")
+        means: dict[int, float] = {}
+        for index in indices:
             trials = [
                 record
                 for record in records
@@ -168,8 +192,8 @@ def select_candidates(
                     sum(score["correct"] for score in scores)
                     / sum(score["total"] for score in scores)
                 )
-            means.append(sum(accuracies) / len(accuracies))
-        selected[method] = max((0, 1), key=lambda index: means[index])
+            means[index] = sum(accuracies) / len(accuracies)
+        selected[method] = max(indices, key=lambda index: means[index])
     return selected
 
 
@@ -181,7 +205,7 @@ def main() -> None:
     parser.add_argument("--lengths", nargs="+", type=positive_int, default=list(LENGTHS))
     parser.add_argument("--methods", nargs="+", choices=METHODS, default=list(METHODS))
     parser.add_argument("--seeds", nargs="+", type=int, default=list(range(100, 110)))
-    parser.add_argument("--candidates", nargs="+", type=int, choices=(0, 1), default=[0, 1])
+    parser.add_argument("--candidates", nargs="+", type=int, choices=(0, 1, 2), default=[0, 1])
     parser.add_argument("--tuning-records", type=Path)
     parser.add_argument("--tuning", action="store_true")
     parser.add_argument("--max-runs", type=positive_int)
@@ -212,7 +236,7 @@ def main() -> None:
             or record["steps"] != args.steps
             or record["batch_size"] != args.batch_size
             or record["samples"] != args.samples
-            or record["settings"] != candidate(record["method"], record["candidate"])
+            or record["settings"] != successor_candidate(record["method"], record["candidate"])
             for record in tuning_records
         ):
             raise ValueError("tuning records do not match the reporting configuration")
@@ -242,7 +266,7 @@ def main() -> None:
                 for seed in args.seeds:
                     if (method, index, seed) in completed:
                         continue
-                    settings = candidate(method, index)
+                    settings = successor_candidate(method, index)
                     model = reuse_rope_trial(
                         cache,
                         method,
