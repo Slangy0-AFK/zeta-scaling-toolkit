@@ -123,3 +123,21 @@ baseline, a 4.78% increase. Full cosine+log perplexity was 11.4062 versus
   perplexity alone cannot establish long-context use.
 - No 2,000-step confirmation, larger model, GPU performance, or generalization
   beyond these measured settings is claimed.
+
+## Successor measurement follow-up
+
+The historical held-out successor test simultaneously changes digit length,
+copy distance and delimiter period, and its low accuracy starts within the
+training context. The same-window copy-five and role-oracle copy-and-increment
+rules reach 0.7779 and 0.9779 accuracy respectively, compared with 0.5220 for
+ALiBi on the local tuning seeds. The three-digit cyclic result repeats seen
+values. These observations do not establish long-range context use.
+
+An opt-in diagnostic now records token-role and carry counts and reference
+rules; see the [detailed results](../benchmarks/RESULTS.md#successor-measurement-diagnosis-incomplete-follow-up)
+for definitions, caveats, exact commands and tuning-seed comparisons.
+The in-distribution gate and separated extrapolation runner are implemented,
+but equal-budget tuning and independent reporting runs remain incomplete.
+The sweep was paused after 43 of 480 sanity trials; the detailed report links
+the resumable records and model checkpoints. The original NO-GO stands; no
+new decision-rule pass is claimed.

@@ -71,6 +71,48 @@ def test_successor_runner_resumes_completed_candidate(tmp_path, monkeypatch):
     assert len(calls) == 1
 
 
+def test_successor_runner_diagnostics_are_saved_printed_and_not_mixed(
+    tmp_path, monkeypatch, capsys
+):
+    output = tmp_path / "successor.jsonl"
+    monkeypatch.setattr(context_successor, "train_successor", lambda *args: None)
+    calls = []
+
+    def evaluate(*args, **kwargs):
+        calls.append(kwargs)
+        return {"diagnostics": {"stream": {"256": {"copy_5": {"correct": 1, "total": 2}}}}}
+
+    monkeypatch.setattr(context_successor, "evaluate_successor", evaluate)
+    args = [
+        "context_successor",
+        "--steps",
+        "1",
+        "--methods",
+        "alibi",
+        "--seeds",
+        "100",
+        "--candidates",
+        "0",
+        "--lengths",
+        "256",
+        "--diagnostics",
+        "--max-runs",
+        "1",
+        "--output",
+        str(output),
+    ]
+    monkeypatch.setattr(sys, "argv", args)
+    context_successor.main()
+    record = json.loads(output.read_text())
+    assert record["diagnostics"] is True
+    assert record["metrics"]["diagnostics"]["stream"]["256"]["copy_5"]["correct"] == 1
+    assert calls == [{"held_out_only": False, "diagnostics": True}]
+    assert '"diagnostics"' in capsys.readouterr().out
+    monkeypatch.setattr(sys, "argv", [arg for arg in args if arg != "--diagnostics"])
+    with pytest.raises(ValueError, match="different experiment configuration"):
+        context_successor.main()
+
+
 def test_successor_runner_keeps_original_defaults_and_resumes_with_candidate_two(
     tmp_path, monkeypatch
 ):

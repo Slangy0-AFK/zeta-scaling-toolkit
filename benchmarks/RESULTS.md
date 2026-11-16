@@ -1277,3 +1277,181 @@ original streaming implementation were at most `3.58e-6` in fp32; a separate
 `1.5e-8` for a mean-squared-output loss. At both long lengths, the maximum
 Q/K/V/temperature gradient difference was below `2.5e-10` for a random
 weighted-mean output.
+
+## Successor measurement diagnosis (incomplete follow-up)
+
+The original Stage 1 decision above remains **NO-GO**. The follow-up runner now
+implements an in-distribution sanity gate and separate fixed-digit
+context-length and fixed-context digit-length tests, but their complete
+independent reporting-seed results are not yet available. Consequently there
+is no new valid extrapolation comparison or evidence that a variant passes the
+new decision rule.
+
+The following re-analysis reads the existing local 500-step tuning records,
+not independent reporting records. Seeds are 100–109; each seed used eight
+windows of length 4096 on the stream `1000|1001|...|2999|` (`|` is token 10).
+Training used `0|1|...|999|` at context 256. The original measurements used
+Python 3.14.2, PyTorch 2.15.0+cu132, Linux 6.8.0-1070-azure, CPU, one thread.
+
+| Method | 0–63 | 64–255 | 256–1023 | 1024–4095 |
+|---|---:|---:|---:|---:|
+| RoPE+log window, initial temperature 2 | 0.4018 | 0.4730 | 0.4891 | 0.4799 |
+| RoPE+log window, initial temperature 5 | 0.3580 | 0.4203 | 0.4305 | 0.4358 |
+| ALiBi | 0.4797 | 0.5022 | 0.5244 | 0.5220 |
+
+At positions 1024–4095, temperature 2 minus temperature 5 is +0.0441
+[+0.0239, +0.0641], 9/10 seeds; temperature 2 minus ALiBi is −0.0421
+[−0.0576, −0.0287], 0/10 seeds. Intervals use 10,000 paired seed-bootstrap
+resamples, with the repository's `bootstrap_interval` and seed 0. The extra
+temperature candidate was not matched by extra ALiBi candidates. None of
+these tuning comparisons is a valid new reporting-seed pass.
+
+Positions 0–63 are within the training context, yet the held-out error is
+already large. The training numbers have up to three digits plus a delimiter;
+the held-out numbers have four digits plus a delimiter. The task therefore
+changes digit length, copy distance and delimiter period. A 64-token window
+contains the local information used by the following rules, so the existing
+test does not establish a need for long-range information.
+
+| Rule, same windows at positions 1024–4095 | Correct / total | Accuracy |
+|---|---:|---:|
+| Majority token chosen separately from each scored window (oracle) | 56,891 / 245,760 | 0.2315 |
+| Copy the token five positions back | 191,170 / 245,760 | 0.7779 |
+| Copy five back, increment at the last digit (role oracle) | 240,319 / 245,760 | 0.9779 |
+
+The majority oracle uses the scored targets to pick each window's most common
+token and is not a causal predictor; the last-digit rule uses ground-truth
+digit-role metadata. These are reference rules, not mathematical upper bounds.
+For these exact windows the pooled global majority is the delimiter, with
+accuracy 0.2000; neither aggregation reproduces 0.236. The cyclic three-digit
+result above repeats values seen during training and remains a memorisation
+lead, not evidence of unseen-value extrapolation.
+
+The new optional `--diagnostics` flag on `context_successor.py` adds per-bucket
+counts for digit roles, delimiters, carry/non-carry and the three reference
+rules to the JSONL records and prints them. Carry is a changed non-final digit
+relative to the preceding same-width consecutive number; cases without such
+a predecessor are excluded. The first five target positions in each window
+are excluded from all three rule comparisons. Role-oracle metadata is derived
+from the full stream and must not be interpreted as a model input. The flag
+requires a separate output file; it does not add a sanity gate or change the
+legacy candidate selection.
+
+### Separated follow-up protocol
+
+The new runner uses two learning-rate candidates, 0.0007 and 0.001, for each
+of NoPE, full RoPE, linearly interpolated RoPE, NTK RoPE, ALiBi, windowed
+RoPE, and full/windowed RoPE+log. Other settings are fixed across candidates:
+initial temperature 10, RoPE scaling factor 4, window 64, four sinks, two
+layers, width 32, four heads, batch size 16, context 256, and AdamW with the
+existing asymptotic scheduler. The same candidate budget is spent on every
+method before eligibility is determined. The interpolation and NTK settings
+are applied at evaluation after training ordinary RoPE.
+
+The `context` axis trains on `100|...|699|` and separately evaluates that
+seen range and the unseen range `700|...|999|` at lengths 256, 512, 1024 and
+4096. Both ranges contain three-digit numbers and use the same local copy
+distance. The `digit_4` axis trains on `0|...|999|` and evaluates
+`1000|...|2999|`; `digit_5` trains on `0|...|9999|` and evaluates
+`10000|...|29999|`. Both digit tests use context 256.
+
+For in-distribution evaluation, starts are disjoint from training starts:
+`(offset ^ (offset >> 3) ^ (offset >> 6)) % 5 == 0` is held out. The
+underlying training numbers and overlapping subsequences are not held out.
+Shorter streams are repeated only when needed to supply a longer window;
+long-context windows can therefore include range-wrap transitions and repeated
+numbers. The test probes stability at longer positions, not whether a model
+uses distant information. Per-seed scores retain role and rule counts, with
+the oracle caveats above.
+
+Each method/candidate must achieve at least 0.95 in-distribution accuracy on
+eight of the ten tuning seeds before extrapolation tuning can rank it. The
+corresponding independent reporting gate is checked again on seeds 42–51;
+methods failing it are labelled `undertrained` and not compared. Candidate
+selection and baseline selection use tuning seeds only. The 2000-step phase
+requires a passing 500-step toolkit and baseline, and reuses the candidates
+frozen at 500 steps. The decision requires both budgets, a positive paired
+bootstrap lower bound against the strongest equally tuned baseline, and an
+absolute relative training-length perplexity difference no greater than 1%.
+All bootstrap intervals use 10,000 paired seed resamples.
+
+The sanity sweep was paused after 43 of 480 trials. Incomplete records are not
+a completed gate. Environment: AMD EPYC 7763, two visible CPU cores,
+Linux 6.8.0-1070-azure, Python 3.14.2, PyTorch 2.15.0+cu132, CPU, one
+PyTorch thread, no CUDA. The work directory stores resumable JSONL and
+checkpoints and binds them to a source-code hash.
+
+For the context axis, these complete tuning-seed candidate groups all failed
+the in-distribution gate and are **undertrained**. The confidence intervals
+are 10,000-resample seed-bootstrap intervals for each mean, not paired
+comparisons. The `rope-linear` candidate 0 has only three seeds and is not
+included in the table.
+
+| Method | Candidate | In-distribution accuracy [95% CI] | Seeds ≥ 0.95 |
+|---|---:|---:|---:|
+| NoPE | 0 | 0.6058 [0.5942, 0.6167] | 0/10 |
+| NoPE | 1 | 0.6410 [0.6359, 0.6459] | 0/10 |
+| RoPE | 0 | 0.8119 [0.7732, 0.8476] | 0/10 |
+| RoPE | 1 | 0.9441 [0.9258, 0.9603] | 5/10 |
+
+The [paused checkpoint](./context-extrapolation-checkpoint-20261116.tar.gz)
+contains the 43 JSONL records and their matching model weights. SHA-256:
+`a0ff702f9857a24596c409abe6dc76a1639dcec3fdd706a154c4d0084db838a1`.
+To resume in the same software environment from the repository root:
+
+```bash
+mkdir -p benchmarks/context-extrapolation-resume
+tar -xzf benchmarks/context-extrapolation-checkpoint-20261116.tar.gz -C benchmarks/context-extrapolation-resume
+python -u benchmarks/context_extrapolation.py --phase sanity --axis context --steps 500 --batch-size 16 --samples 8 --work-dir benchmarks/context-extrapolation-resume
+python -u benchmarks/context_extrapolation.py --phase sanity --axis digit_4 --steps 500 --batch-size 16 --samples 8 --work-dir benchmarks/context-extrapolation-resume
+python -u benchmarks/context_extrapolation.py --phase sanity --axis digit_5 --steps 500 --batch-size 16 --samples 8 --work-dir benchmarks/context-extrapolation-resume
+```
+
+The original commands used the session work directory below:
+
+The follow-up code passed `ruff check .`, `ruff format --check .`,
+`mypy --strict zeta_scaling_toolkit`, and
+`pytest -q -o addopts= --cov=zeta_scaling_toolkit --cov-fail-under=95`
+(591 passed, one skipped, 99.17% package coverage). In a separate worktree,
+`python tools/mutation_check.py` killed 37 of 37 mutants.
+
+```bash
+python -u benchmarks/context_extrapolation.py --phase sanity --axis context --steps 500 --batch-size 16 --samples 8 --work-dir /home/codespace/.copilot/session-state/2815fe1d-1d49-4d1f-904f-aecbf511499d/files/context-extrapolation
+python -u benchmarks/context_extrapolation.py --phase sanity --axis digit_4 --steps 500 --batch-size 16 --samples 8 --work-dir /home/codespace/.copilot/session-state/2815fe1d-1d49-4d1f-904f-aecbf511499d/files/context-extrapolation
+python -u benchmarks/context_extrapolation.py --phase sanity --axis digit_5 --steps 500 --batch-size 16 --samples 8 --work-dir /home/codespace/.copilot/session-state/2815fe1d-1d49-4d1f-904f-aecbf511499d/files/context-extrapolation
+```
+
+The exact re-analysis command, run from the repository root, was:
+
+```bash
+python - <<'PY'
+import json, statistics
+import torch
+from benchmarks.context_successor import successor_metadata, successor_diagnostics
+from benchmarks.length_generalization import encode_successors, sample_text_batch, bootstrap_interval
+paths = ['benchmarks/context-successor-low-temperature-tuning500.jsonl', 'benchmarks/context-successor-temperature-control-tuning500.jsonl', 'benchmarks/context-successor-alibi-tuning500.jsonl']
+records = [[json.loads(line) for line in open(path, encoding='utf-8')] for path in paths]
+values = []
+for path, rows in zip(paths, records):
+    buckets = ('0_63', '64_255', '256_1023', '1024_4095')
+    print(path, [round(statistics.mean(r['metrics']['4_digit_held_out']['4096'][b]['correct'] / r['metrics']['4_digit_held_out']['4096'][b]['total'] for r in rows), 6) for b in buckets])
+    values.append({r['seed']: r['metrics']['4_digit_held_out']['4096']['1024_4095']['correct'] / r['metrics']['4_digit_held_out']['4096']['1024_4095']['total'] for r in rows})
+for reference in values[1:]:
+    differences = [values[0][seed] - reference[seed] for seed in range(100, 110)]
+    print('paired difference, CI, wins:', statistics.mean(differences), bootstrap_interval(differences), sum(d > 0 for d in differences))
+data = encode_successors(1000, 3000); metadata = successor_metadata(data); totals = {}
+pooled_counts = torch.zeros(11, dtype=torch.long)
+for seed in range(100, 110):
+    generator = torch.Generator().manual_seed(seed + 4096 + 110000)
+    for _ in range(4):
+        mirror = torch.Generator().set_state(generator.get_state())
+        starts = torch.randint(0, len(data) - 4097, (2,), generator=mirror)
+        _, targets = sample_text_batch(data, 4096, 2, generator)
+        pooled_counts += torch.bincount(targets[:, 1024:4096].flatten(), minlength=11)
+        groups = successor_diagnostics(targets, targets, starts, metadata)['1024_4095']
+        for name in ('majority_per_window_oracle', 'copy_5', 'copy_5_increment_last_oracle'):
+            totals[name] = [totals.get(name, [0, 0])[i] + groups[name][key] for i, key in enumerate(('correct', 'total'))]
+print('same-window rule counts:', totals)
+print('pooled majority token and accuracy:', int(pooled_counts.argmax()), int(pooled_counts.max()) / int(pooled_counts.sum()))
+PY
+```

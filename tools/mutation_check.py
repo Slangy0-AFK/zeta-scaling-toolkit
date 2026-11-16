@@ -113,6 +113,56 @@ MUTANTS = (
         "digits = selected == 10",
     ),
     (
+        "benchmarks/context_successor.py",
+        "roles[start:position] = torch.arange(1, len(number) + 1)",
+        "roles[start:position] = torch.arange(len(number), 0, -1)",
+    ),
+    (
+        "benchmarks/context_successor.py",
+        "index < len(number) - 1 and digit != old_digit",
+        "index < len(number) - 1 and digit == old_digit",
+    ),
+    (
+        "benchmarks/context_successor.py",
+        "targets[:, rule_start - 5 : rule_end - 5]",
+        "targets[:, rule_start - 4 : rule_end - 4]",
+    ),
+    (
+        "benchmarks/context_successor.py",
+        "last_digits[:, rule_start:rule_end], (copied + 1) % 10, copied",
+        "last_digits[:, rule_start:rule_end], copied, copied",
+    ),
+    (
+        "benchmarks/context_successor.py",
+        "train = encode_successors(100, 700)",
+        "train = encode_successors(100, 701)",
+    ),
+    (
+        "benchmarks/context_successor.py",
+        "offsets = offsets[~held_out]",
+        "offsets = offsets[held_out]",
+    ),
+    (
+        "benchmarks/context_successor.py",
+        "sum(value >= 0.95 for value in accuracies) >= 8",
+        "sum(value >= 0.95 for value in accuracies) >= 7",
+    ),
+    (
+        "benchmarks/context_extrapolation.py",
+        "TUNING_SEEDS = range(100, 110)",
+        "TUNING_SEEDS = range(42, 52)",
+    ),
+    (
+        "benchmarks/context_extrapolation.py",
+        "method: max(\n            candidates,",
+        "method: min(\n            candidates,",
+    ),
+    (
+        "benchmarks/context_extrapolation.py",
+        'accuracy["ci_low"] > 0 and abs(entry["relative_training_perplexity"]) <= 0.01',
+        'accuracy["ci_high"] > 0 and abs(entry["relative_training_perplexity"]) <= 0.01',
+    ),
+    (
         "benchmarks/context_needle_tuned.py",
         'return sum(record["correct"] / record["total"] >= 0.9 for record in records) >= 8',
         'return sum(record["correct"] / record["total"] >= 0.9 for record in records) >= 7',
