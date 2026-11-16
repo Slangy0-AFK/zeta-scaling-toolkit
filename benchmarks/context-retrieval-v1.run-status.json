@@ -1,0 +1,59 @@
+{
+  "phase": "sanity",
+  "status": "incomplete",
+  "gate_status": "not_evaluated",
+  "reason": "Stopped after observed CPU runtime made completion impractical; no evaluation or result rows were written.",
+  "configuration": {
+    "training_context_length": 256,
+    "evaluation_context_length": 256,
+    "steps_per_fit": 3000,
+    "batch_size": 16,
+    "evaluation_examples_per_seed": 300,
+    "evaluation_batch_size": 8,
+    "seeds": [
+      200,
+      201,
+      202,
+      203,
+      204,
+      205,
+      206,
+      207,
+      208,
+      209
+    ],
+    "methods": [
+      "rope-log-full",
+      "rope-full",
+      "alibi",
+      "rope-log-window"
+    ],
+    "candidates": [
+      0,
+      1
+    ],
+    "eligibility_accuracy": 0.95,
+    "required_seeds": 8
+  },
+  "observed_progress": {
+    "runtime_at_stop": "approximately 14 minutes",
+    "cpu_cores_available": 2,
+    "cpu_utilization_sample_percent": 96.9,
+    "resident_memory_sample_bytes": 812265472,
+    "completed_fit_checkpoints": [
+      {
+        "method": "rope-log-full",
+        "candidate": 0,
+        "seed": 200,
+        "path": "benchmarks/context-retrieval-v1-checkpoints/sanity-rope-log-full-0-200.pt",
+        "sha256": "afc4599b37f18736df17cfeefdfc138b60ad3194de21b7e9abb618f6113b2d48"
+      }
+    ],
+    "complete_result_records": 0,
+    "evaluation_completed": false,
+    "registered_examples": {
+      "train": 4096
+    }
+  },
+  "interpretation": "The checkpoint is an incomplete run artifact, not a scored trial or research result. No learnability-gate decision can be made."
+}

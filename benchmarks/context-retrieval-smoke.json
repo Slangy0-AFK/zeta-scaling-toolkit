@@ -1,0 +1,87 @@
+{
+  "context_length": 256,
+  "example_fingerprint": "c07035a383d9b9fe0f8f66fd167ff54e24c8f744c2fc746dac3682fe9fa924d0",
+  "examples": 3,
+  "methods_forwarded": {
+    "alibi": {
+      "ablated_denominator": 3,
+      "evaluation_denominator": 3,
+      "finite": true,
+      "output_shape": [
+        1,
+        162
+      ]
+    },
+    "rope-full": {
+      "ablated_denominator": 3,
+      "evaluation_denominator": 3,
+      "finite": true,
+      "output_shape": [
+        1,
+        162
+      ]
+    },
+    "rope-log-full": {
+      "ablated_denominator": 3,
+      "evaluation_denominator": 3,
+      "finite": true,
+      "output_shape": [
+        1,
+        162
+      ]
+    },
+    "rope-log-window": {
+      "ablated_denominator": 3,
+      "evaluation_denominator": 3,
+      "finite": true,
+      "output_shape": [
+        1,
+        162
+      ]
+    }
+  },
+  "oracle_accuracy": 1.0,
+  "pair_count": 16,
+  "protocol_version": 1,
+  "random_control": {
+    "by_distractor_count": {
+      "15": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "total": 3
+      }
+    },
+    "by_target_distance": {
+      "64_255": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "total": 3
+      }
+    },
+    "by_target_position": {
+      "early": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "total": 1
+      },
+      "late": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "total": 1
+      },
+      "middle": {
+        "accuracy": 0.0,
+        "correct": 0,
+        "total": 1
+      }
+    },
+    "overall": {
+      "accuracy": 0.0,
+      "correct": 0,
+      "total": 3
+    }
+  },
+  "research_result": false,
+  "smoke_only": true,
+  "training_performed": false
+}
