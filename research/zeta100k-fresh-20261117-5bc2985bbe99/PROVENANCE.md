@@ -70,6 +70,9 @@ The runtime container also used PostgreSQL image
 - Live telemetry: 3 checkpoint summaries delivered to MathMesh, 0 failures,
   0 drops. Stability recommendations are appended per checkpoint with
   `applied_to_zeta=false`.
+- Deterministic RAG released the external checkpoint-6,144 audit reference;
+  its request and response are stored in
+  `qualification/post-resize-20261117/rag-checkpoint-6144.json`.
 
 ## Audit and preservation artifacts
 

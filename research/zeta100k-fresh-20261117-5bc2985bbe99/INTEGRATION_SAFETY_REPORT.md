@@ -17,6 +17,7 @@ pinned provenance.
 | Checkpoint save/load recovery | Passed on the first 8 stream tokens; resumed logits were bit-identical. |
 | Live asynchronous MathMesh telemetry | Delivered the 2,048, 4,096, and 6,144 progress summaries; no failures or drops observed. |
 | Stability checkpoint advisories | Recorded at 2,048, 4,096, and 6,144; all are advisory-only. |
+| Deterministic RAG checkpoint audit | Released the external 6,144-token provenance reference; no model data was sent. |
 | Support-service failure isolation | Injected telemetry sender failures did not prevent finite model logits/cache checks; coordinator failure-record tests passed. |
 | Full-run completion and final recovery | Pending while the run continues. |
 

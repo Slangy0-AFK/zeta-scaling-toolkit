@@ -1,0 +1,12 @@
+{
+  "request": {
+    "agent_id": "zeta100k-fresh-20261117-5bc2985bbe99",
+    "request_id": "zeta100k-fresh-20261117-5bc2985bbe99:checkpoint-6144",
+    "query": "Record active Zeta run zeta100k-fresh-20261117-5bc2985bbe99 at checkpoint 6144, stream sha256 c9c43fb35050bc31f8d60e2a9bd600ae960f96d7a7ac1618b41505b2955da322; this is pipeline provenance only, not a retrieval-accuracy claim."
+  },
+  "result": {
+    "released": true,
+    "answer": "This deterministic source records Zeta experiment run metadata and lifecycle audit details. Request: Record active Zeta run zeta100k-fresh-20261117-5bc2985bbe99 at checkpoint 6144, stream sha256 c9c43fb35050bc31f8d60e2a9bd600ae960f96d7a7ac1618b41505b2955da322; this is pipeline provenance only, not a retrieval-accuracy claim.",
+    "reason": "rag"
+  }
+}

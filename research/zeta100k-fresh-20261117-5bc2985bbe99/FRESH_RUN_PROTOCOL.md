@@ -61,6 +61,9 @@ the expected stream SHA-256 and passed its correctness gates.
   behavior, and parity checks passed.
 - All three support systems passed run-level admission/advisory/audit calls.
   MathMesh `/api/health` and RAG `/ready` were healthy at launch.
+- Deterministic RAG also released the external audit reference for checkpoint
+  6,144; the request and response are in
+  `qualification/post-resize-20261117/rag-checkpoint-6144.json`.
 - Checkpoint save/load recovery was verified on the first 8 real stream tokens:
   resumed logits were bit-identical to uninterrupted logits.
 - Focused telemetry, service-failure, and Stability watcher tests passed.
