@@ -1,0 +1,21 @@
+STATUS: NOT GENERATED — dependency resolution and installation were blocked.
+
+No package lock is claimed by this file. A complete, hash-verified lock could
+not be resolved for the experiment environment:
+
+- Host Python: 3.12.3; isolated venv created at
+  /home/runner/.cache/zeta-100k-venv.
+- Candidate direct versions reviewed: torch 2.15.0 CPU build and Transformers
+  5.23.0. Advisory lookup reported no vulnerabilities for torch 2.15.0 and
+  Transformers 5.23.0; this is not a full transitive dependency audit.
+- PyTorch CPU wheel resolution failed because the redirected wheel host
+  download-r2.pytorch.org could not be resolved.
+- Transformers 5.23.0 wheel was downloaded to /tmp for source inspection only;
+  it was not installed.
+- A PyPI resolver attempt began selecting CUDA libraries for the generic
+  torch==2.15.0 wheel. It was stopped before installation.
+
+Do not install from this file. Do not treat the direct candidate versions as
+a reproducible environment or silently replace the requested CPU build with
+the CUDA package. Generate a full pin-and-hash lock only after a supported
+CPU runtime and all transitive package artifacts can be resolved and audited.

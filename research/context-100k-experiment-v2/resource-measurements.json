@@ -1,0 +1,48 @@
+{
+  "status": "BLOCKED_BEFORE_MODEL_LOAD",
+  "execution": {
+    "model_loaded": false,
+    "tokenizer_loaded": false,
+    "actual_tokens_processed": 0,
+    "model_load_seconds": null,
+    "prefill_seconds": null,
+    "incremental_decode_seconds": null,
+    "evaluation_seconds": null,
+    "total_experiment_seconds": null,
+    "tokens_per_second": null,
+    "peak_rss_mib": null,
+    "peak_gpu_memory_mib": null,
+    "kv_cache_bytes": null,
+    "reason": "No model snapshot was available and required packages were not installed."
+  },
+  "preflight": {
+    "captured_at_utc": "2026-11-17T02:10:02Z",
+    "python": "3.12.3",
+    "logical_cpus": 4,
+    "ram_total_kib": 16367528,
+    "ram_available_kib": 14026564,
+    "root_disk_available_bytes": 81994792960,
+    "torch_installed": false,
+    "transformers_installed": false,
+    "tokenizers_installed": false,
+    "safetensors_installed": false,
+    "gpu_available": false,
+    "model_snapshot_available": false,
+    "huggingface_dns_available": false
+  },
+  "historical_measurements_not_from_this_run": {
+    "source_commit": "ee3a7c8f5702b73ae8e2c2dc2d73930b09efa2ed",
+    "actual_contiguous_tokens": 8193,
+    "wall_seconds": 1290.8177864329991,
+    "peak_rss_mib": 2812.796875,
+    "bounded_cache_bytes": 5587968,
+    "historical_environment": {
+      "python": "3.14.2",
+      "pytorch": "2.15.0+cu132",
+      "transformers": "4.52.2",
+      "device": "cpu",
+      "dtype": "float32"
+    },
+    "note": "Historical run used the now-disallowed Transformers version and does not validate this run's environment or 100K position extension."
+  }
+}

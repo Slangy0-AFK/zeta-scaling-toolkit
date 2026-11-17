@@ -1,0 +1,1 @@
+{"status":"NOT_RUN_BLOCKED","target_positions":[128,2048,8000,16000,25000,50000,75000,90000],"actual_fact_positions":null,"facts_created":false,"answers":[],"exact_match_accuracy":null,"multi_fact_accuracy":null,"eviction_status":null,"reason":"No tokenizer/model inference ran; no claim about information retention is possible."}
