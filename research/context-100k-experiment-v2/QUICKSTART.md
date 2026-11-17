@@ -26,6 +26,35 @@ activity. Restart the Codespace and resume from a validated checkpoint after a
 stop; saved data in `/workspaces` survives a stop but not deletion. Model and
 environment caches outside `/workspaces` may not survive a rebuild.
 
+## Read-only pipeline diagnostics
+
+The independent monitor uses the pinned Python environment and writes a new
+JSONL log **outside** the experiment directory. It does not change or resume the
+experiment. Start it with the running experiment's PID and pinned model config:
+
+```bash
+mkdir -p research/context-100k-diagnostics
+/path/to/venv/bin/python tools/monitor_context_100k.py \
+  --experiment-dir research/context-100k-experiment-v2 \
+  --model-config /path/to/pinned/model/snapshot/config.json \
+  --pid EXPERIMENT_PID \
+  --output research/context-100k-diagnostics/health.jsonl
+```
+
+The output must not already exist. The log records process status, checkpoint
+age, configured stall warnings, and checks for checkpoint sequence, metadata,
+cache shapes, finite values, positions, and shared cache entries. It also
+records the existing high-position RoPE preflight result. An absent checkpoint
+for 1,200 seconds is a **suspected** stall, not proof of one; adjust
+`--stall-seconds` for the hardware. Use `--once` for a single inspection.
+
+Checkpoints cannot prove that every intervening token was processed exactly
+once, expose live logits or position-encoding outputs, or demonstrate
+bit-identical resumed execution. The original runner performs its own live
+checks; this sidecar does not replace them. The monitor stops when the
+experiment process exits and must itself be restarted after a Codespace stop.
+Use a fresh log path each time.
+
 ## What's Already Done ✓
 
 - ✓ Preflight correctness gates all passed
