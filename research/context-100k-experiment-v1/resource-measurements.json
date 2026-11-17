@@ -1,0 +1,83 @@
+{
+  "status": "BLOCKED_BEFORE_MODEL_LOAD",
+  "captured_at_utc": "2026-11-17T01:39:03Z",
+  "execution": {
+    "actual_model_tokens_processed": 0,
+    "model_loaded": false,
+    "tokenizer_loaded": false,
+    "inference_runtime_seconds": null,
+    "inference_cpu_seconds": null,
+    "inference_peak_rss_mib": null,
+    "reason": "No local checkpoint or required inference packages; no download was attempted."
+  },
+  "host_preflight": {
+    "logical_cpu_count": 4,
+    "load_average_1m_5m_15m": [0.33, 0.30, 0.17],
+    "ram_total_kib": 16367524,
+    "ram_available_kib": 14155880,
+    "swap_total_kib": 3145724,
+    "swap_free_kib": 3145724,
+    "root_disk_total_bytes": 154894188544,
+    "root_disk_used_bytes": 68032806912,
+    "root_disk_available_bytes": 86844604416,
+    "python": "3.12.3",
+    "installed_required_packages": {
+      "torch": false,
+      "transformers": false,
+      "tokenizers": false,
+      "safetensors": false
+    },
+    "model_locations_checked": [
+      "/home/runner/.cache/huggingface/hub (absent)",
+      "/root/.cache/huggingface/hub (absent)",
+      "/models (absent)"
+    ]
+  },
+  "implementation_limits": {
+    "default_adapter_position_limit": 8192,
+    "experimental_max_position_limit": 65537,
+    "maximum_experimental_contiguous_tokens": 65537,
+    "requested_target_tokens": 100000,
+    "supports_requested_target": false
+  },
+  "historical_provenance_from_commit_ee3a7c8_not_recomputed_locally": {
+    "model_id": "HuggingFaceTB/SmolLM2-360M-Instruct",
+    "model_revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+    "weight_sha256": "e6bffe7435d7ddc10fd3b9a9efd429dafbacb1cb17015fb5562664e7532bf86e",
+    "tokenizer_sha256": "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c",
+    "config_sha256": "224f72354f10d617a359cc82ad15a3c96e866b9b2ffadb81997eeea9e88e22ee",
+    "original_adapter_sha256": "f30a86f73534abd63d1fbb2a83763606d294ed61c1cbc2ca17162e63f7ee4c5e",
+    "position_extension_sha256": "f176c27f74d7bb3b431064b69e1e343241deaec6f7a4f731a2fa2eaa8043b370",
+    "validate_positions_sha256": "a36398832037f88e3069ead6b5dfebfaba046b428417858d2c8fc27d32775311",
+    "validate_contiguous_sha256": "75404174e11207ce08eae4d721ed8a6359bc130cd710b928d154887d20f8f8d1"
+  },
+  "historical_parity_not_rerun": {
+    "scope": "9-token bounded native dense-mask comparison in the prior adapter validation record",
+    "absolute_tolerance": 0.0002,
+    "relative_tolerance": 0.0001,
+    "maximum_absolute_logit_difference": 0.00014400482177734375,
+    "mean_absolute_logit_difference": 0.00001115258874051505,
+    "out_of_tolerance": 0
+  },
+  "cache_configuration_from_inspected_prior_commit": {
+    "recent_window_tokens": 64,
+    "sink_tokens": 4,
+    "maximum_retained_positions_per_layer": 68,
+    "eviction_policy": "Retain absolute positions below sink_tokens and positions >= next_position - window + 1; discard all other K/V positions.",
+    "historical_8193_token_record_cache_bytes_batch_1": 5587968,
+    "historical_8193_token_record_peak_rss_mib": 2812.796875,
+    "historical_8193_token_record_wall_seconds": 1290.8177864329991,
+    "historical_record_is_not_a_measurement_from_this_run": true
+  },
+  "resource_estimates": {
+    "basis": "Linear extrapolation from the historical 8193-token Zeta engineering run in commit ee3a7c8; not a benchmark and not a safe-runtime guarantee.",
+    "historical_throughput_tokens_per_second": 6.346,
+    "estimated_single_zeta_pass_65537_tokens_wall_hours": 2.87,
+    "estimated_single_zeta_pass_100000_tokens_wall_hours": 4.38,
+    "limitations": [
+      "The 100,000-token target exceeds the inspected prototype's maximum position limit.",
+      "Estimates exclude native baseline, repeated questions, generation, tokenizer work, setup, and system contention.",
+      "The original experiment uses a cache that discards older K/V; bounded cache size does not establish information retention."
+    ]
+  }
+}
