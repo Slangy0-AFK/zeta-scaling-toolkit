@@ -107,3 +107,45 @@ def test_native_rope_matches_independent_split_half_reference(model):
         (-x[..., 4:], x[..., :4]), dim=-1
     ) * sine.unsqueeze(1)
     torch.testing.assert_close(actual.double(), reference, rtol=1e-5, atol=1e-5)
+
+
+def test_full_length_probe_uses_causal_suffix_after_eviction(model, monkeypatch):
+    directory = ROOT / "research/smollm2-integration-v1"
+    monkeypatch.syspath_prepend(str(directory))
+    spec = importlib.util.spec_from_file_location(
+        "full_length_validation", directory / "validate_full_length.py"
+    )
+    assert spec is not None and spec.loader is not None
+    validation = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(validation)
+
+    previous_threads = torch.get_num_threads()
+    torch.set_num_threads(2)
+    try:
+        extended = validation.ExperimentalPositionAdapter(
+            model, max_positions=256, window=64, sink_tokens=64
+        )
+        tokens = (torch.arange(133) % model.config.vocab_size).reshape(1, -1)
+        reference = validation.IndependentNativeReference(model)
+        expected = reference.forward(tokens[:, :64])
+        actual = extended.forward(tokens[:, :64])
+        torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+        expected = reference.forward(tokens[:, 64:129])
+        actual = extended.forward(tokens[:, 64:129])
+        torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+        validation.check_cache(extended, 129)
+        expected = reference.forward(tokens[:, 129:])
+        result, actual = validation.probe_suffix(model, extended, tokens[:, 129:])
+        torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+        validation.check_cache(extended, 133)
+    finally:
+        torch.set_num_threads(previous_threads)
+
+    assert result["first_position"] == 129
+    assert result["last_position"] == 132
+    assert result["future_token_invariance"]
+    assert result["finite_attention_probabilities"]
+    assert result["max_masked_attention_probability"] == 0
+    assert result["native_suffix_comparison"]["out_of_tolerance"] == 0
+    assert extended.cache.layers[0].positions.tolist() == list(range(64)) + list(range(69, 133))
+    assert reference.positions.tolist() == extended.cache.layers[0].positions.tolist()
