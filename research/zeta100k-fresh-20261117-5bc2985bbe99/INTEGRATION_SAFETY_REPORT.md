@@ -5,8 +5,8 @@ For subsequent checks and remaining gates, see
 
 ## Current status: RUNNING; launch qualifications passed
 
-The fresh runner is active as PID `12915`, at checkpoint 4,096/100,000.
-The host had 9,844.6 MiB `MemAvailable` at the latest check, above the unchanged
+The fresh runner is active as PID `12915`, at checkpoint 6,144/100,000.
+The host had 9,799.7 MiB `MemAvailable` at the latest check, above the unchanged
 3,584 MiB load gate. Model, corpus, tokenizer, and stream hashes match the
 pinned provenance.
 
@@ -15,8 +15,8 @@ pinned provenance.
 | Standalone and post-resize actual-model preflight | Passed; correctness result fields match. |
 | MathMesh, Stability, and RAG run-level integration | Passed; the exact commits and calls are in `integration-state.json` and `PROVENANCE.md`. |
 | Checkpoint save/load recovery | Passed on the first 8 stream tokens; resumed logits were bit-identical. |
-| Live asynchronous MathMesh telemetry | Delivered the 2,048 and 4,096 progress summaries; no failures or drops observed. |
-| Stability checkpoint advisories | Recorded at 2,048 and 4,096; both are advisory-only. |
+| Live asynchronous MathMesh telemetry | Delivered the 2,048, 4,096, and 6,144 progress summaries; no failures or drops observed. |
+| Stability checkpoint advisories | Recorded at 2,048, 4,096, and 6,144; all are advisory-only. |
 | Support-service failure isolation | Injected telemetry sender failures did not prevent finite model logits/cache checks; coordinator failure-record tests passed. |
 | Full-run completion and final recovery | Pending while the run continues. |
 

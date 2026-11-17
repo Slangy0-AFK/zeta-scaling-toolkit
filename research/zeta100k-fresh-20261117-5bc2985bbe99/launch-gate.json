@@ -1,13 +1,13 @@
 {
   "run_id": "zeta100k-fresh-20261117-5bc2985bbe99",
-  "checked_at_utc": "2026-11-17T22:17:25Z",
+  "checked_at_utc": "2026-11-17T22:19:58Z",
   "status": "running",
   "starting_commit": "cc2b8dfb45dd887f6f202ca69b8c874410fc4645",
   "runner_pid": 12915,
   "codespace_machine": "standardLinux32gb",
   "logical_cpus": 4,
   "total_memory_mib": 15993.6,
-  "available_memory_mib_at_check": 9844.6,
+  "available_memory_mib_at_check": 9799.7,
   "cgroup_memory_limit": "max",
   "workspace_disk_free_gib": 4.7,
   "required_available_memory_mib": 3584,
@@ -27,7 +27,7 @@
   },
   "telemetry": {
     "status": "running",
-    "delivered": 2,
+    "delivered": 3,
     "failed_requests": 0,
     "dropped": 0,
     "queue_capacity": 128
@@ -36,11 +36,11 @@
   "zeta_configuration_changed": false,
   "old_run_resumed": false,
   "full_run_started": true,
-  "processed_tokens": 4096,
-  "last_position": 4095,
-  "tokens_per_second": 10.547777266165621,
+  "processed_tokens": 6144,
+  "last_position": 6143,
+  "tokens_per_second": 10.388621814447365,
   "runner_peak_rss_mib": 2480.26953125,
-  "latest_checkpoint": "checkpoints/position-004096.safetensors",
-  "latest_checkpoint_sha256": "478c79fa23d0942370f594f0c011b4c4f154f1919724e13a865ec1d5b3b1458e",
+  "latest_checkpoint": "checkpoints/position-006144.safetensors",
+  "latest_checkpoint_sha256": "7d71caa1be6ec4cd881a4472d2c97bdd2c5699fa624aab4678a94ad9a051ccf6",
   "decision": "Continue monitoring; do not restart automatically on failure."
 }

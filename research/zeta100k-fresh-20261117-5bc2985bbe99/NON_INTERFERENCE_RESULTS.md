@@ -26,7 +26,7 @@ Additional bounded non-interference checks:
   run in separate processes; neither receives tensors, logits, or cache state.
   Stability recommendations are recorded as advisory-only and never applied.
 
-The full run has reached checkpoint 4,096 and has so far recorded finite logits,
+The full run has reached checkpoint 6,144 and has so far recorded finite logits,
 sequential positions, and bounded cache state. This is prefix evidence, not a
 claim that the complete 100K run has passed.
 

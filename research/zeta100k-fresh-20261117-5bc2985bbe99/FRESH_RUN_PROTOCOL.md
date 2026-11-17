@@ -11,16 +11,16 @@ This is the authorized fresh experiment, not a continuation of the paused
 experiment. The full runner is active as PID `12915`, launched from starting
 commit `cc2b8dfb45dd887f6f202ca69b8c874410fc4645`, without `--resume`.
 
-At the 2026-11-17 22:17 UTC status check, it had committed a verified checkpoint
-at 4,096/100,000 contiguous tokens (last position 4,095), averaging 10.548
+At the 2026-11-17 22:19 UTC status check, it had committed a verified checkpoint
+at 6,144/100,000 contiguous tokens (last position 6,143), averaging 10.389
 tokens/s over the latest checkpoint interval. The checkpoint SHA-256 is
-`478c79fa23d0942370f594f0c011b4c4f154f1919724e13a865ec1d5b3b1458e`.
+`7d71caa1be6ec4cd881a4472d2c97bdd2c5699fa624aab4678a94ad9a051ccf6`.
 The runner, MathMesh telemetry sidecar (PID `12787`), and Stability advisory
 sidecar (PID `17641`) are separate processes.
 
 The existing Codespace reported the approved `standardLinux32gb` specification;
 no additional resize operation was needed. It has 4 CPUs, 15,993.6 MiB total
-RAM, no cgroup memory cap, and 9,844.6 MiB host `MemAvailable` at the latest
+RAM, no cgroup memory cap, and 9,799.7 MiB host `MemAvailable` at the latest
 check. The launch gate remained 3,584 MiB. The runner-reported peak RSS through
 the latest checkpoint was 2,480.3 MiB. Workspace storage had 4.7 GiB free.
 
@@ -72,7 +72,7 @@ the expected stream SHA-256 and passed its correctness gates.
 
 ## Launch gate
 
-The initial 3,584 MiB model-load gate passed with 9,844.6 MiB currently
+The initial 3,584 MiB model-load gate passed with 9,799.7 MiB currently
 available. No threshold or mathematical setting was changed. Current gate
 details and checkpoint evidence are in `launch-gate.json` and
 [100K_PIPELINE_INTEGRITY_REPORT.md](100K_PIPELINE_INTEGRITY_REPORT.md).

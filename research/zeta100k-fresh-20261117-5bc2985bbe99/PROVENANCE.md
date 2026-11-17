@@ -6,8 +6,8 @@ For subsequent audit-store hashes and qualification evidence, see
 ## New run identity
 
 - Run ID: `zeta100k-fresh-20261117-5bc2985bbe99`.
-- Status at 2026-11-17 22:18 UTC: running; 4,096/100,000 contiguous tokens
-  processed, last position 4,095.
+- Status at 2026-11-17 22:19 UTC: running; 6,144/100,000 contiguous tokens
+  processed, last position 6,143.
 - Primary Zeta checkout: `cc2b8dfb45dd887f6f202ca69b8c874410fc4645`.
 - Zeta experiment source prototype recorded by the runner:
   `ee3a7c8f5702b73ae8e2c2dc2d73930b09efa2ed`.
@@ -15,7 +15,7 @@ For subsequent audit-store hashes and qualification evidence, see
 - Full runner PID: `12915`; MathMesh telemetry PID: `12787`; Stability
   advisory PID: `17641`.
 - The existing Codespace reported `standardLinux32gb`, 4 CPUs, 15,993.6 MiB
-  total RAM, no cgroup memory cap, and 9,844.6 MiB `MemAvailable` at the latest
+  total RAM, no cgroup memory cap, and 9,799.7 MiB `MemAvailable` at the latest
   check. Workspace storage had 4.7 GiB free.
 - Pre-existing unrelated edits in retrieval benchmark records/manifests were
   left untouched.
@@ -61,12 +61,13 @@ The runtime container also used PostgreSQL image
   positions; float32; CPU.
 - Active run checkpoints:
   - Position 2,048: 10.806 tokens/s; stream hash matches above.
-  - Position 4,096: 10.548 tokens/s; checkpoint SHA-256
-    `478c79fa23d0942370f594f0c011b4c4f154f1919724e13a865ec1d5b3b1458e`.
-  - Runner-reported peak RSS through position 4,096: 2,480.3 MiB.
+  - Position 4,096: 10.548 tokens/s.
+  - Position 6,144: 10.389 tokens/s; checkpoint SHA-256
+    `7d71caa1be6ec4cd881a4472d2c97bdd2c5699fa624aab4678a94ad9a051ccf6`.
+  - Runner-reported peak RSS through position 6,144: 2,480.3 MiB.
 - Qualification-only checkpoint smoke: 8 real stream tokens; restore at
   position 4, resumed logits bit-identical to uninterrupted processing.
-- Live telemetry: 2 checkpoint summaries delivered to MathMesh, 0 failures,
+- Live telemetry: 3 checkpoint summaries delivered to MathMesh, 0 failures,
   0 drops. Stability recommendations are appended per checkpoint with
   `applied_to_zeta=false`.
 

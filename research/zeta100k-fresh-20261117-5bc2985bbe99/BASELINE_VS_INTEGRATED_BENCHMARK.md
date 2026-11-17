@@ -6,7 +6,7 @@ For subsequent sidecar measurements and remaining gates, see
 ## Current status: full run active; no matched full-run comparison yet
 
 The fresh 100K process is active. Its latest checkpoint interval measured
-10.548 tokens/s, with 4,096/100,000 contiguous tokens complete. This is an
+10.389 tokens/s, with 6,144/100,000 contiguous tokens complete. This is an
 observed run rate, not a matched baseline-versus-integrated comparison.
 The previous matched 4,096-token attention benchmark remains unchanged:
 telemetry off 7.33×, telemetry on 7.67×, two-pair medians; the difference is
@@ -42,11 +42,12 @@ benchmark.
 
 - Host: 4 CPUs, 15,993.6 MiB total memory, CPU-only execution; latest host
   `MemAvailable` 9,844.6 MiB.
-- Stability recommendations at checkpoints 2,048 and 4,096: 4 CPUs, 9,969
-  MiB available at sample time, concurrency 4, buffer 2,823, task size 186.
+- Stability recommendations at checkpoints 2,048, 4,096, and 6,144: 4 CPUs,
+  9,906 MiB available at the latest sample, concurrency 4, buffer 2,823,
+  task size 186.
   Recommendations were recorded and not applied to Zeta.
 - Zeta load gate: at least 3,584 MiB available; it passed before model load.
-- Runner-reported peak RSS through checkpoint 4,096: 2,480.3 MiB.
+- Runner-reported peak RSS through checkpoint 6,144: 2,480.3 MiB.
 - MathMesh and RAG health/admission/audit calls succeeded and their records were
   preserved. The RAG audit chain verified after restart; MathMesh DB export
   restored successfully.
