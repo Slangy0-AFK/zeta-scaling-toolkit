@@ -2,6 +2,30 @@
 
 **Status:** Ready to run. Preflight passed. Contiguous run awaiting execution.
 
+## Future long-running sessions
+
+The runner checkpoints every 2,048 tokens and at the protocol's staged
+positions. For a future run, install `tmux` if absent, create a separate output
+directory, and use the pinned Python environment:
+
+```bash
+bash research/context-100k-experiment-v2/run_in_tmux.sh \
+  /path/to/experiment-output /path/to/pinned/model/snapshot /path/to/venv/bin/python
+```
+
+The launcher creates or resumes preflight artifacts and appends output to
+`experiment.log`. Its lock prevents simultaneous cooperating launchers for
+the same output directory, but cannot protect against the older direct runner.
+Before resuming, confirm that no other process is writing to that directory.
+Check the log and `progress.jsonl`; do not assume launch means success.
+
+`tmux` can survive terminal disconnects while the Codespace remains running.
+It cannot survive a Codespace stop, rebuild, or deletion. GitHub documents
+an inactivity timeout and a maximum 12-hour Codespace lifetime even during
+activity. Restart the Codespace and resume from a validated checkpoint after a
+stop; saved data in `/workspaces` survives a stop but not deletion. Model and
+environment caches outside `/workspaces` may not survive a rebuild.
+
 ## What's Already Done ✓
 
 - ✓ Preflight correctness gates all passed
