@@ -1,0 +1,275 @@
+{
+  "status": "pass_for_bounded_probes_only",
+  "model_id": "HuggingFaceTB/SmolLM2-360M-Instruct",
+  "model_revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+  "weight_sha256": "e6bffe7435d7ddc10fd3b9a9efd429dafbacb1cb17015fb5562664e7532bf86e",
+  "config_sha256": "224f72354f10d617a359cc82ad15a3c96e866b9b2ffadb81997eeea9e88e22ee",
+  "tokenizer_sha256": "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c",
+  "original_adapter_sha256": "f30a86f73534abd63d1fbb2a83763606d294ed61c1cbc2ca17162e63f7ee4c5e",
+  "prototype_sha256": "f176c27f74d7bb3b431064b69e1e343241deaec6f7a4f731a2fa2eaa8043b370",
+  "validation_sha256": "a36398832037f88e3069ead6b5dfebfaba046b428417858d2c8fc27d32775311",
+  "environment": {
+    "python": "3.14.2",
+    "pytorch": "2.15.0+cu132",
+    "transformers": "4.52.2",
+    "dtype": "torch.float32",
+    "device": "cpu",
+    "cpu_threads": 2
+  },
+  "logit_tolerance": {
+    "atol": 0.0002,
+    "rtol": 0.0001
+  },
+  "original_range_parity": {
+    "original_adapter_vs_experimental": {
+      "max_abs_difference": 0.0,
+      "out_of_tolerance": 0
+    },
+    "experimental_vs_native_prefill": {
+      "max_abs_difference": 8.511543273925781e-05,
+      "out_of_tolerance": 0
+    },
+    "token_count": 5,
+    "manifest": {
+      "mode": "experimental_native_unscaled_rope",
+      "original_max_positions": 8192,
+      "experimental_max_positions": 65537,
+      "initial_position": 0,
+      "synthetic_empty_offset_history": false,
+      "window": 65537,
+      "sink_tokens": 0,
+      "rope_theta": 100000.0,
+      "rope_scaling": null
+    }
+  },
+  "rotary_reference": {
+    "reference": "FP64 split-half rotation and independently computed inverse frequencies",
+    "max_absolute_tolerance": 0.003,
+    "positions": [
+      0,
+      8191,
+      8192,
+      16384,
+      32768,
+      65536
+    ],
+    "max_abs_error_by_position": [
+      0.0,
+      0.00013612867972900844,
+      0.00019322123582948825,
+      0.0003495837408075131,
+      0.0007972835932172906,
+      0.0012452047599067484
+    ],
+    "shape": [
+      1,
+      1,
+      6,
+      64
+    ]
+  },
+  "synthetic_empty_history_offset_probes": [
+    {
+      "manifest": {
+        "mode": "experimental_native_unscaled_rope",
+        "original_max_positions": 8192,
+        "experimental_max_positions": 65537,
+        "initial_position": 8190,
+        "synthetic_empty_offset_history": true,
+        "window": 3,
+        "sink_tokens": 0,
+        "rope_theta": 100000.0,
+        "rope_scaling": null
+      },
+      "processed_absolute_positions": [
+        8190,
+        8191,
+        8192,
+        8193,
+        8194
+      ],
+      "retained_absolute_positions": [
+        8192,
+        8193,
+        8194
+      ],
+      "next_absolute_position": 8195,
+      "native_dense_mask": {
+        "max_abs_difference": 8.511543273925781e-05,
+        "out_of_tolerance": 0
+      },
+      "future_token_invariance": true,
+      "finite": true,
+      "finite_cache": true,
+      "cache_bytes": 246528,
+      "wall_seconds": 0.8000050600003306
+    },
+    {
+      "manifest": {
+        "mode": "experimental_native_unscaled_rope",
+        "original_max_positions": 8192,
+        "experimental_max_positions": 65537,
+        "initial_position": 16382,
+        "synthetic_empty_offset_history": true,
+        "window": 3,
+        "sink_tokens": 0,
+        "rope_theta": 100000.0,
+        "rope_scaling": null
+      },
+      "processed_absolute_positions": [
+        16382,
+        16383,
+        16384,
+        16385,
+        16386
+      ],
+      "retained_absolute_positions": [
+        16384,
+        16385,
+        16386
+      ],
+      "next_absolute_position": 16387,
+      "native_dense_mask": {
+        "max_abs_difference": 8.511543273925781e-05,
+        "out_of_tolerance": 0
+      },
+      "future_token_invariance": true,
+      "finite": true,
+      "finite_cache": true,
+      "cache_bytes": 246528,
+      "wall_seconds": 0.7281981859996449
+    },
+    {
+      "manifest": {
+        "mode": "experimental_native_unscaled_rope",
+        "original_max_positions": 8192,
+        "experimental_max_positions": 65537,
+        "initial_position": 32766,
+        "synthetic_empty_offset_history": true,
+        "window": 3,
+        "sink_tokens": 0,
+        "rope_theta": 100000.0,
+        "rope_scaling": null
+      },
+      "processed_absolute_positions": [
+        32766,
+        32767,
+        32768,
+        32769,
+        32770
+      ],
+      "retained_absolute_positions": [
+        32768,
+        32769,
+        32770
+      ],
+      "next_absolute_position": 32771,
+      "native_dense_mask": {
+        "max_abs_difference": 8.511543273925781e-05,
+        "out_of_tolerance": 0
+      },
+      "future_token_invariance": true,
+      "finite": true,
+      "finite_cache": true,
+      "cache_bytes": 246528,
+      "wall_seconds": 0.7706684839995432
+    },
+    {
+      "manifest": {
+        "mode": "experimental_native_unscaled_rope",
+        "original_max_positions": 8192,
+        "experimental_max_positions": 65537,
+        "initial_position": 65532,
+        "synthetic_empty_offset_history": true,
+        "window": 3,
+        "sink_tokens": 0,
+        "rope_theta": 100000.0,
+        "rope_scaling": null
+      },
+      "processed_absolute_positions": [
+        65532,
+        65533,
+        65534,
+        65535,
+        65536
+      ],
+      "retained_absolute_positions": [
+        65534,
+        65535,
+        65536
+      ],
+      "next_absolute_position": 65537,
+      "native_dense_mask": {
+        "max_abs_difference": 8.511543273925781e-05,
+        "out_of_tolerance": 0
+      },
+      "future_token_invariance": true,
+      "finite": true,
+      "finite_cache": true,
+      "cache_bytes": 246528,
+      "wall_seconds": 0.6683896979993733
+    }
+  ],
+  "actual_contiguous_input": {
+    "manifest": {
+      "mode": "experimental_native_unscaled_rope",
+      "original_max_positions": 8192,
+      "experimental_max_positions": 65537,
+      "initial_position": 0,
+      "synthetic_empty_offset_history": false,
+      "window": 64,
+      "sink_tokens": 4,
+      "rope_theta": 100000.0,
+      "rope_scaling": null
+    },
+    "measurements": [
+      {
+        "actual_contiguous_tokens": 16,
+        "chunk_tokens": 16,
+        "chunk_wall_seconds": 2.838473981999414,
+        "chunk_cpu_seconds": 4.632782488,
+        "cumulative_wall_seconds": 2.838489830999606,
+        "cumulative_cpu_seconds": 4.632791425000001,
+        "cache_bytes": 1314816,
+        "peak_rss_mib": 2818.1953125,
+        "finite_logits": true
+      },
+      {
+        "actual_contiguous_tokens": 32,
+        "chunk_tokens": 16,
+        "chunk_wall_seconds": 2.528794502999517,
+        "chunk_cpu_seconds": 4.431878298999997,
+        "cumulative_wall_seconds": 5.367400380999243,
+        "cumulative_cpu_seconds": 9.065782698999996,
+        "cache_bytes": 2629632,
+        "peak_rss_mib": 2818.1953125,
+        "finite_logits": true
+      },
+      {
+        "actual_contiguous_tokens": 64,
+        "chunk_tokens": 32,
+        "chunk_wall_seconds": 4.915938997999547,
+        "chunk_cpu_seconds": 8.423307700000002,
+        "cumulative_wall_seconds": 10.2834264109988,
+        "cumulative_cpu_seconds": 17.489174405999997,
+        "cache_bytes": 5259264,
+        "peak_rss_mib": 2818.1953125,
+        "finite_logits": true
+      },
+      {
+        "actual_contiguous_tokens": 128,
+        "chunk_tokens": 64,
+        "chunk_wall_seconds": 11.205643213001167,
+        "chunk_cpu_seconds": 18.355079974,
+        "cumulative_wall_seconds": 21.489167415998963,
+        "cumulative_cpu_seconds": 35.844348405,
+        "cache_bytes": 5587968,
+        "peak_rss_mib": 2818.1953125,
+        "finite_logits": true
+      }
+    ]
+  },
+  "total_wall_seconds": 32.843025853000654,
+  "total_cpu_seconds": 54.603323919000005,
+  "peak_rss_mib": 2818.1953125
+}

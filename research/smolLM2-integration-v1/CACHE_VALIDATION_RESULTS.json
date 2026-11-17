@@ -1,0 +1,255 @@
+{
+  "status": "pass",
+  "phase": "bounded",
+  "metadata": {
+    "model_id": "HuggingFaceTB/SmolLM2-360M-Instruct",
+    "revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+    "weight_sha256": "e6bffe7435d7ddc10fd3b9a9efd429dafbacb1cb17015fb5562664e7532bf86e",
+    "tokenizer_sha256": "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c",
+    "tokenizer_config_sha256": "4ec77d44f62efeb38d7e044a1db318f6a939438425312dfa333b8382dbad98df",
+    "config_sha256": "224f72354f10d617a359cc82ad15a3c96e866b9b2ffadb81997eeea9e88e22ee",
+    "adapter_sha256": "f30a86f73534abd63d1fbb2a83763606d294ed61c1cbc2ca17162e63f7ee4c5e",
+    "validation_sha256": "b7245c4b26859996a32b62d95d97f6162fd53c8f28b334b4252af49191f1d734",
+    "python": "3.14.2",
+    "pytorch": "2.15.0+cu132",
+    "transformers": "4.52.2",
+    "device": "cpu",
+    "dtype": "torch.float32",
+    "cpu_threads": 2,
+    "eos_token_id": 2,
+    "model_load": {
+      "wall_seconds": 4.18583747699995,
+      "cpu_seconds": 3.790875063
+    },
+    "tolerance": {
+      "absolute": 0.0002,
+      "relative": 0.0001
+    }
+  },
+  "results": {
+    "name": "bounded_native_dense_mask",
+    "shape": [
+      2,
+      9,
+      49152
+    ],
+    "max_absolute_difference": 0.00014400482177734375,
+    "mean_absolute_difference": 1.1152588740515057e-05,
+    "out_of_tolerance": 0,
+    "window": 3,
+    "sink_tokens": 2,
+    "input_tokens_per_row": 9,
+    "retained_absolute_positions": [
+      0,
+      1,
+      6,
+      7,
+      8
+    ],
+    "layer_count": 32,
+    "all_layer_key_shapes": [
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ],
+      [
+        2,
+        5,
+        5,
+        64
+      ]
+    ],
+    "cache_bytes": 820480,
+    "finite_cache": true,
+    "finite_logits": true
+  },
+  "resources": {
+    "wall_seconds_including_load": 7.822016641001028,
+    "process_cpu_seconds": 9.657303362,
+    "mean_cores_used": 1.2346308893513298,
+    "peak_rss_mib": 2808.51171875,
+    "logical_cpus_available": 2
+  }
+}

@@ -1,0 +1,233 @@
+{
+  "status": "pass",
+  "phase": "parity",
+  "metadata": {
+    "model_id": "HuggingFaceTB/SmolLM2-360M-Instruct",
+    "revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+    "weight_sha256": "e6bffe7435d7ddc10fd3b9a9efd429dafbacb1cb17015fb5562664e7532bf86e",
+    "tokenizer_sha256": "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c",
+    "tokenizer_config_sha256": "4ec77d44f62efeb38d7e044a1db318f6a939438425312dfa333b8382dbad98df",
+    "config_sha256": "224f72354f10d617a359cc82ad15a3c96e866b9b2ffadb81997eeea9e88e22ee",
+    "adapter_sha256": "f30a86f73534abd63d1fbb2a83763606d294ed61c1cbc2ca17162e63f7ee4c5e",
+    "validation_sha256": "b7245c4b26859996a32b62d95d97f6162fd53c8f28b334b4252af49191f1d734",
+    "python": "3.14.2",
+    "pytorch": "2.15.0+cu132",
+    "transformers": "4.52.2",
+    "device": "cpu",
+    "dtype": "torch.float32",
+    "cpu_threads": 2,
+    "eos_token_id": 2,
+    "model_load": {
+      "wall_seconds": 3.138736032999077,
+      "cpu_seconds": 3.653156666
+    },
+    "tolerance": {
+      "absolute": 0.0002,
+      "relative": 0.0001
+    }
+  },
+  "results": [
+    {
+      "name": "prefill_batch_1",
+      "shape": [
+        1,
+        5,
+        49152
+      ],
+      "max_absolute_difference": 9.107589721679688e-05,
+      "mean_absolute_difference": 2.3187491024145856e-05,
+      "out_of_tolerance": 0,
+      "native_timing": {
+        "wall_seconds": 0.3232020349987579,
+        "cpu_seconds": 0.6060810419999996
+      },
+      "adapter_timing": {
+        "wall_seconds": 0.9010173340011534,
+        "cpu_seconds": 1.396928826
+      },
+      "cache_bytes": 410880
+    },
+    {
+      "name": "native_sequential_vs_prefill_batch_1",
+      "shape": [
+        1,
+        5,
+        49152
+      ],
+      "max_absolute_difference": 9.107589721679688e-05,
+      "mean_absolute_difference": 2.3187491024145856e-05,
+      "out_of_tolerance": 0
+    },
+    {
+      "name": "adapter_vs_native_sequential_batch_1",
+      "shape": [
+        1,
+        5,
+        49152
+      ],
+      "max_absolute_difference": 0.0,
+      "mean_absolute_difference": 0.0,
+      "out_of_tolerance": 0
+    },
+    {
+      "name": "prefill_batch_2",
+      "shape": [
+        2,
+        5,
+        49152
+      ],
+      "max_absolute_difference": 0.00014400482177734375,
+      "mean_absolute_difference": 1.3964182471681852e-05,
+      "out_of_tolerance": 0,
+      "native_timing": {
+        "wall_seconds": 0.49792045100002724,
+        "cpu_seconds": 0.7538071019999997
+      },
+      "adapter_timing": {
+        "wall_seconds": 1.362833043000137,
+        "cpu_seconds": 2.3049339339999992
+      },
+      "cache_bytes": 820480
+    },
+    {
+      "name": "native_sequential_vs_prefill_batch_2",
+      "shape": [
+        2,
+        5,
+        49152
+      ],
+      "max_absolute_difference": 0.00014400482177734375,
+      "mean_absolute_difference": 1.3964182471681852e-05,
+      "out_of_tolerance": 0
+    },
+    {
+      "name": "adapter_vs_native_sequential_batch_2",
+      "shape": [
+        2,
+        5,
+        49152
+      ],
+      "max_absolute_difference": 0.0,
+      "mean_absolute_difference": 0.0,
+      "out_of_tolerance": 0
+    },
+    {
+      "name": "single_token_batch_2",
+      "shape": [
+        2,
+        1,
+        49152
+      ],
+      "max_absolute_difference": 0.0,
+      "mean_absolute_difference": 0.0,
+      "out_of_tolerance": 0,
+      "native_timing": {
+        "wall_seconds": 0.21762372699959087,
+        "cpu_seconds": 0.4069286840000004
+      },
+      "adapter_timing": {
+        "wall_seconds": 0.2266080849985883,
+        "cpu_seconds": 0.4191747439999993
+      }
+    },
+    {
+      "name": "continuation_1_two_tokens",
+      "shape": [
+        2,
+        2,
+        49152
+      ],
+      "max_absolute_difference": 5.4717063903808594e-05,
+      "mean_absolute_difference": 1.1192377314728219e-05,
+      "out_of_tolerance": 0,
+      "native_timing": {
+        "wall_seconds": 0.2515949919998093,
+        "cpu_seconds": 0.4689885320000009
+      },
+      "adapter_timing": {
+        "wall_seconds": 0.5345269609988463,
+        "cpu_seconds": 0.9088136650000003
+      }
+    },
+    {
+      "name": "continuation_2_one_token",
+      "shape": [
+        2,
+        1,
+        49152
+      ],
+      "max_absolute_difference": 4.0531158447265625e-05,
+      "mean_absolute_difference": 9.384789336763788e-06,
+      "out_of_tolerance": 0,
+      "native_timing": {
+        "wall_seconds": 0.3159412289987813,
+        "cpu_seconds": 0.4912184080000017
+      },
+      "adapter_timing": {
+        "wall_seconds": 0.2286359750014526,
+        "cpu_seconds": 0.4245193339999993
+      }
+    },
+    {
+      "name": "continuation_3_one_token",
+      "shape": [
+        2,
+        1,
+        49152
+      ],
+      "max_absolute_difference": 3.0994415283203125e-05,
+      "mean_absolute_difference": 5.468159088195534e-06,
+      "out_of_tolerance": 0,
+      "native_timing": {
+        "wall_seconds": 0.22490037100033078,
+        "cpu_seconds": 0.4213683520000018
+      },
+      "adapter_timing": {
+        "wall_seconds": 0.24723317099960695,
+        "cpu_seconds": 0.4440584600000008
+      }
+    },
+    {
+      "name": "greedy_per_row_eos",
+      "eos_token_id": 28,
+      "adapter_tokens": [
+        [
+          28
+        ],
+        [
+          30,
+          198,
+          198
+        ]
+      ],
+      "native_tokens": [
+        [
+          28
+        ],
+        [
+          30,
+          198,
+          198
+        ]
+      ]
+    },
+    {
+      "name": "native_eos_token_as_input",
+      "shape": [
+        1,
+        2,
+        49152
+      ],
+      "max_absolute_difference": 7.343292236328125e-05,
+      "mean_absolute_difference": 1.5744895790703595e-05,
+      "out_of_tolerance": 0
+    }
+  ],
+  "resources": {
+    "wall_seconds_including_load": 13.628492979998555,
+    "process_cpu_seconds": 21.044700218000003,
+    "mean_cores_used": 1.5441692818777264,
+    "peak_rss_mib": 2812.50390625,
+    "logical_cpus_available": 2
+  }
+}
