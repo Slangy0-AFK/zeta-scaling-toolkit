@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "qualification_tokens_only": true,
+  "stream_sha256": "c9c43fb35050bc31f8d60e2a9bd600ae960f96d7a7ac1618b41505b2955da322",
+  "corpus_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "checkpoint4_sha256": "32dacd9ec1f5510a0e00ddd9aa507fec4a427ef1c26ce8bd4b8fb46fac6c2cf4",
+  "checkpoint8_sha256": "3cf44184b2774a6ffc331686591d03beb109a243abac36fc5ed0be96c8950990",
+  "checkpoint_restored_position": 4,
+  "resumed_logits_bit_identical": true,
+  "cache_positions_after_resume": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "cache_bytes": 657408,
+  "mathmesh_telemetry_delivered": 1,
+  "mathmesh_telemetry_last_position": 7,
+  "mathmesh_telemetry_mode": "mathmesh_async",
+  "injected_outage_failures": 2,
+  "finite_logits_during_injected_outage": true,
+  "available_memory_mib_after_test": 10430.87890625,
+  "peak_rss_mib": 2659.765625
+}

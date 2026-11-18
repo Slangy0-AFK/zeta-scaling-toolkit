@@ -1,0 +1,3134 @@
+{
+  "benchmark_scope": "NonCollapsingAttention microbenchmark only; no model, tokenizer, or 100K stream loaded",
+  "environment": {
+    "affinity_cpus": 2,
+    "head_dimension": 8,
+    "lengths": [
+      4096
+    ],
+    "logical_cpus": 2,
+    "pairs": 1,
+    "platform": "Linux-6.8.0-1070-azure-x86_64-with-glibc2.39",
+    "python": "3.14.2",
+    "repeats": 3,
+    "windows": [
+      64,
+      256
+    ]
+  },
+  "recorded_at_utc": "2026-11-17T21:14:15.051143+00:00",
+  "records": [
+    {
+      "attention_results": [
+        {
+          "forward_ratio": 6.749896925531624,
+          "full_attention_tokens_per_second": 11031.89163119223,
+          "full_ms": 371.2871859997904,
+          "length": 4096,
+          "measurement": "forward_backward_ms",
+          "scaling": "none",
+          "window": 64,
+          "window_attention_tokens_per_second": 74464.13140418248,
+          "window_ms": 55.00634899999568
+        },
+        {
+          "forward_ratio": 7.088635102467798,
+          "full_attention_tokens_per_second": 45584.26169509222,
+          "full_ms": 89.85557400046673,
+          "length": 4096,
+          "measurement": "forward_ms",
+          "scaling": "none",
+          "window": 64,
+          "window_attention_tokens_per_second": 323130.19757190894,
+          "window_ms": 12.676004999775614
+        },
+        {
+          "forward_ratio": 7.995154119009395,
+          "full_attention_tokens_per_second": 11031.89163119223,
+          "full_ms": 371.2871859997904,
+          "length": 4096,
+          "measurement": "forward_backward_ms",
+          "scaling": "log",
+          "window": 64,
+          "window_attention_tokens_per_second": 88201.67381559181,
+          "window_ms": 46.439028000349936
+        },
+        {
+          "forward_ratio": 7.055477820806351,
+          "full_attention_tokens_per_second": 45584.26169509222,
+          "full_ms": 89.85557400046673,
+          "length": 4096,
+          "measurement": "forward_ms",
+          "scaling": "log",
+          "window": 64,
+          "window_attention_tokens_per_second": 321618.7473675557,
+          "window_ms": 12.735575999613502
+        },
+        {
+          "forward_ratio": 4.710001205036769,
+          "full_attention_tokens_per_second": 11031.89163119223,
+          "full_ms": 371.2871859997904,
+          "length": 4096,
+          "measurement": "forward_backward_ms",
+          "scaling": "none",
+          "window": 256,
+          "window_attention_tokens_per_second": 51960.22287675045,
+          "window_ms": 78.82953099942824
+        },
+        {
+          "forward_ratio": 4.289609291621338,
+          "full_attention_tokens_per_second": 45584.26169509222,
+          "full_ms": 89.85557400046673,
+          "length": 4096,
+          "measurement": "forward_ms",
+          "scaling": "none",
+          "window": 256,
+          "window_attention_tokens_per_second": 195538.67251896622,
+          "window_ms": 20.94726300038019
+        },
+        {
+          "forward_ratio": 4.698265484249591,
+          "full_attention_tokens_per_second": 11031.89163119223,
+          "full_ms": 371.2871859997904,
+          "length": 4096,
+          "measurement": "forward_backward_ms",
+          "scaling": "log",
+          "window": 256,
+          "window_attention_tokens_per_second": 51830.75567681237,
+          "window_ms": 79.02643800025544
+        },
+        {
+          "forward_ratio": 2.8802330122395867,
+          "full_attention_tokens_per_second": 45584.26169509222,
+          "full_ms": 89.85557400046673,
+          "length": 4096,
+          "measurement": "forward_ms",
+          "scaling": "log",
+          "window": 256,
+          "window_attention_tokens_per_second": 131293.29537277308,
+          "window_ms": 31.197328000416746
+        }
+      ],
+      "available_memory_after_mib": 2494.5390625,
+      "available_memory_before_mib": 2507.7421875,
+      "benchmark_child_cpu_percent_sampled": null,
+      "benchmark_child_peak_rss_mib_sampled": null,
+      "cgroup_after": {
+        "burst_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "cpu_max": "max 100000",
+        "memory_current_bytes": 3766857728,
+        "memory_limit_bytes": "max",
+        "memory_peak_bytes": 5931794432,
+        "nr_bursts": 0,
+        "nr_periods": 0,
+        "nr_throttled": 0,
+        "system_usec": 350109623,
+        "throttled_usec": 0,
+        "usage_usec": 984388016,
+        "user_usec": 634278392
+      },
+      "cgroup_before": {
+        "burst_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "cpu_max": "max 100000",
+        "memory_current_bytes": 3772035072,
+        "memory_limit_bytes": "max",
+        "memory_peak_bytes": 5931794432,
+        "nr_bursts": 0,
+        "nr_periods": 0,
+        "nr_throttled": 0,
+        "system_usec": 349316840,
+        "throttled_usec": 0,
+        "usage_usec": 978192182,
+        "user_usec": 628875341
+      },
+      "command": [
+        "/tmp/zeta100k-fresh-5bc2985bbe99/bin/python",
+        "/workspaces/zeta-scaling-toolkit/benchmarks/window_speed.py",
+        "--head-dimension",
+        "8",
+        "--lengths",
+        "4096",
+        "--windows",
+        "64",
+        "256",
+        "--repeats",
+        "3"
+      ],
+      "cpu_mhz_sampled_max": null,
+      "cpu_mhz_sampled_median": null,
+      "cpu_mhz_sampled_min": null,
+      "elapsed_seconds": 6.325527627000156,
+      "exit_code": 0,
+      "host_cpu_utilization_percent_sampled": null,
+      "parent_cpu_seconds": 0.006629861000000001,
+      "parent_cpu_seconds_delta_ru": 0.006567000000000003,
+      "sample_count": 0,
+      "sample_interval_seconds": null,
+      "samples": [],
+      "sequence": 0,
+      "telemetry_mode": "telemetry_off",
+      "thermal_after": {
+        "cooling_devices": [
+          {
+            "current_state": 0,
+            "max_state": 0,
+            "type": "Processor"
+          },
+          {
+            "current_state": 0,
+            "max_state": 0,
+            "type": "Processor"
+          }
+        ],
+        "hwmon": [],
+        "thermal_throttle_counters": {},
+        "thermal_zones": []
+      },
+      "thermal_before": {
+        "cooling_devices": [
+          {
+            "current_state": 0,
+            "max_state": 0,
+            "type": "Processor"
+          },
+          {
+            "current_state": 0,
+            "max_state": 0,
+            "type": "Processor"
+          }
+        ],
+        "hwmon": [],
+        "thermal_throttle_counters": {},
+        "thermal_zones": []
+      }
+    },
+    {
+      "attention_results": [
+        {
+          "forward_ratio": 6.678232672679453,
+          "full_attention_tokens_per_second": 10985.523635807944,
+          "full_ms": 372.85432499993476,
+          "length": 4096,
+          "measurement": "forward_backward_ms",
+          "scaling": "none",
+          "window": 64,
+          "window_attention_tokens_per_second": 73363.88287114499,
+          "window_ms": 55.831286999818985
+        },
+        {
+          "forward_ratio": 5.973201887497865,
+          "full_attention_tokens_per_second": 45915.378674439,
+          "full_ms": 89.20758400017803,
+          "length": 4096,
+          "measurement": "forward_ms",
+          "scaling": "none",
+          "window": 64,
+          "window_attention_tokens_per_second": 274261.8265633382,
+          "window_ms": 14.934634000383085
+        },
+        {
+          "forward_ratio": 6.986699547079527,
+          "full_attention_tokens_per_second": 10985.523635807944,
+          "full_ms": 372.85432499993476,
+          "length": 4096,
+          "measurement": "forward_backward_ms",
+          "scaling": "log",
+          "window": 64,
+          "window_attention_tokens_per_second": 76752.5530107308,
+          "window_ms": 53.36630300007528
+        },
+        {
+          "forward_ratio": 6.669096144289104,
+          "full_attention_tokens_per_second": 45915.378674439,
+          "full_ms": 89.20758400017803,
+          "length": 4096,
+          "measurement": "forward_ms",
+          "scaling": "log",
+          "window": 64,
+          "window_attention_tokens_per_second": 306214.0748812753,
+          "window_ms": 13.376263000282052
+        },
+        {
+          "forward_ratio": 4.637957188454464,
+          "full_attention_tokens_per_second": 10985.523635807944,
+          "full_ms": 372.85432499993476,
+          "length": 4096,
+          "measurement": "forward_backward_ms",
+          "scaling": "none",
+          "window": 256,
+          "window_attention_tokens_per_second": 50950.38831563187,
+          "window_ms": 80.39192900014314
+        },
+        {
+          "forward_ratio": 3.7174117180016752,
+          "full_attention_tokens_per_second": 45915.378674439,
+          "full_ms": 89.20758400017803,
+          "length": 4096,
+          "measurement": "forward_ms",
+          "scaling": "none",
+          "window": 256,
+          "window_attention_tokens_per_second": 170686.36672084374,
+          "window_ms": 23.997229999622505
+        },
+        {
+          "forward_ratio": 4.650600629609083,
+          "full_attention_tokens_per_second": 10985.523635807944,
+          "full_ms": 372.85432499993476,
+          "length": 4096,
+          "measurement": "forward_backward_ms",
+          "scaling": "log",
+          "window": 256,
+          "window_attention_tokens_per_second": 51089.28313727389,
+          "window_ms": 80.17337000001135
+        },
+        {
+          "forward_ratio": 3.9592997286981477,
+          "full_attention_tokens_per_second": 45915.378674439,
+          "full_ms": 89.20758400017803,
+          "length": 4096,
+          "measurement": "forward_ms",
+          "scaling": "log",
+          "window": 256,
+          "window_attention_tokens_per_second": 181792.74632877906,
+          "window_ms": 22.53115199982858
+        }
+      ],
+      "available_memory_after_mib": 2488.7109375,
+      "available_memory_before_mib": 2494.5390625,
+      "benchmark_child_cpu_percent_sampled": 97.8913026566424,
+      "benchmark_child_peak_rss_mib_sampled": 302.1015625,
+      "cgroup_after": {
+        "burst_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "cpu_max": "max 100000",
+        "memory_current_bytes": 3766038528,
+        "memory_limit_bytes": "max",
+        "memory_peak_bytes": 5931794432,
+        "nr_bursts": 0,
+        "nr_periods": 0,
+        "nr_throttled": 0,
+        "system_usec": 350735906,
+        "throttled_usec": 0,
+        "usage_usec": 990267238,
+        "user_usec": 639531332
+      },
+      "cgroup_before": {
+        "burst_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "cpu_max": "max 100000",
+        "memory_current_bytes": 3767373824,
+        "memory_limit_bytes": "max",
+        "memory_peak_bytes": 5931794432,
+        "nr_bursts": 0,
+        "nr_periods": 0,
+        "nr_throttled": 0,
+        "system_usec": 350112435,
+        "throttled_usec": 0,
+        "usage_usec": 984390827,
+        "user_usec": 634278392
+      },
+      "command": [
+        "/tmp/zeta100k-fresh-5bc2985bbe99/bin/python",
+        "/workspaces/zeta-scaling-toolkit/benchmarks/window_speed.py",
+        "--head-dimension",
+        "8",
+        "--lengths",
+        "4096",
+        "--windows",
+        "64",
+        "256",
+        "--repeats",
+        "3"
+      ],
+      "cpu_mhz_sampled_max": 3260.904,
+      "cpu_mhz_sampled_median": 3241.5280000000002,
+      "cpu_mhz_sampled_min": 2445.424,
+      "elapsed_seconds": 5.516322546999618,
+      "exit_code": 0,
+      "host_cpu_utilization_percent_sampled": 67.69790718835304,
+      "parent_cpu_seconds": 0.098793015,
+      "parent_cpu_seconds_delta_ru": 0.098683,
+      "sample_count": 56,
+      "sample_interval_seconds": 0.1,
+      "samples": [
+        {
+          "available_memory_mib": 2494.5390625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3768037376,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350113599,
+            "throttled_usec": 0,
+            "usage_usec": 984392838,
+            "user_usec": 634279238
+          },
+          "child_cpu_ticks": 0,
+          "child_memory": {
+            "vmhwm_mib": 3.7578125,
+            "vmrss_mib": 3.7578125
+          },
+          "cpu_mhz": [
+            3243.502,
+            3244.485
+          ],
+          "host_cpu_ticks": [
+            1337400,
+            1048608
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:09.534598+00:00"
+        },
+        {
+          "available_memory_mib": 2492.8828125,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3776733184,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350129970,
+            "throttled_usec": 0,
+            "usage_usec": 984498093,
+            "user_usec": 634368123
+          },
+          "child_cpu_ticks": 9,
+          "child_memory": {
+            "vmhwm_mib": 20.15625,
+            "vmrss_mib": 20.15625
+          },
+          "cpu_mhz": [
+            3240.364,
+            3239.452
+          ],
+          "host_cpu_ticks": [
+            1337421,
+            1048611
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:09.638055+00:00"
+        },
+        {
+          "available_memory_mib": 2468.8125,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3807223808,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350153524,
+            "throttled_usec": 0,
+            "usage_usec": 984593341,
+            "user_usec": 634439817
+          },
+          "child_cpu_ticks": 18,
+          "child_memory": {
+            "vmhwm_mib": 80.31640625,
+            "vmrss_mib": 80.31640625
+          },
+          "cpu_mhz": [
+            3242.919,
+            3242.872
+          ],
+          "host_cpu_ticks": [
+            1337441,
+            1048615
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:09.741080+00:00"
+        },
+        {
+          "available_memory_mib": 2458.24609375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3825393664,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350162518,
+            "throttled_usec": 0,
+            "usage_usec": 984694832,
+            "user_usec": 634532314
+          },
+          "child_cpu_ticks": 28,
+          "child_memory": {
+            "vmhwm_mib": 103.73046875,
+            "vmrss_mib": 103.73046875
+          },
+          "cpu_mhz": [
+            3238.995,
+            3241.917
+          ],
+          "host_cpu_ticks": [
+            1337463,
+            1048619
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:09.842777+00:00"
+        },
+        {
+          "available_memory_mib": 2450.91015625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3846356992,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350183065,
+            "throttled_usec": 0,
+            "usage_usec": 984799367,
+            "user_usec": 634616302
+          },
+          "child_cpu_ticks": 38,
+          "child_memory": {
+            "vmhwm_mib": 145.703125,
+            "vmrss_mib": 145.703125
+          },
+          "cpu_mhz": [
+            3240.919,
+            3239.876
+          ],
+          "host_cpu_ticks": [
+            1337483,
+            1048627
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:09.944657+00:00"
+        },
+        {
+          "available_memory_mib": 2435.921875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3863207936,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350200957,
+            "throttled_usec": 0,
+            "usage_usec": 984904005,
+            "user_usec": 634703047
+          },
+          "child_cpu_ticks": 49,
+          "child_memory": {
+            "vmhwm_mib": 167.81640625,
+            "vmrss_mib": 167.81640625
+          },
+          "cpu_mhz": [
+            3242.449,
+            3240.51
+          ],
+          "host_cpu_ticks": [
+            1337504,
+            1048635
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:10.046492+00:00"
+        },
+        {
+          "available_memory_mib": 2426.3046875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3872137216,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350222595,
+            "throttled_usec": 0,
+            "usage_usec": 985018920,
+            "user_usec": 634796325
+          },
+          "child_cpu_ticks": 59,
+          "child_memory": {
+            "vmhwm_mib": 177.87109375,
+            "vmrss_mib": 177.87109375
+          },
+          "cpu_mhz": [
+            3244.583,
+            3253.059
+          ],
+          "host_cpu_ticks": [
+            1337523,
+            1048641
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:10.148392+00:00"
+        },
+        {
+          "available_memory_mib": 2412.03515625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3884847104,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350238433,
+            "throttled_usec": 0,
+            "usage_usec": 985123503,
+            "user_usec": 634885070
+          },
+          "child_cpu_ticks": 69,
+          "child_memory": {
+            "vmhwm_mib": 190.328125,
+            "vmrss_mib": 190.328125
+          },
+          "cpu_mhz": [
+            3244.022,
+            3243.471
+          ],
+          "host_cpu_ticks": [
+            1337543,
+            1048649
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:10.250057+00:00"
+        },
+        {
+          "available_memory_mib": 2403.671875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3893723136,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350256340,
+            "throttled_usec": 0,
+            "usage_usec": 985229391,
+            "user_usec": 634973050
+          },
+          "child_cpu_ticks": 79,
+          "child_memory": {
+            "vmhwm_mib": 198.86328125,
+            "vmrss_mib": 198.86328125
+          },
+          "cpu_mhz": [
+            3242.923,
+            3242.86
+          ],
+          "host_cpu_ticks": [
+            1337563,
+            1048655
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:10.352796+00:00"
+        },
+        {
+          "available_memory_mib": 2396.30859375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3899494400,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350283316,
+            "throttled_usec": 0,
+            "usage_usec": 985333817,
+            "user_usec": 635050500
+          },
+          "child_cpu_ticks": 89,
+          "child_memory": {
+            "vmhwm_mib": 204.58203125,
+            "vmrss_mib": 204.58203125
+          },
+          "cpu_mhz": [
+            3242.791,
+            3244.162
+          ],
+          "host_cpu_ticks": [
+            1337583,
+            1048663
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:10.454649+00:00"
+        },
+        {
+          "available_memory_mib": 2388.453125,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3907358720,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350307231,
+            "throttled_usec": 0,
+            "usage_usec": 985438219,
+            "user_usec": 635130987
+          },
+          "child_cpu_ticks": 99,
+          "child_memory": {
+            "vmhwm_mib": 211.62890625,
+            "vmrss_mib": 211.62890625
+          },
+          "cpu_mhz": [
+            3243.561,
+            3238.417
+          ],
+          "host_cpu_ticks": [
+            1337604,
+            1048671
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:10.556650+00:00"
+        },
+        {
+          "available_memory_mib": 2380.58984375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3912601600,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350312770,
+            "throttled_usec": 0,
+            "usage_usec": 985540421,
+            "user_usec": 635227650
+          },
+          "child_cpu_ticks": 110,
+          "child_memory": {
+            "vmhwm_mib": 217.00390625,
+            "vmrss_mib": 217.00390625
+          },
+          "cpu_mhz": [
+            3244.343,
+            3260.904
+          ],
+          "host_cpu_ticks": [
+            1337626,
+            1048679
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:10.658428+00:00"
+        },
+        {
+          "available_memory_mib": 2379.61328125,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3918368768,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350362371,
+            "throttled_usec": 0,
+            "usage_usec": 985703708,
+            "user_usec": 635341337
+          },
+          "child_cpu_ticks": 120,
+          "child_memory": {
+            "vmhwm_mib": 222.2421875,
+            "vmrss_mib": 222.2421875
+          },
+          "cpu_mhz": [
+            3244.16,
+            3243.957
+          ],
+          "host_cpu_ticks": [
+            1337645,
+            1048680
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:10.760424+00:00"
+        },
+        {
+          "available_memory_mib": 2376.43359375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3923329024,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350403774,
+            "throttled_usec": 0,
+            "usage_usec": 985851572,
+            "user_usec": 635447797
+          },
+          "child_cpu_ticks": 129,
+          "child_memory": {
+            "vmhwm_mib": 227.07421875,
+            "vmrss_mib": 227.07421875
+          },
+          "cpu_mhz": [
+            3243.496,
+            3240.03
+          ],
+          "host_cpu_ticks": [
+            1337666,
+            1048685
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:10.863686+00:00"
+        },
+        {
+          "available_memory_mib": 2367.85546875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3932508160,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350417684,
+            "throttled_usec": 0,
+            "usage_usec": 985957472,
+            "user_usec": 635539787
+          },
+          "child_cpu_ticks": 140,
+          "child_memory": {
+            "vmhwm_mib": 245.0390625,
+            "vmrss_mib": 245.0390625
+          },
+          "cpu_mhz": [
+            3245.099,
+            3244.532
+          ],
+          "host_cpu_ticks": [
+            1337686,
+            1048692
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:10.966052+00:00"
+        },
+        {
+          "available_memory_mib": 2365.6875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3933032448,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350417684,
+            "throttled_usec": 0,
+            "usage_usec": 986060410,
+            "user_usec": 635642726
+          },
+          "child_cpu_ticks": 150,
+          "child_memory": {
+            "vmhwm_mib": 245.92578125,
+            "vmrss_mib": 245.92578125
+          },
+          "cpu_mhz": [
+            3244.061,
+            3238.443
+          ],
+          "host_cpu_ticks": [
+            1337705,
+            1048699
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:11.067647+00:00"
+        },
+        {
+          "available_memory_mib": 2365.73046875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3933040640,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350417684,
+            "throttled_usec": 0,
+            "usage_usec": 986164820,
+            "user_usec": 635747136
+          },
+          "child_cpu_ticks": 161,
+          "child_memory": {
+            "vmhwm_mib": 245.92578125,
+            "vmrss_mib": 245.92578125
+          },
+          "cpu_mhz": [
+            3242.143,
+            3196.796
+          ],
+          "host_cpu_ticks": [
+            1337727,
+            1048707
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:11.169282+00:00"
+        },
+        {
+          "available_memory_mib": 2365.7421875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3933040640,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350417763,
+            "throttled_usec": 0,
+            "usage_usec": 986270471,
+            "user_usec": 635852708
+          },
+          "child_cpu_ticks": 171,
+          "child_memory": {
+            "vmhwm_mib": 245.92578125,
+            "vmrss_mib": 245.92578125
+          },
+          "cpu_mhz": [
+            3243.38,
+            3243.436
+          ],
+          "host_cpu_ticks": [
+            1337746,
+            1048714
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:11.270820+00:00"
+        },
+        {
+          "available_memory_mib": 2361.8359375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3935559680,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350419643,
+            "throttled_usec": 0,
+            "usage_usec": 986375862,
+            "user_usec": 635956219
+          },
+          "child_cpu_ticks": 181,
+          "child_memory": {
+            "vmhwm_mib": 248.66015625,
+            "vmrss_mib": 248.66015625
+          },
+          "cpu_mhz": [
+            3239.836,
+            3239.144
+          ],
+          "host_cpu_ticks": [
+            1337768,
+            1048722
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:11.374057+00:00"
+        },
+        {
+          "available_memory_mib": 2353.98046875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3939762176,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350422851,
+            "throttled_usec": 0,
+            "usage_usec": 986480281,
+            "user_usec": 636057430
+          },
+          "child_cpu_ticks": 191,
+          "child_memory": {
+            "vmhwm_mib": 254.3046875,
+            "vmrss_mib": 254.3046875
+          },
+          "cpu_mhz": [
+            3242.178,
+            3240.493
+          ],
+          "host_cpu_ticks": [
+            1337788,
+            1048729
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:11.475639+00:00"
+        },
+        {
+          "available_memory_mib": 2353.99609375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3939766272,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350422851,
+            "throttled_usec": 0,
+            "usage_usec": 986582952,
+            "user_usec": 636160101
+          },
+          "child_cpu_ticks": 201,
+          "child_memory": {
+            "vmhwm_mib": 254.3046875,
+            "vmrss_mib": 254.3046875
+          },
+          "cpu_mhz": [
+            3240.734,
+            3240.6
+          ],
+          "host_cpu_ticks": [
+            1337808,
+            1048737
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:11.577449+00:00"
+        },
+        {
+          "available_memory_mib": 2354.01171875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3939577856,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350422970,
+            "throttled_usec": 0,
+            "usage_usec": 986689408,
+            "user_usec": 636266437
+          },
+          "child_cpu_ticks": 211,
+          "child_memory": {
+            "vmhwm_mib": 254.3046875,
+            "vmrss_mib": 254.3046875
+          },
+          "cpu_mhz": [
+            3243.253,
+            3242.978
+          ],
+          "host_cpu_ticks": [
+            1337829,
+            1048744
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:11.681287+00:00"
+        },
+        {
+          "available_memory_mib": 2354.72265625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3937198080,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350428446,
+            "throttled_usec": 0,
+            "usage_usec": 986793463,
+            "user_usec": 636365017
+          },
+          "child_cpu_ticks": 221,
+          "child_memory": {
+            "vmhwm_mib": 255.453125,
+            "vmrss_mib": 252.88671875
+          },
+          "cpu_mhz": [
+            3241.935,
+            3241.715
+          ],
+          "host_cpu_ticks": [
+            1337849,
+            1048751
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:11.783166+00:00"
+        },
+        {
+          "available_memory_mib": 2354.7890625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3940876288,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350430823,
+            "throttled_usec": 0,
+            "usage_usec": 986898406,
+            "user_usec": 636467582
+          },
+          "child_cpu_ticks": 231,
+          "child_memory": {
+            "vmhwm_mib": 256.37890625,
+            "vmrss_mib": 256.37890625
+          },
+          "cpu_mhz": [
+            3242.611,
+            3242.965
+          ],
+          "host_cpu_ticks": [
+            1337869,
+            1048759
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:11.886066+00:00"
+        },
+        {
+          "available_memory_mib": 2354.9140625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3940880384,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350430823,
+            "throttled_usec": 0,
+            "usage_usec": 987002754,
+            "user_usec": 636571930
+          },
+          "child_cpu_ticks": 242,
+          "child_memory": {
+            "vmhwm_mib": 256.37890625,
+            "vmrss_mib": 256.37890625
+          },
+          "cpu_mhz": [
+            3240.953,
+            3237.809
+          ],
+          "host_cpu_ticks": [
+            1337890,
+            1048768
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:11.987827+00:00"
+        },
+        {
+          "available_memory_mib": 2354.91796875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3936280576,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350436768,
+            "throttled_usec": 0,
+            "usage_usec": 987107760,
+            "user_usec": 636670992
+          },
+          "child_cpu_ticks": 252,
+          "child_memory": {
+            "vmhwm_mib": 256.21484375,
+            "vmrss_mib": 252.08203125
+          },
+          "cpu_mhz": [
+            3238.658,
+            3235.266
+          ],
+          "host_cpu_ticks": [
+            1337910,
+            1048775
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:12.089665+00:00"
+        },
+        {
+          "available_memory_mib": 2354.921875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3940212736,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350438507,
+            "throttled_usec": 0,
+            "usage_usec": 987210718,
+            "user_usec": 636772210
+          },
+          "child_cpu_ticks": 262,
+          "child_memory": {
+            "vmhwm_mib": 256.21484375,
+            "vmrss_mib": 255.87890625
+          },
+          "cpu_mhz": [
+            3242.619,
+            3248.149
+          ],
+          "host_cpu_ticks": [
+            1337931,
+            1048783
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:12.191445+00:00"
+        },
+        {
+          "available_memory_mib": 2354.96484375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3940139008,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350439883,
+            "throttled_usec": 0,
+            "usage_usec": 987316724,
+            "user_usec": 636876840
+          },
+          "child_cpu_ticks": 273,
+          "child_memory": {
+            "vmhwm_mib": 256.21484375,
+            "vmrss_mib": 255.87890625
+          },
+          "cpu_mhz": [
+            3240.248,
+            3237.406
+          ],
+          "host_cpu_ticks": [
+            1337950,
+            1048790
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:12.293808+00:00"
+        },
+        {
+          "available_memory_mib": 2354.96484375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3940143104,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350440444,
+            "throttled_usec": 0,
+            "usage_usec": 987421265,
+            "user_usec": 636980820
+          },
+          "child_cpu_ticks": 283,
+          "child_memory": {
+            "vmhwm_mib": 256.21484375,
+            "vmrss_mib": 255.87890625
+          },
+          "cpu_mhz": [
+            3243.799,
+            3238.818
+          ],
+          "host_cpu_ticks": [
+            1337971,
+            1048797
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:12.395570+00:00"
+        },
+        {
+          "available_memory_mib": 2354.96875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3937075200,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350445955,
+            "throttled_usec": 0,
+            "usage_usec": 987524398,
+            "user_usec": 637078443
+          },
+          "child_cpu_ticks": 292,
+          "child_memory": {
+            "vmhwm_mib": 256.21484375,
+            "vmrss_mib": 252.74609375
+          },
+          "cpu_mhz": [
+            3243.652,
+            3243.426
+          ],
+          "host_cpu_ticks": [
+            1337991,
+            1048803
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:12.497299+00:00"
+        },
+        {
+          "available_memory_mib": 2355.0859375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3940679680,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350454578,
+            "throttled_usec": 0,
+            "usage_usec": 987627700,
+            "user_usec": 637173121
+          },
+          "child_cpu_ticks": 303,
+          "child_memory": {
+            "vmhwm_mib": 256.37890625,
+            "vmrss_mib": 256.37890625
+          },
+          "cpu_mhz": [
+            3242.232,
+            3241.532
+          ],
+          "host_cpu_ticks": [
+            1338012,
+            1048805
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:12.598964+00:00"
+        },
+        {
+          "available_memory_mib": 2355.1015625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3940683776,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350454903,
+            "throttled_usec": 0,
+            "usage_usec": 987731574,
+            "user_usec": 637276670
+          },
+          "child_cpu_ticks": 313,
+          "child_memory": {
+            "vmhwm_mib": 256.37890625,
+            "vmrss_mib": 256.37890625
+          },
+          "cpu_mhz": [
+            3239.998,
+            3236.509
+          ],
+          "host_cpu_ticks": [
+            1338032,
+            1048812
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:12.700742+00:00"
+        },
+        {
+          "available_memory_mib": 2355.66796875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3940687872,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350454903,
+            "throttled_usec": 0,
+            "usage_usec": 987833689,
+            "user_usec": 637378786
+          },
+          "child_cpu_ticks": 323,
+          "child_memory": {
+            "vmhwm_mib": 256.37890625,
+            "vmrss_mib": 256.37890625
+          },
+          "cpu_mhz": [
+            3241.381,
+            3247.906
+          ],
+          "host_cpu_ticks": [
+            1338052,
+            1048820
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:12.802494+00:00"
+        },
+        {
+          "available_memory_mib": 2351.23828125,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3942215680,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350527738,
+            "throttled_usec": 0,
+            "usage_usec": 988012229,
+            "user_usec": 637484490
+          },
+          "child_cpu_ticks": 333,
+          "child_memory": {
+            "vmhwm_mib": 256.71875,
+            "vmrss_mib": 256.71875
+          },
+          "cpu_mhz": [
+            3240.996,
+            3242.126
+          ],
+          "host_cpu_ticks": [
+            1338073,
+            1048822
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:12.905037+00:00"
+        },
+        {
+          "available_memory_mib": 2342.15234375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3951321088,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350571599,
+            "throttled_usec": 0,
+            "usage_usec": 988135835,
+            "user_usec": 637564236
+          },
+          "child_cpu_ticks": 342,
+          "child_memory": {
+            "vmhwm_mib": 266.6171875,
+            "vmrss_mib": 266.6171875
+          },
+          "cpu_mhz": [
+            3243.955,
+            3241.593
+          ],
+          "host_cpu_ticks": [
+            1338094,
+            1048827
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:13.006693+00:00"
+        },
+        {
+          "available_memory_mib": 2327.9375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3963834368,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350586529,
+            "throttled_usec": 0,
+            "usage_usec": 988238687,
+            "user_usec": 637652158
+          },
+          "child_cpu_ticks": 353,
+          "child_memory": {
+            "vmhwm_mib": 278.56640625,
+            "vmrss_mib": 278.56640625
+          },
+          "cpu_mhz": [
+            3241.218,
+            3242.689
+          ],
+          "host_cpu_ticks": [
+            1338113,
+            1048834
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:13.108592+00:00"
+        },
+        {
+          "available_memory_mib": 2320.07421875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3971174400,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350590661,
+            "throttled_usec": 0,
+            "usage_usec": 988344686,
+            "user_usec": 637754025
+          },
+          "child_cpu_ticks": 363,
+          "child_memory": {
+            "vmhwm_mib": 285.484375,
+            "vmrss_mib": 285.484375
+          },
+          "cpu_mhz": [
+            3240.92,
+            3241.304
+          ],
+          "host_cpu_ticks": [
+            1338134,
+            1048842
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:13.211058+00:00"
+        },
+        {
+          "available_memory_mib": 2312.3125,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3980591104,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350594563,
+            "throttled_usec": 0,
+            "usage_usec": 988448188,
+            "user_usec": 637853624
+          },
+          "child_cpu_ticks": 373,
+          "child_memory": {
+            "vmhwm_mib": 296.58203125,
+            "vmrss_mib": 295.765625
+          },
+          "cpu_mhz": [
+            3242.358,
+            3241.614
+          ],
+          "host_cpu_ticks": [
+            1338154,
+            1048849
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:13.312802+00:00"
+        },
+        {
+          "available_memory_mib": 2312.3125,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3980709888,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350597856,
+            "throttled_usec": 0,
+            "usage_usec": 988553857,
+            "user_usec": 637956001
+          },
+          "child_cpu_ticks": 383,
+          "child_memory": {
+            "vmhwm_mib": 297.609375,
+            "vmrss_mib": 295.765625
+          },
+          "cpu_mhz": [
+            3242.351,
+            3241.06
+          ],
+          "host_cpu_ticks": [
+            1338174,
+            1048855
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:13.414659+00:00"
+        },
+        {
+          "available_memory_mib": 2312.34765625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3981369344,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350600466,
+            "throttled_usec": 0,
+            "usage_usec": 988656398,
+            "user_usec": 638055931
+          },
+          "child_cpu_ticks": 393,
+          "child_memory": {
+            "vmhwm_mib": 297.609375,
+            "vmrss_mib": 296.328125
+          },
+          "cpu_mhz": [
+            3238.785,
+            3240.762
+          ],
+          "host_cpu_ticks": [
+            1338194,
+            1048863
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:13.516547+00:00"
+        },
+        {
+          "available_memory_mib": 2312.37109375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3982942208,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350601918,
+            "throttled_usec": 0,
+            "usage_usec": 988760579,
+            "user_usec": 638158660
+          },
+          "child_cpu_ticks": 403,
+          "child_memory": {
+            "vmhwm_mib": 297.828125,
+            "vmrss_mib": 297.828125
+          },
+          "cpu_mhz": [
+            2445.424,
+            3241.723
+          ],
+          "host_cpu_ticks": [
+            1338214,
+            1048870
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:13.618447+00:00"
+        },
+        {
+          "available_memory_mib": 2312.38671875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3982278656,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350602340,
+            "throttled_usec": 0,
+            "usage_usec": 988864725,
+            "user_usec": 638262384
+          },
+          "child_cpu_ticks": 413,
+          "child_memory": {
+            "vmhwm_mib": 297.609375,
+            "vmrss_mib": 297.33984375
+          },
+          "cpu_mhz": [
+            3239.582,
+            3242.814
+          ],
+          "host_cpu_ticks": [
+            1338236,
+            1048879
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:13.720305+00:00"
+        },
+        {
+          "available_memory_mib": 2308.70703125,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3985432576,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350602340,
+            "throttled_usec": 0,
+            "usage_usec": 988970133,
+            "user_usec": 638367792
+          },
+          "child_cpu_ticks": 423,
+          "child_memory": {
+            "vmhwm_mib": 300.17578125,
+            "vmrss_mib": 300.17578125
+          },
+          "cpu_mhz": [
+            3247.814,
+            3245.238
+          ],
+          "host_cpu_ticks": [
+            1338254,
+            1048885
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:13.822099+00:00"
+        },
+        {
+          "available_memory_mib": 2304.7734375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3987005440,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350606719,
+            "throttled_usec": 0,
+            "usage_usec": 989074375,
+            "user_usec": 638467655
+          },
+          "child_cpu_ticks": 434,
+          "child_memory": {
+            "vmhwm_mib": 301.67578125,
+            "vmrss_mib": 301.67578125
+          },
+          "cpu_mhz": [
+            3241.299,
+            3241.145
+          ],
+          "host_cpu_ticks": [
+            1338274,
+            1048893
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:13.923763+00:00"
+        },
+        {
+          "available_memory_mib": 2304.78515625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3986415616,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350607896,
+            "throttled_usec": 0,
+            "usage_usec": 989178796,
+            "user_usec": 638570899
+          },
+          "child_cpu_ticks": 444,
+          "child_memory": {
+            "vmhwm_mib": 301.86328125,
+            "vmrss_mib": 301.24609375
+          },
+          "cpu_mhz": [
+            3240.196,
+            3239.81
+          ],
+          "host_cpu_ticks": [
+            1338295,
+            1048901
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:14.025604+00:00"
+        },
+        {
+          "available_memory_mib": 2304.79296875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3986538496,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350609558,
+            "throttled_usec": 0,
+            "usage_usec": 989282550,
+            "user_usec": 638672991
+          },
+          "child_cpu_ticks": 454,
+          "child_memory": {
+            "vmhwm_mib": 301.86328125,
+            "vmrss_mib": 301.24609375
+          },
+          "cpu_mhz": [
+            3230.198,
+            3240.627
+          ],
+          "host_cpu_ticks": [
+            1338316,
+            1048909
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:14.127467+00:00"
+        },
+        {
+          "available_memory_mib": 2304.81640625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3986542592,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350609558,
+            "throttled_usec": 0,
+            "usage_usec": 989386538,
+            "user_usec": 638776979
+          },
+          "child_cpu_ticks": 464,
+          "child_memory": {
+            "vmhwm_mib": 301.86328125,
+            "vmrss_mib": 301.24609375
+          },
+          "cpu_mhz": [
+            3240.895,
+            3241.034
+          ],
+          "host_cpu_ticks": [
+            1338336,
+            1048917
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:14.229360+00:00"
+        },
+        {
+          "available_memory_mib": 2304.82421875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3986321408,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350609558,
+            "throttled_usec": 0,
+            "usage_usec": 989490558,
+            "user_usec": 638880999
+          },
+          "child_cpu_ticks": 475,
+          "child_memory": {
+            "vmhwm_mib": 301.86328125,
+            "vmrss_mib": 301.24609375
+          },
+          "cpu_mhz": [
+            3239.075,
+            3235.157
+          ],
+          "host_cpu_ticks": [
+            1338356,
+            1048925
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:14.331081+00:00"
+        },
+        {
+          "available_memory_mib": 2304.8359375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3985584128,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350612805,
+            "throttled_usec": 0,
+            "usage_usec": 989594825,
+            "user_usec": 638982020
+          },
+          "child_cpu_ticks": 484,
+          "child_memory": {
+            "vmhwm_mib": 301.86328125,
+            "vmrss_mib": 300.546875
+          },
+          "cpu_mhz": [
+            3239.681,
+            3239.299
+          ],
+          "host_cpu_ticks": [
+            1338377,
+            1048931
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:14.432755+00:00"
+        },
+        {
+          "available_memory_mib": 2304.8515625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3987427328,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350612805,
+            "throttled_usec": 0,
+            "usage_usec": 989697529,
+            "user_usec": 639084724
+          },
+          "child_cpu_ticks": 494,
+          "child_memory": {
+            "vmhwm_mib": 302.0546875,
+            "vmrss_mib": 302.0546875
+          },
+          "cpu_mhz": [
+            3241.524,
+            3241.218
+          ],
+          "host_cpu_ticks": [
+            1338397,
+            1048938
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:14.534637+00:00"
+        },
+        {
+          "available_memory_mib": 2304.85546875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3987427328,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350614942,
+            "throttled_usec": 0,
+            "usage_usec": 989801852,
+            "user_usec": 639186910
+          },
+          "child_cpu_ticks": 504,
+          "child_memory": {
+            "vmhwm_mib": 302.1015625,
+            "vmrss_mib": 302.1015625
+          },
+          "cpu_mhz": [
+            3241.084,
+            3243.886
+          ],
+          "host_cpu_ticks": [
+            1338417,
+            1048946
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:14.636251+00:00"
+        },
+        {
+          "available_memory_mib": 2305.0078125,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3987230720,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350614992,
+            "throttled_usec": 0,
+            "usage_usec": 989902910,
+            "user_usec": 639287918
+          },
+          "child_cpu_ticks": 514,
+          "child_memory": {
+            "vmhwm_mib": 302.1015625,
+            "vmrss_mib": 302.1015625
+          },
+          "cpu_mhz": [
+            3242.791,
+            3239.912
+          ],
+          "host_cpu_ticks": [
+            1338437,
+            1048949
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:14.737825+00:00"
+        },
+        {
+          "available_memory_mib": 2304.3359375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3987234816,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350614992,
+            "throttled_usec": 0,
+            "usage_usec": 989996127,
+            "user_usec": 639381134
+          },
+          "child_cpu_ticks": 523,
+          "child_memory": {
+            "vmhwm_mib": 302.1015625,
+            "vmrss_mib": 302.1015625
+          },
+          "cpu_mhz": [
+            3241.001,
+            3234.831
+          ],
+          "host_cpu_ticks": [
+            1338458,
+            1048953
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:14.839454+00:00"
+        },
+        {
+          "available_memory_mib": 2303.41796875,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3984306176,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350619679,
+            "throttled_usec": 0,
+            "usage_usec": 990105642,
+            "user_usec": 639485963
+          },
+          "child_cpu_ticks": 533,
+          "child_memory": {
+            "vmhwm_mib": 301.86328125,
+            "vmrss_mib": 300.05078125
+          },
+          "cpu_mhz": [
+            3239.977,
+            3255.661
+          ],
+          "host_cpu_ticks": [
+            1338478,
+            1048960
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:14.941094+00:00"
+        },
+        {
+          "available_memory_mib": 2488.72265625,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3766042624,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350734338,
+            "throttled_usec": 0,
+            "usage_usec": 990264667,
+            "user_usec": 639530329
+          },
+          "child_cpu_ticks": 540,
+          "child_memory": {},
+          "cpu_mhz": [
+            3224.298,
+            3241.97
+          ],
+          "host_cpu_ticks": [
+            1338498,
+            1048962
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:15.042685+00:00"
+        },
+        {
+          "available_memory_mib": 2488.7109375,
+          "cgroup": {
+            "burst_usec": 0,
+            "core_sched.force_idle_usec": 0,
+            "cpu_max": "max 100000",
+            "memory_current_bytes": 3766042624,
+            "memory_limit_bytes": "max",
+            "memory_peak_bytes": 5931794432,
+            "nr_bursts": 0,
+            "nr_periods": 0,
+            "nr_throttled": 0,
+            "system_usec": 350734864,
+            "throttled_usec": 0,
+            "usage_usec": 990266152,
+            "user_usec": 639531288
+          },
+          "child_cpu_ticks": null,
+          "child_memory": null,
+          "cpu_mhz": [
+            2666.501,
+            3023.531
+          ],
+          "host_cpu_ticks": [
+            1338499,
+            1048963
+          ],
+          "thermal": {
+            "cooling_devices": [
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              },
+              {
+                "current_state": 0,
+                "max_state": 0,
+                "type": "Processor"
+              }
+            ],
+            "hwmon": [],
+            "thermal_throttle_counters": {},
+            "thermal_zones": []
+          },
+          "timestamp_utc": "2026-11-17T21:14:15.049148+00:00"
+        }
+      ],
+      "sequence": 1,
+      "telemetry_mode": "telemetry_on",
+      "thermal_after": {
+        "cooling_devices": [
+          {
+            "current_state": 0,
+            "max_state": 0,
+            "type": "Processor"
+          },
+          {
+            "current_state": 0,
+            "max_state": 0,
+            "type": "Processor"
+          }
+        ],
+        "hwmon": [],
+        "thermal_throttle_counters": {},
+        "thermal_zones": []
+      },
+      "thermal_before": {
+        "cooling_devices": [
+          {
+            "current_state": 0,
+            "max_state": 0,
+            "type": "Processor"
+          },
+          {
+            "current_state": 0,
+            "max_state": 0,
+            "type": "Processor"
+          }
+        ],
+        "hwmon": [],
+        "thermal_throttle_counters": {},
+        "thermal_zones": []
+      }
+    }
+  ],
+  "run_id": "zeta100k-fresh-20261117-5bc2985bbe99"
+}

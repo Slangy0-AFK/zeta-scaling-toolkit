@@ -1,0 +1,43 @@
+{
+  "configuration_sha256": "379144d9117d82f8a06e8ab474cdf5e82fcfc18647458691072d6a9325e2e8c1",
+  "elapsed_seconds": 0.3266238420001173,
+  "phase": "admit",
+  "recorded_at": "2026-11-17T20:36:05.594183+00:00",
+  "run_id": "zeta100k-fresh-20261117-5bc2985bbe99",
+  "services": {
+    "mathmesh": {
+      "admission_seconds": 0.03141779999987193,
+      "agent_id": "64b85e06-4325-4b51-960e-5208d6e5a547",
+      "audit_seconds": 0.009398372999385174,
+      "audit_sequence": 1,
+      "create_agent_seconds": 0.01279217899991636,
+      "health_seconds": 0.052005733999976655,
+      "issue_key_seconds": 0.10439984099957655,
+      "login_seconds": 0.0525373540003784,
+      "metadata_id": "215170c1-106d-4231-88be-30e76bfbb156",
+      "metadata_seconds": 0.0036297699998613098
+    },
+    "rag": {
+      "credit_seconds": 0.006565874000443728,
+      "decision": "rag",
+      "govern_seconds": 0.040602883999781625,
+      "health_seconds": 0.0033871480000016163,
+      "register_seconds": 0.007547255999270419,
+      "request_id": "zeta100k-fresh-20261117-5bc2985bbe99:admit"
+    },
+    "stability": {
+      "applied_to_zeta": false,
+      "available_memory_mb": 3494.3125,
+      "cpu_cores": 2,
+      "elapsed_seconds": 3.0807000257482287e-05,
+      "recommendation": {
+        "buffer_window": 2823,
+        "parallel_tasks": 2,
+        "task_size": 186
+      },
+      "recorded_at": "2026-11-17T20:36:05.535471+00:00",
+      "source": "System-Stability-Toolkit",
+      "workload_tokens": 100000
+    }
+  }
+}

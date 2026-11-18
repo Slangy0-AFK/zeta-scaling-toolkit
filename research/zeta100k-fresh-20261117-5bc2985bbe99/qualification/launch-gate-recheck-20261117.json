@@ -1,0 +1,21 @@
+{
+  "run_id": "zeta100k-fresh-20261117-5bc2985bbe99",
+  "checked_at_utc": "2026-11-17T21:06:36.506750Z",
+  "status": "blocked_before_full_launch",
+  "measurement": "host MemAvailable from /proc/meminfo",
+  "total_memory_mib": 7942.3,
+  "available_memory_mib": 2469.1,
+  "required_available_memory_mib": 3584,
+  "headroom_mib": -1114.9,
+  "swap_mib": 0,
+  "logical_cpus": 2,
+  "preflight_recheck": "failed_before_model_load_insufficient_available_memory",
+  "integrated_numerical_qualification": "not_run",
+  "model_execution_outage_qualification": "not_run",
+  "telemetry_concurrent_model_qualification": "not_run",
+  "ambiguous_request_idempotency": "unqualified",
+  "full_run_started": false,
+  "processed_tokens": 0,
+  "old_run_resumed": false,
+  "zeta_numerical_configuration_changed": false
+}

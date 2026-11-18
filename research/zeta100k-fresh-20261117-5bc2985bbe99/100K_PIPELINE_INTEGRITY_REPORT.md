@@ -1,44 +1,39 @@
 # 100K Pipeline Integrity Report
 
-For the later launch-gate recheck, see
-[QUALIFICATION_RECHECK_20261117.md](QUALIFICATION_RECHECK_20261117.md).
+## Final outcome: processing pass
 
-## Current outcome: RUNNING
+Run `zeta100k-fresh-20261117-5bc2985bbe99` completed 100,000 contiguous tokens
+from position 0 through 99,999. The runner exited with code 0. This supports a
+pipeline-integrity result for the specified model and configuration only; it
+does not establish general retrieval quality or an end-to-end speedup.
 
-Run ID: `zeta100k-fresh-20261117-5bc2985bbe99`
-
-The full Zeta runner is active as PID `12915` from starting commit
-`cc2b8dfb45dd887f6f202ca69b8c874410fc4645`. At the latest verified checkpoint,
-6,144 of 100,000 contiguous tokens were processed, ending at absolute position
-6,143. No token was skipped or duplicated in the recorded prefix. The latest
-interval throughput was 10.389 tokens/s.
-
-| Requirement | Status |
+| Requirement | Final result |
 |---|---|
-| Contiguous token processing | Running; 6,144/100,000 processed contiguously from position 0. |
-| Position progression | Checkpoint records end at 2,047, 4,095, and 6,143, with matching token counts. |
-| Cache integrity during run | Verified at checkpoints; 64 sink plus 64 recent positions retained. |
-| Numerical stability during run | Finite logits and cache verified through the current prefix. |
-| New-run checkpoints/recovery | Checkpoints at 2,048, 4,096, and 6,144 exist; a separate save/restore smoke produced bit-identical resumed logits. |
-| Full 100,000-token completion | In progress; not yet complete. |
-| Retrieval accuracy/factual recall | Not yet evaluated; pipeline integrity is not a retrieval-quality result. |
-| Position-dependent model behavior | Only qualification and current-prefix evidence exists; final interpretation pending. |
+| Contiguous token processing | 100,000/100,000; all 56 progress records start at position 0 and have matching completed-token/last-position fields. |
+| Checkpoint integrity | All 56 checkpoint hashes, provenance metadata, retained positions, tensor shapes, and finite cache values verified. |
+| Numerical stability | The runner checks stream logits and cache state during processing; it completed without a numerical exception. |
+| KV cache | 64 sink + 64 recent positions; final cache is 10,518,528 bytes. |
+| Checkpoint restoration | The separate 8-token save/restore smoke resumed at position 4 with bit-identical logits. The final checkpoint was not reloaded after the successful run. |
+| Retrieval | 0/8 exact long-range synthetic-fact answers; all 8 short-prompt controls passed. |
+| Supporting observers | MathMesh delivered 56 records through 100,000 with no failures or drops; Stability emitted 56 advisory-only records. |
+| Full-run service outage isolation | Not tested; support services remained available during the run. |
 
-The standalone correctness preflight passed its native/adapted parity,
-sequential cache, causal invariance, bounded reference, and high-position RoPE
-checks. It is not evidence that the full contiguous pipeline completed or that
-facts remain retrievable. The preflight stream hash is recorded in
-`qualification/standalone/CORRECTNESS_RESULTS.json` and
-[PROVENANCE.md](PROVENANCE.md).
+Final checkpoint path `checkpoints/position-100000.safetensors` (large
+checkpoint files remain local and are ignored by Git), SHA-256:
+`43e7eee27e0287a01f631025f3d11b8311632a58de6c1faaf1943d2097e7a076`.
+Its cache contains positions 0–63 and 99,936–99,999; each of the 64 key/value
+tensors has shape `[1, 5, 128, 64]`.
 
-At the latest checkpoint the runner reported 9,870.6 MiB available and peak RSS
-of 2,480.3 MiB; host `MemAvailable` was 9,799.7 MiB at the subsequent check.
-The 3,584 MiB launch threshold and model configuration were not changed. The
-2,794 MiB result remains as historical pre-resize evidence in older gate
-snapshots; it is not the current resource state.
+The measured stream throughput was 10.7199 tokens/s; stream prefill took
+9,328.4 seconds and total wall time was 9,636.7 seconds. Peak runner RSS was
+3,400.3 MiB. There is no matched 100,000-token native/full-history baseline,
+so no end-to-end speedup is claimed. Detailed timing and retrieval outcomes
+are in [FINAL_REPORT.md](FINAL_REPORT.md); pinned inputs and support commits
+are in [PROVENANCE.md](PROVENANCE.md).
 
-Checkpoint `position-006144.safetensors` SHA-256:
-`7d71caa1be6ec4cd881a4472d2c97bdd2c5699fa624aab4678a94ad9a051ccf6`.
-The full-run integrity result remains provisional until 100,000 tokens and
-final checkpoint verification complete. No retrieval score or model-quality
-claim is inferred from pipeline progress or support-service audit records.
+The launch-time snapshot in
+[`launch-gate.json`](launch-gate.json) and the earlier sections of
+[QUALIFICATION_RECHECK_20261117.md](QUALIFICATION_RECHECK_20261117.md) preserve
+pre-run status and should not be read as final run status. The final checkpoint
+hashes, observer state, and exit status are recorded in
+[`qualification/monitoring-20261117.jsonl`](qualification/monitoring-20261117.jsonl).

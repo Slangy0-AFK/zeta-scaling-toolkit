@@ -1,0 +1,22 @@
+{
+  "backpressure_events": 0,
+  "delivered": 0,
+  "dropped": 0,
+  "elapsed_seconds": 0.1896656520000306,
+  "failed_requests": 2,
+  "last_deferred_tokens": null,
+  "last_delivered_tokens": 0,
+  "last_error": "RuntimeError",
+  "last_failed_tokens": 2,
+  "last_failure": "RuntimeError",
+  "last_seen_tokens": 2,
+  "malformed_records": 0,
+  "mode": "mathmesh_async",
+  "process_cpu_seconds": 21.648573,
+  "process_peak_rss_mib": 2659.765625,
+  "queue_capacity": 128,
+  "queue_depth": 0,
+  "queue_high_water": 1,
+  "queued": 1,
+  "retries": 2
+}

@@ -1,0 +1,40 @@
+{
+  "run_id": "zeta100k-fresh-20261117-5bc2985bbe99",
+  "checked_at_utc": "2026-11-17T21:27:50.956704Z",
+  "environment": "GitHub Codespaces dev container on Docker-backed VM",
+  "machine_name": "basicLinux32gb",
+  "machine_display": "2 cores, 8 GB RAM, 32 GB storage",
+  "host_total_mib": 7942.3,
+  "host_available_mib": 2506.7,
+  "required_available_mib": 3584,
+  "headroom_mib": -1077.3,
+  "swap_mib": 0,
+  "cgroup_memory_limit": "max",
+  "cgroup_memory_current_bytes": 3948367872,
+  "cgroup_memory_peak_bytes": 5931794432,
+  "logical_cpus": 2,
+  "experiment_process_active": false,
+  "support_services_active": false,
+  "fresh_run_started": false,
+  "safe_experiment_owned_memory_reclaim_available": false,
+  "alternative_machine": {
+    "name": "standardLinux32gb",
+    "cpus": 4,
+    "memory_reported_by_api": null,
+    "action_taken": false,
+    "reason": "resize or create may incur charges and alter account/resource settings; requires approval"
+  },
+  "self_hosted_runner_inventory": "unavailable_http_403",
+  "latest_read_only_ssh_snapshot": {
+    "checked_at_utc": "2026-11-17T21:33:58Z",
+    "host_available_mib": 2428.6,
+    "required_available_mib": 3584,
+    "headroom_mib": -1155.4,
+    "cgroup_memory_limit": "max",
+    "cgroup_memory_current_bytes": 3897901056,
+    "cgroup_memory_peak_bytes": 5931794432,
+    "logical_cpus": 2,
+    "swap_mib": 0
+  },
+  "launch_decision": "blocked_on_host_capacity_and_remaining_integrated_qualification"
+}

@@ -1,16 +1,22 @@
 # Baseline vs Integrated Benchmark
 
-For subsequent sidecar measurements and remaining gates, see
+For final run measurements and pre-launch qualification history, see
 [QUALIFICATION_RECHECK_20261117.md](QUALIFICATION_RECHECK_20261117.md).
 
-## Current status: full run active; no matched full-run comparison yet
+## Final status: run completed; no matched full-run comparison
 
-The fresh 100K process is active. Its latest checkpoint interval measured
-10.389 tokens/s, with 6,144/100,000 contiguous tokens complete. This is an
-observed run rate, not a matched baseline-versus-integrated comparison.
-The previous matched 4,096-token attention benchmark remains unchanged:
-telemetry off 7.33×, telemetry on 7.67×, two-pair medians; the difference is
-inconclusive. The historical 8,192-token 9× crossover remains unverified.
+The fresh run completed 100,000 contiguous tokens at 10.7199 tokens/s, with
+9,328.4 seconds of stream prefill and 9,636.7 seconds total wall time. This is
+an observed result for one configuration, not a matched
+baseline-versus-integrated comparison. The native baseline processed only an
+8,064-token prefix, and only 3 of 8 native fact queries completed. There is no
+matched native 100K full-history baseline.
+
+The separate matched 4,096-token attention benchmark remains unchanged:
+telemetry off 7.33× and telemetry on 7.67× for two-pair medians in one
+configuration. The difference is inconclusive; these are not end-to-end
+language-model speedups. The historical 8,192-token 9× crossover remains
+unverified.
 
 ## Measured run-level integration overhead
 
@@ -40,23 +46,28 @@ benchmark.
 
 ## Resources and service reliability
 
-- Host: 4 CPUs, 15,993.6 MiB total memory, CPU-only execution; latest host
-  `MemAvailable` 9,844.6 MiB.
-- Stability recommendations at checkpoints 2,048, 4,096, and 6,144: 4 CPUs,
-  9,906 MiB available at the latest sample, concurrency 4, buffer 2,823,
-  task size 186.
-  Recommendations were recorded and not applied to Zeta.
+- Host: 4 logical CPUs, 15,993.6 MiB total memory, CPU-only execution.
+- Full-run resource results: 18,748.1 process CPU-seconds, about 194.5%
+  average process CPU, 3,400.3 MiB peak runner RSS.
+- Stability recommendations were recorded at all 56 checkpoints through
+  100,000 and were not applied to Zeta.
 - Zeta load gate: at least 3,584 MiB available; it passed before model load.
-- Runner-reported peak RSS through checkpoint 6,144: 2,480.3 MiB.
+- MathMesh delivered all 56 telemetry records through token 100,000 with no
+  failures or drops; the sidecar used 41.38 CPU-seconds and 27.25 MiB peak
+  RSS. This is measured usage during one run, not a telemetry-off comparison.
 - MathMesh and RAG health/admission/audit calls succeeded and their records were
   preserved. The RAG audit chain verified after restart; MathMesh DB export
   restored successfully.
 - The RAG container needed forced termination at shutdown (exit 137,
   `OOMKilled=false`) because its shell wrapper did not forward SIGTERM. A
   restart succeeded and its persisted audit chain verified.
-- A support-service outage during active token processing and recovery under
-  load were not measured.
+- A physical support-service outage during active 100K token processing and
+  recovery under load were not measured.
 
 The standalone and post-resize actual-model preflight records have identical
-correctness outputs. Full-run CPU and peak RSS will continue to be recorded;
-no retrieval or factual-recall claim is made by this pipeline-integrity report.
+correctness outputs. The completed run's 100K synthetic long-range retrieval
+evaluation returned 0/8 exact answers, with 8/8 short-prompt controls passing.
+No general retrieval or factual-recall claim follows from pipeline completion.
+The final execution measurements are in
+[`resource-results.json`](resource-results.json), and retrieval results are in
+[`retention-results.jsonl`](retention-results.jsonl).

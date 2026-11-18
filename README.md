@@ -119,6 +119,22 @@ scheduler-only variant improved loss on all 20 matched seeds; attention-only
 was worse, while initialization-only and all-components paired intervals
 included zero. These results apply to the measured model and dataset only.
 
+## Long-stream engineering run
+
+A separate CPU FP32 experiment processed 100,000 contiguous tokens with
+SmolLM2-360M-Instruct, using a bounded 64-sink plus 64-recent KV cache. The
+runner exited successfully at position 99,999; 56 checkpoints and their
+provenance/cache state were verified. This demonstrates operation for that
+configuration, not improved model quality or unbounded information retention.
+The synthetic long-distance fact task returned 0/8 exact answers, while all
+eight short-prompt controls passed. No matched 100K full-history baseline was
+run, so no end-to-end speedup is established.
+
+See the [completed run report](./research/zeta100k-fresh-20261117-5bc2985bbe99/FINAL_REPORT.md),
+[provenance](./research/zeta100k-fresh-20261117-5bc2985bbe99/PROVENANCE.md), and
+[evidence checklist](./ZETA_BREAKTHROUGH_CHECKLIST.md) for measurements and
+limitations. This is separate from the char-level training benchmark above.
+
 ## What this can and cannot do
 
 - Opt-in log-length temperature scaling compensates for softmax dilution as

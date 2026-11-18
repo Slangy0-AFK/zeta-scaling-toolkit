@@ -1,0 +1,21 @@
+{
+  "configuration_sha256": "379144d9117d82f8a06e8ab474cdf5e82fcfc18647458691072d6a9325e2e8c1",
+  "elapsed_seconds": 0.1730217630001789,
+  "phase": "admit",
+  "recorded_at": "2026-11-17T20:36:41.509377+00:00",
+  "run_id": "zeta100k-fresh-20261117-5bc2985bbe99-mathmesh",
+  "services": {
+    "mathmesh": {
+      "admission_seconds": 0.01402096700076072,
+      "agent_id": "ba0f10b8-8a3f-4039-b9a1-61195792f4fc",
+      "audit_seconds": 0.004675731000133965,
+      "audit_sequence": 1,
+      "create_agent_seconds": 0.00574539100034599,
+      "health_seconds": 0.06332174700037285,
+      "issue_key_seconds": 0.010018068999670504,
+      "login_seconds": 0.07193410199943173,
+      "metadata_id": "4ae7b308-befb-472d-a72e-8a5da9d69671",
+      "metadata_seconds": 0.002533333999963361
+    }
+  }
+}

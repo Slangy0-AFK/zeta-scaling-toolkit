@@ -1,0 +1,457 @@
+{
+  "status": "all_gates_passed",
+  "model_and_tokenizer_loading": {
+    "status": "passed",
+    "revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+    "device": "cpu",
+    "dtype": "torch.float32"
+  },
+  "original_range_native_adapter_parity": {
+    "status": "passed",
+    "name": "native prefill versus adapter",
+    "shape": [
+      2,
+      8,
+      49152
+    ],
+    "max_absolute_difference": 0.00021076202392578125,
+    "mean_absolute_difference": 1.378113665850833e-05,
+    "out_of_tolerance": 0,
+    "atol": 0.0002,
+    "rtol": 0.0001
+  },
+  "native_sequential_parity": {
+    "status": "passed",
+    "name": "native sequential versus adapter",
+    "shape": [
+      2,
+      8,
+      49152
+    ],
+    "max_absolute_difference": 0.0,
+    "mean_absolute_difference": 0.0,
+    "out_of_tolerance": 0,
+    "atol": 0.0002,
+    "rtol": 0.0001
+  },
+  "incremental_cache_continuation": {
+    "status": "passed",
+    "bit_identical_to_single_prefill": true
+  },
+  "causal_future_token_invariance": {
+    "status": "passed",
+    "earlier_logits_bit_identical": true
+  },
+  "full_vs_bounded_cache": {
+    "status": "passed",
+    "full_vs_bounded_max_abs_difference": 10.573875427246094,
+    "bounded_native_reference": {
+      "name": "bounded adapter versus native dense sink/window mask",
+      "shape": [
+        1,
+        16,
+        49152
+      ],
+      "max_absolute_difference": 0.000148773193359375,
+      "mean_absolute_difference": 7.970746992214117e-06,
+      "out_of_tolerance": 0,
+      "atol": 0.0002,
+      "rtol": 0.0001
+    }
+  },
+  "attention_mask_and_eviction": {
+    "status": "passed",
+    "sink_positions": [
+      0,
+      1
+    ],
+    "recent_positions": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "retained_positions": [
+      0,
+      1,
+      12,
+      13,
+      14,
+      15
+    ],
+    "max_masked_attention_probability": 0.0,
+    "batch_and_cache_shapes": [
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ],
+      [
+        1,
+        5,
+        6,
+        64
+      ]
+    ]
+  },
+  "finite_logits_and_cache": {
+    "status": "passed"
+  },
+  "high_position_rope": {
+    "status": "passed",
+    "positions": [
+      0,
+      8191,
+      8192,
+      65536,
+      100000
+    ],
+    "max_abs_error_vs_fp64": 0.0034187827684633576,
+    "absolute_tolerance": 0.005
+  },
+  "synthetic_high_position_offset_probe": {
+    "status": "passed",
+    "history": "empty synthetic offset; not part of the 100K stream",
+    "processed_positions": [
+      65535,
+      65536,
+      65537,
+      65538
+    ],
+    "next_position": 65539,
+    "retained_positions": [
+      65536,
+      65537,
+      65538
+    ]
+  },
+  "contiguous_staged_run_beyond_65537": {
+    "status": "passed",
+    "processed_contiguously_from_position_zero": true,
+    "processed_tokens": 65537,
+    "last_position": 65536,
+    "cache_positions": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      65473,
+      65474,
+      65475,
+      65476,
+      65477,
+      65478,
+      65479,
+      65480,
+      65481,
+      65482,
+      65483,
+      65484,
+      65485,
+      65486,
+      65487,
+      65488,
+      65489,
+      65490,
+      65491,
+      65492,
+      65493,
+      65494,
+      65495,
+      65496,
+      65497,
+      65498,
+      65499,
+      65500,
+      65501,
+      65502,
+      65503,
+      65504,
+      65505,
+      65506,
+      65507,
+      65508,
+      65509,
+      65510,
+      65511,
+      65512,
+      65513,
+      65514,
+      65515,
+      65516,
+      65517,
+      65518,
+      65519,
+      65520,
+      65521,
+      65522,
+      65523,
+      65524,
+      65525,
+      65526,
+      65527,
+      65528,
+      65529,
+      65530,
+      65531,
+      65532,
+      65533,
+      65534,
+      65535,
+      65536
+    ],
+    "checkpoint": "checkpoints/position-065537.safetensors"
+  },
+  "tolerances": {
+    "logit_atol": 0.0002,
+    "logit_rtol": 0.0001
+  },
+  "model_id": "HuggingFaceTB/SmolLM2-360M-Instruct",
+  "model_revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+  "weights_sha256": "e6bffe7435d7ddc10fd3b9a9efd429dafbacb1cb17015fb5562664e7532bf86e",
+  "tokenizer_sha256": "9ca9acddb6525a194ec8ac7a87f24fbba7232a9a15ffa1af0c1224fcd888e47c",
+  "stream_sha256": "c9c43fb35050bc31f8d60e2a9bd600ae960f96d7a7ac1618b41505b2955da322",
+  "corpus_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "source_commit": "ee3a7c8f5702b73ae8e2c2dc2d73930b09efa2ed"
+}

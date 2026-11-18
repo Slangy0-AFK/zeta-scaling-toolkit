@@ -1,7 +1,8 @@
 # Multi-Repository Architecture
 
-The active run status and live sidecars are recorded in
-[FRESH_RUN_PROTOCOL.md](FRESH_RUN_PROTOCOL.md).
+The completed run status and measured outcomes are recorded in
+[FINAL_REPORT.md](FINAL_REPORT.md) and
+[100K_PIPELINE_INTEGRITY_REPORT.md](100K_PIPELINE_INTEGRITY_REPORT.md).
 
 ## Ownership boundary
 
@@ -28,10 +29,10 @@ It is not imported by `run_experiment.py` or `compat_adapter.py`. The static
 Stability Toolkit recommendation is written to a separate JSON file and is
 never applied to Zeta settings.
 
-During the current run, `telemetry_sidecar.py` tails append-only progress and
-sends bounded summaries to MathMesh from a separate process.
-`stability_advisory_sidecar.py` reads those records and appends per-checkpoint
-resource recommendations to `stability-recommendations.jsonl`. Both are
+During the completed run, `telemetry_sidecar.py` tailed append-only progress
+and sent bounded summaries to MathMesh from a separate process.
+`stability_advisory_sidecar.py` read those records and appended per-checkpoint
+resource recommendations to `stability-recommendations.jsonl`. Both were
 separate from the inference process and cannot alter its configuration.
 
 ## Service roles
@@ -61,10 +62,12 @@ RAG request is made from the Zeta token-processing path.
 
 ## Timing and failure boundary
 
-Coordinator requests are bounded and occur outside inference. The live
-MathMesh sender uses its own worker thread and bounded queue; the Stability
-observer runs in a separate process and performs local read-only measurements.
-Neither observer receives tensors, logits, cache state, or model state. Focused
-tests and a telemetry sender failure injected during a short model smoke
-confirmed that Zeta inference continues independently. Full-run isolation
-remains under observation until finalization.
+Coordinator requests are bounded and occurred outside inference. The MathMesh
+sender used its own worker thread and bounded queue; the Stability observer ran
+in a separate process and performed local read-only measurements. Neither
+observer received tensors, logits, cache state, or model state. Focused tests
+and a telemetry sender failure injected during a short model smoke confirmed
+that Zeta inference continues independently. Both observers delivered their
+records through the completed run. Physical support-service outage isolation
+during full-run inference was not tested; see
+[NON_INTERFERENCE_RESULTS.md](NON_INTERFERENCE_RESULTS.md).

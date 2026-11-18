@@ -1,0 +1,17 @@
+{
+  "configuration_sha256": "379144d9117d82f8a06e8ab474cdf5e82fcfc18647458691072d6a9325e2e8c1",
+  "elapsed_seconds": 0.06262695999976131,
+  "phase": "admit",
+  "recorded_at": "2026-11-17T21:00:20.288967+00:00",
+  "run_id": "zeta100k-fresh-20261117-5bc2985bbe99-outage-rag",
+  "services": {
+    "rag": {
+      "credit_seconds": 0.0049110019999716314,
+      "decision": "rag",
+      "govern_seconds": 0.02428017700003693,
+      "health_seconds": 0.025652643999819702,
+      "register_seconds": 0.007331602999329334,
+      "request_id": "zeta100k-fresh-20261117-5bc2985bbe99-outage-rag:admit"
+    }
+  }
+}

@@ -10,6 +10,15 @@ The contiguous run is separate from the synthetic high-position probe; check
 `CORRECTNESS_RESULTS.json` for the latest gate state and `FINAL_REPORT.md` for
 the completed experiment results.
 
+The separately authorized fresh run
+[`zeta100k-fresh-20261117-5bc2985bbe99`](../zeta100k-fresh-20261117-5bc2985bbe99/FINAL_REPORT.md)
+completed 100,000 contiguous tokens with a 64-sink plus 64-recent cache and
+10.7199 tokens/s measured stream throughput. All 56 checkpoints and their
+provenance/cache state were verified. Its synthetic long-range retrieval
+result was 0/8 exact matches; the run is not evidence of general retrieval
+quality or a full-run speedup over a matched baseline. Do not rerun this
+completed run ID.
+
 ## Reproduce or resume
 
 Install the exact hashed runtime dependencies:

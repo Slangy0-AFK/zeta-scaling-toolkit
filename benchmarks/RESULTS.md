@@ -4,6 +4,16 @@ This is a small, CPU-only char-level language-model comparison. It is an
 experiment on one dataset, architecture, and training budget—not evidence that
 any component improves other tasks or large-scale training.
 
+## Separate 100K position-extension experiment
+
+The fresh SmolLM2 streaming experiment is a different workload and is not
+included in the results below. It completed 100,000 contiguous tokens with a
+bounded 128-position cache, but its synthetic long-distance retrieval test
+scored 0/8 exact matches and it had no matched full-length baseline. These
+results do not change the Stage 1 decisions below and do not establish an
+end-to-end speedup. See the [run report](../research/zeta100k-fresh-20261117-5bc2985bbe99/FINAL_REPORT.md)
+and [evidence checklist](../ZETA_BREAKTHROUGH_CHECKLIST.md).
+
 ## Stage 1 context-ability gate
 
 **Decision: NO-GO.** On the specified held-out four-digit successor task at

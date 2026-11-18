@@ -1,0 +1,16 @@
+{
+  "recorded_at_utc": "2026-11-17T21:18:20.280276Z",
+  "host": "Linux 6.8.0-1070-azure, Microsoft virtualized environment",
+  "cpu_model_string": "AMD EPYC 7763 64-Core Processor",
+  "visible_logical_cpus": 2,
+  "temperature_zones": [],
+  "hwmon_temperature_inputs": [],
+  "cooling_devices": [
+    {"type": "Processor", "current_state": 0, "max_state": 0},
+    {"type": "Processor", "current_state": 0, "max_state": 0}
+  ],
+  "thermal_throttle_interface": "absent",
+  "cpufreq_policy_interface": "absent",
+  "proc_cpu_mhz_field": "present but hypervisor-reported; not hardware-verified",
+  "cgroup_cpu_throttle_counters": {"nr_throttled_delta": 0, "throttled_usec_delta": 0}
+}

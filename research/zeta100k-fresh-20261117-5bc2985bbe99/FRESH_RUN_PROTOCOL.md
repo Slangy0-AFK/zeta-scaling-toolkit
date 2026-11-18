@@ -1,28 +1,33 @@
 # Fresh 100K Run Protocol
 
-For subsequent qualification and the latest gate check, see
+For pre-launch qualification history and the final outcome, see
 [QUALIFICATION_RECHECK_20261117.md](QUALIFICATION_RECHECK_20261117.md).
 
-## Current status: RUNNING
+## Final status: COMPLETED
 
 Run ID: `zeta100k-fresh-20261117-5bc2985bbe99`
 
-This is the authorized fresh experiment, not a continuation of the paused
-experiment. The full runner is active as PID `12915`, launched from starting
-commit `cc2b8dfb45dd887f6f202ca69b8c874410fc4645`, without `--resume`.
+This was the authorized fresh experiment, not a continuation of the paused
+experiment. The runner started from commit
+`cc2b8dfb45dd887f6f202ca69b8c874410fc4645` without `--resume`, processed
+100,000 contiguous tokens through absolute position 99,999, and exited with
+code 0. Final stream throughput was 10.7199 tokens/s; total wall time was
+9,636.7 seconds and peak runner RSS was 3,400.3 MiB. All 56 checkpoints were
+verified; the final checkpoint SHA-256 is
+`43e7eee27e0287a01f631025f3d11b8311632a58de6c1faaf1943d2097e7a076`.
 
-At the 2026-11-17 22:19 UTC status check, it had committed a verified checkpoint
-at 6,144/100,000 contiguous tokens (last position 6,143), averaging 10.389
-tokens/s over the latest checkpoint interval. The checkpoint SHA-256 is
-`7d71caa1be6ec4cd881a4472d2c97bdd2c5699fa624aab4678a94ad9a051ccf6`.
-The runner, MathMesh telemetry sidecar (PID `12787`), and Stability advisory
-sidecar (PID `17641`) are separate processes.
+MathMesh and Stability observers ran as separate processes and delivered
+56 records each through token 100,000. MathMesh recorded zero failed requests
+and drops; Stability recommendations were never applied to Zeta.
+[`100K_PIPELINE_INTEGRITY_REPORT.md`](100K_PIPELINE_INTEGRITY_REPORT.md) and
+[`FINAL_REPORT.md`](FINAL_REPORT.md) contain the final outcome.
 
 The existing Codespace reported the approved `standardLinux32gb` specification;
 no additional resize operation was needed. It has 4 CPUs, 15,993.6 MiB total
-RAM, no cgroup memory cap, and 9,799.7 MiB host `MemAvailable` at the latest
-check. The launch gate remained 3,584 MiB. The runner-reported peak RSS through
-the latest checkpoint was 2,480.3 MiB. Workspace storage had 4.7 GiB free.
+RAM, no cgroup memory cap, and 9,799.7 MiB host `MemAvailable` at the
+launch-gate check. The launch gate remained 3,584 MiB. At that launch-time
+snapshot the workspace had 4.7 GiB free; full-run peak RSS was 3,400.3 MiB as
+reported in the final resource results.
 
 ## Preservation and isolation
 
@@ -75,14 +80,17 @@ the expected stream SHA-256 and passed its correctness gates.
 
 ## Launch gate
 
-The initial 3,584 MiB model-load gate passed with 9,799.7 MiB currently
-available. No threshold or mathematical setting was changed. Current gate
-details and checkpoint evidence are in `launch-gate.json` and
+The initial 3,584 MiB model-load gate passed with 9,799.7 MiB available at
+launch. No threshold or mathematical setting was changed. The launch-time gate
+snapshot is preserved in `launch-gate.json`; final status and checkpoint
+evidence are in
 [100K_PIPELINE_INTEGRITY_REPORT.md](100K_PIPELINE_INTEGRITY_REPORT.md).
 
-## Reproducible launch command
+## Reproducible launch command (historical; do not relaunch this run)
 
-The following is the command already running; do not launch a duplicate:
+This is the command used for the completed run. The run ID and output directory
+already exist. Do not execute it again or resume this completed experiment.
+Use a new run ID and output directory only for a separately authorized run.
 
 ```bash
 PYTHONPATH=. TRANSFORMERS_OFFLINE=1 HF_HUB_OFFLINE=1 \
@@ -94,6 +102,8 @@ research/context-100k-experiment-v2/run_experiment.py \
   --max-seconds 43200 --min-available-mib 1024
 ```
 
-The runner writes progress, atomic checkpoints, resource measurements,
+The runner wrote progress, atomic checkpoints, resource measurements,
 retrieval results, and its final report under this run-ID directory. The old
-experiment and all of its checkpoints remain untouched.
+experiment and all of its checkpoints remain untouched. Hashes and the final
+observer/exit status are recorded in
+[`qualification/monitoring-20261117.jsonl`](qualification/monitoring-20261117.jsonl).

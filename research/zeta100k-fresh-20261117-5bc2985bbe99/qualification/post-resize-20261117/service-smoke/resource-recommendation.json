@@ -1,0 +1,14 @@
+{
+  "applied_to_zeta": false,
+  "available_memory_mb": 12396.54296875,
+  "cpu_cores": 4,
+  "elapsed_seconds": 5.2357999948071665e-05,
+  "recommendation": {
+    "buffer_window": 2823,
+    "parallel_tasks": 4,
+    "task_size": 186
+  },
+  "recorded_at": "2026-11-17T22:04:57.886852+00:00",
+  "source": "System-Stability-Toolkit",
+  "workload_tokens": 100000
+}

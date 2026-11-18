@@ -1,0 +1,22 @@
+{
+  "backpressure_events": 0,
+  "delivered": 1,
+  "dropped": 0,
+  "elapsed_seconds": 0.282103546000144,
+  "failed_requests": 8,
+  "last_deferred_tokens": null,
+  "last_delivered_tokens": 2048,
+  "last_error": null,
+  "last_failed_tokens": 2048,
+  "last_failure": "TelemetryHTTPError",
+  "last_seen_tokens": 2048,
+  "malformed_records": 0,
+  "mode": "mathmesh_async",
+  "process_cpu_seconds": 0.130068,
+  "process_peak_rss_mib": 27.0,
+  "queue_capacity": 128,
+  "queue_depth": 0,
+  "queue_high_water": 1,
+  "queued": 2,
+  "retries": 8
+}

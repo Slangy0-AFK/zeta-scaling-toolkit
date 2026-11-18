@@ -1,0 +1,8 @@
+{
+  "error_type": "RuntimeError",
+  "failure_count": 1,
+  "phase": "admit",
+  "recorded_at": "2026-11-17T20:59:53.210014+00:00",
+  "run_id": "zeta100k-fresh-20261117-5bc2985bbe99-outage-rag",
+  "service": "rag"
+}

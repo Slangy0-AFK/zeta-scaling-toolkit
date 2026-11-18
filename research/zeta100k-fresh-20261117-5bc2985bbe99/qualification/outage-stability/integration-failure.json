@@ -1,0 +1,8 @@
+{
+  "error_type": "FileNotFoundError",
+  "failure_count": 1,
+  "phase": "admit",
+  "recorded_at": "2026-11-17T21:01:11.954118+00:00",
+  "run_id": "zeta100k-fresh-20261117-5bc2985bbe99-outage-stability",
+  "service": "stability"
+}

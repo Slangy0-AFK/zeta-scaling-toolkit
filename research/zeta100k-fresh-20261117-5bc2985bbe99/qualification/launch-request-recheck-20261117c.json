@@ -1,0 +1,19 @@
+{
+  "run_id": "zeta100k-fresh-20261117-5bc2985bbe99",
+  "checked_at_utc": "2026-11-17T21:28:28.938729+00:00",
+  "status": "blocked_before_full_launch",
+  "measurement": "host MemAvailable from /proc/meminfo",
+  "total_memory_mib": 7942.3,
+  "available_memory_mib": 2444.7,
+  "required_available_memory_mib": 3584,
+  "headroom_mib": -1139.3,
+  "swap_mib": 0,
+  "preflight_result": "RuntimeError: insufficient available memory to load the model safely",
+  "failed_before_model_load": true,
+  "full_run_started": false,
+  "processed_tokens": 0,
+  "old_run_resumed": false,
+  "zeta_configuration_changed": false,
+  "original_checkpoints_modified": false,
+  "decision": "Do not launch until the existing memory and integrated qualification gates pass."
+}
