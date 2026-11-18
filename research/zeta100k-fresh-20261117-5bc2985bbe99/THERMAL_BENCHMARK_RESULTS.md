@@ -5,10 +5,7 @@
 Short Zeta attention microbenchmarks ran successfully with telemetry off/on.
 Thermal condition was **not measurable**: this environment exposed no
 CPU-temperature or hardware thermal-throttling sensor. The full model and
-100K stream were not loaded or run as part of these short microbenchmarks. A
-separate later 100K stream run completed; see
-[FINAL_REPORT.md](FINAL_REPORT.md). It was not a thermal comparison and does
-not change the conclusion that thermal limiting is not established.
+100K stream were not loaded or run.
 
 Raw data: `qualification/thermal/matched-attention-4096-pairs2-v2.json`.
 Harness: `thermal_benchmark.py`. The benchmark reads progress/system counters

@@ -1,12 +1,11 @@
 # Qualification Recheck
 
-## Historical decision: blocked before launch
+## Decision: blocked before launch
 
-At this recheck snapshot, run
-`zeta100k-fresh-20261117-5bc2985bbe99` was blocked and no 100K processing had
-started. This was a new experiment; the prior experiment was not restarted.
-The later post-resize qualification and completed run are recorded at the end
-of this file; this historical diagnosis is retained unchanged in substance.
+Run ID: `zeta100k-fresh-20261117-5bc2985bbe99`. This is a new experiment;
+the prior experiment was not restarted. No 100K processing was started.
+This addendum records subsequent checks without replacing the earlier gate
+snapshot or historical evidence.
 
 ## Memory diagnosis
 
@@ -44,10 +43,8 @@ number is a fresh Zeta process peak. Two logical CPUs were available.
   high-water 56/128. In an earlier live MathMesh test, an earlier sidecar
   revision delivered 56 synthetic events in 0.5844 seconds, using 0.1973
   CPU seconds and 27.1 MiB peak RSS. Neither is Zeta token throughput or
-  a matched model-run overhead measurement. The final sidecar revision was
-  later exercised during the full run: 56 deliveries, zero failures/drops,
-  41.38 sidecar CPU-seconds, and 27.25 MiB peak RSS. This is not a matched
-  model-throughput comparison or telemetry-off/on full-run benchmark.
+  a matched model-run overhead measurement; the final sidecar revision has
+  not been benchmarked with a running model.
 
 The support containers were stopped after qualification. No mathematical
 setting, numerical safeguard, or memory threshold was changed, and no
@@ -79,10 +76,8 @@ one audit row. A missing Stability Toolkit path also produced a recorded
 pre-admission failure. The corrected RAG container uses `exec uvicorn`;
 it stopped with exit code 0, restarted, and reported `chain_valid=true`.
 These are component/service-boundary tests, not service outages while Zeta
-was running. The final sidecar revision was subsequently exercised with the
-live MathMesh service and concurrent inference during the completed run.
-Physical service outage during full inference and exactly-once recovery after
-an ambiguous request timeout remain unqualified.
+was running. The final sidecar revision has not been rechecked against live
+services or with concurrent inference.
 
 MathMesh admission and RAG credit/govern operations are not proven idempotent
 after a timeout with an ambiguous server-side outcome. The tests above failed
@@ -99,7 +94,7 @@ database after the new tests has SHA-256
 The prior RAG hash in `PROVENANCE.md` describes the earlier snapshot, before
 these additional qualification events.
 
-## Mandatory gates at the pre-launch recheck snapshot
+## Remaining mandatory gates
 
 1. Provide enough available memory to meet the unchanged 3,584 MiB runner
    gate, including support-process headroom, and re-run the actual preflight.
@@ -118,32 +113,3 @@ these additional qualification events.
 
 No retrieval or factual-recall claim follows from the standalone preflight or
 the component tests.
-
-## Post-resize qualification and final run outcome
-
-The existing Codespace was resized to the approved `standardLinux32gb`
-configuration. Post-resize checks measured 4 logical CPUs, 15,993.6 MiB RAM,
-no cgroup memory cap, and 11,960.7 MiB available to the runner at model start.
-The original 3,584 MiB launch gate and mathematical configuration were not
-lowered or changed.
-
-The actual-model post-resize integrated preflight passed and matched the
-standalone correctness fields. The 8-token checkpoint restore smoke resumed
-at position 4 with bit-identical logits. Focused telemetry, service failure
-record, and Stability watcher checks passed. The completed run's detailed
-results are in [100K_PIPELINE_INTEGRITY_REPORT.md](100K_PIPELINE_INTEGRITY_REPORT.md),
-[resource-results.json](resource-results.json), and [FINAL_REPORT.md](FINAL_REPORT.md).
-
-The fresh runner processed all 100,000 contiguous tokens (positions 0–99,999)
-and exited with code 0. All 56 checkpoints passed hash, provenance, retained
-position, cache-shape, and finite-value checks. MathMesh delivered 56 records
-through token 100,000 with no failed requests or drops; Stability emitted 56
-advisory-only records. The final checkpoint SHA-256 is
-`43e7eee27e0287a01f631025f3d11b8311632a58de6c1faaf1943d2097e7a076`.
-
-The bounded telemetry failure-injection smoke did not prevent finite model
-logits or valid cache state. Physical MathMesh/RAG/Stability outages during the
-full inference run were not performed. Final-checkpoint restoration was not
-performed after normal completion. The synthetic long-distance retrieval test
-scored 0/8 exact matches, with all 8 short-prompt controls passing; this is
-separate from the 100K pipeline-integrity pass.

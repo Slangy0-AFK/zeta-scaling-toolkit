@@ -1,39 +1,13 @@
 # Integration Safety Report
 
-For pre-launch history and the final run outcome, see
+For subsequent checks and remaining gates, see
 [QUALIFICATION_RECHECK_20261117.md](QUALIFICATION_RECHECK_20261117.md).
 
-## Final status: 100K run completed; integration limits recorded
+## Decision: BLOCKED
 
-The runner completed 100,000 contiguous tokens and exited with code 0. MathMesh
-telemetry delivered 56 records through token 100,000 with no failures or drops;
-the Stability observer recorded 56 advisory-only recommendations. Deterministic
-RAG handled run/checkpoint audit metadata outside the mathematical execution
-path. See [PROVENANCE.md](PROVENANCE.md) and
-[monitoring-20261117.jsonl](qualification/monitoring-20261117.jsonl).
-
-| Qualification | Current result |
-|---|---|
-| Standalone and post-resize actual-model preflight | Passed with matching correctness fields and pinned inputs. |
-| MathMesh live telemetry | 56 deliveries through token 100,000; zero failures/drops; queue empty at final check. |
-| Stability advisories | 56 records through token 100,000; none applied to Zeta. |
-| Deterministic RAG audit | Run and checkpoint provenance was recorded externally; no tensors, logits, or cache state were sent. |
-| Checkpoint smoke recovery | Passed on 8 real stream tokens; resumed logits were bit-identical. |
-| Injected telemetry outage isolation | Passed at the bounded smoke-test boundary with finite logits/cache. |
-| Physical support-service outage during the full run | Not tested; services remained available during the run. |
-| Final checkpoint reload | Not tested; the completed final checkpoint was hash/provenance/cache validated without restarting. |
-
-The outbound telemetry queue is capped at 128 records, with bounded HTTP
-timeouts. Support observers run outside Zeta and do not receive model tensors,
-logits, or cache state. The live runner uses the pinned CPU FP32 configuration
-without resume. The full run and its limits are summarized in
-[100K_PIPELINE_INTEGRITY_REPORT.md](100K_PIPELINE_INTEGRITY_REPORT.md).
-
-## Historical pre-resize decision
-
-The previous decision was blocked because memory was below the launch gate.
-The following inventory and results preserve that earlier qualification
-snapshot; they do not describe the current resource or run state.
+All services were contacted at run level. The standalone actual-model
+preflight passed, but the integrated actual-model preflight was blocked before
+model load by the resource gate. No full 100K inference was launched.
 
 ## Repository and dependency identity
 
@@ -57,11 +31,7 @@ isolated in the repository's declared Python 3.11 container boundary. The
 unused Chroma/LangChain retrieval stack was not installed; the run used a
 static adapter with the service's API/control dependencies only.
 
-## Historical pre-resize qualification matrix
-
-The matrix below records the earlier insufficient-memory attempt. It is
-preserved as historical evidence; post-resize preflight and completed-run
-results are summarized above.
+## Required qualification matrix
 
 | Case | Result |
 |---|---|
@@ -75,7 +45,7 @@ A successful service call is not a successful integrated-model qualification.
 Identical numerical outputs, positions, cache integrity, and checkpoint
 recovery have not been compared for the integrated cases.
 
-## Historical pre-resize resource and isolation checks
+## Resource and isolation checks
 
 The Stability Toolkit observed 2 CPU cores and 3,494.31 MiB available during
 admission. It recommended buffer 2,823, concurrency 2, and task size 186; none
@@ -94,11 +64,10 @@ export was restored into a disposable database with `psql`; it contains the
 expected admission, audit, and metadata records. The RAG database reports
 `chain_valid: true`. Both stores are preserved under `support/`.
 
-In this historical pre-resize snapshot, services were bound to localhost and
-stopped after qualification, and that coordinator revision lacked asynchronous
-telemetry. The later run used a separate bounded asynchronous telemetry
-observer. A physical support-service outage during the completed full run was
-not tested.
+The services were bound to localhost and stopped after qualification. Their
+outage during an actual Zeta execution was not verified. The coordinator uses
+bounded synchronous run-level requests; the required asynchronous telemetry
+queue is not implemented. Both items remain launch gates.
 
 The RAG container exited with code 137 during shutdown, while Docker reported
 `OOMKilled=false`. Its shell wrapper did not forward SIGTERM, so Docker forced

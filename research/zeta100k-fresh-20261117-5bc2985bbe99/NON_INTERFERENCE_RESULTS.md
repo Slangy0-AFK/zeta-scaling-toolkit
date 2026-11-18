@@ -1,41 +1,36 @@
 # Non-Interference Results
 
-For pre-launch history and the final run outcome, see
+For subsequent checks and remaining gates, see
 [QUALIFICATION_RECHECK_20261117.md](QUALIFICATION_RECHECK_20261117.md).
 
-## Final status: 100K processing completed
+## Status: NOT ESTABLISHED
 
-The standalone preflight and a post-resize preflight run while support services
-were available produced identical correctness fields with the same pinned
-inputs. Both passed native/adapted parity, sequential cache continuation,
-causal invariance, bounded-cache reference parity, finite-value checks, cache
-positions, and high-position RoPE checks. See
-[integrated-preflight/CORRECTNESS_RESULTS.json](qualification/post-resize-20261117/integrated-preflight/CORRECTNESS_RESULTS.json)
-and [standalone/CORRECTNESS_RESULTS.json](qualification/standalone/CORRECTNESS_RESULTS.json).
+The Zeta standalone preflight passed. It measured native/adapted logits,
+sequential cache continuation, future-token invariance, bounded-cache
+reference parity, finite-value checks, cache positions, and high-position
+RoPE correctness. The detailed machine-readable record is
+`qualification/standalone/CORRECTNESS_RESULTS.json`.
 
-Additional bounded non-interference checks:
+Examples from that standalone run:
 
-- The preflight correctness JSON records identical numerical outputs and
-  stream SHA-256 `c9c43fb35050bc31f8d60e2a9bd600ae960f96d7a7ac1618b41505b2955da322`.
-- A fresh checkpoint save/restore at position 4 resumed to position 8 with
-  logits bit-identical to uninterrupted execution.
-- While a telemetry sender outage was injected, Zeta still produced finite
-  logits and passed cache checks. Live MathMesh telemetry separately delivered
-  the qualification checkpoint asynchronously.
-- During the completed 100K run, MathMesh telemetry and the Stability advisory
-  watcher ran in separate processes; neither received tensors, logits, or
-  cache state. MathMesh delivered 56 records through token 100,000 with no
-  failures or drops. Stability recorded 56 recommendations, none applied.
+- Native sequential versus adapter: maximum absolute difference 0.0; bitwise
+  equal.
+- Incremental cache continuation: bit-identical to single prefill.
+- Earlier logits under future-token changes: bit-identical.
+- Bounded adapter versus its native dense sink/window reference: maximum
+  absolute difference `0.000148773193359375`, zero out of tolerance at
+  `atol=0.0002`, `rtol=0.0001`.
+- Standalone stream SHA-256:
+  `c9c43fb35050bc31f8d60e2a9bd600ae960f96d7a7ac1618b41505b2955da322`.
 
-The runner completed all 100,000 contiguous tokens with finite logits and
-bounded cache state. All 56 checkpoints passed hash, provenance, retained
-position, tensor-shape, and finite-cache validation. The final checkpoint was
-not reloaded after completion.
+These are standalone Zeta results, not connected-versus-standalone
+comparisons. The MathMesh-connected preflight stopped before model loading;
+Stability-only, RAG-only, and all-connected numerical preflights were not run.
+No integrated logits, cache traces, positions, or checkpoints exist to compare.
 
-The outage case was injected at the asynchronous telemetry sender boundary; the
-persistent services themselves were not stopped during inference. Therefore
-the smoke establishes isolation from injected sender failures, not from a
-physical service outage during the full run. See
-[checkpoint-telemetry-isolation-results.json](qualification/post-resize-20261117/checkpoint-smoke-20261117-02/checkpoint-telemetry-isolation-results.json)
-and [FINAL_REPORT.md](FINAL_REPORT.md). Historical pre-resize blockers below
-this updated status are retained as historical evidence only.
+`integration_control.py` is a separate run-level process and the existing Zeta
+runner has no support-service call in its token loop. That source boundary is
+useful design evidence, but it does not replace measured non-interference.
+Support-service outage behavior during model execution, integrated checkpoint
+recovery, and full-run numerical equivalence remain unverified. Therefore this
+report does not declare non-interference.

@@ -8,12 +8,8 @@ frequency field is virtualized and cannot confirm the host's physical clock or
 thermal behavior. No thermally stable versus constrained comparison was
 possible, and no cooling improvement is claimed.
 
-The full SmolLM2 Zeta runner was not loaded during the thermal measurements.
-At that historical launch check it had about 2,469 MiB available against its
-unchanged 3,584 MiB minimum. A separate, later authorized 100K run completed;
-its full-model measurements are in
-[FINAL_REPORT.md](FINAL_REPORT.md). That run did not add temperature or
-hardware-throttling measurements and does not change the thermal conclusion.
+The full SmolLM2 Zeta runner was not loaded. At the latest recorded launch
+check it had about 2,469 MiB available against its unchanged 3,584 MiB minimum.
 The short benchmark below uses only Zeta's `NonCollapsingAttention` with
 synthetic Q/K/V at length 4,096; it does not measure full-model throughput.
 

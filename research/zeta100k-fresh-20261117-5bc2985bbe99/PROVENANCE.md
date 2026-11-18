@@ -1,22 +1,16 @@
 # Provenance
 
-For pre-launch qualification history and final execution evidence, see
+For subsequent audit-store hashes and qualification evidence, see
 [QUALIFICATION_RECHECK_20261117.md](QUALIFICATION_RECHECK_20261117.md).
 
 ## New run identity
 
 - Run ID: `zeta100k-fresh-20261117-5bc2985bbe99`.
-- Final status: completed 100,000/100,000 contiguous tokens, last position
-  99,999; runner exited with code 0.
+- Status: blocked before the full contiguous inference run.
 - Primary Zeta checkout: `cc2b8dfb45dd887f6f202ca69b8c874410fc4645`.
 - Zeta experiment source prototype recorded by the runner:
   `ee3a7c8f5702b73ae8e2c2dc2d73930b09efa2ed`.
 - Zeta branch: `copilot/experiment-infrastructure-phase-2`.
-- Runner PID: `12915` (exited successfully). MathMesh telemetry and Stability
-  advisory observers ran separately and were stopped after final verification.
-- The existing Codespace reported `standardLinux32gb`, 4 CPUs, 15,993.6 MiB
-  total RAM, no cgroup memory cap, and 9,799.7 MiB `MemAvailable` at the
-  launch-gate check. Workspace storage had 4.7 GiB free at that check.
 - Pre-existing unrelated edits in retrieval benchmark records/manifests were
   left untouched.
 
@@ -59,35 +53,14 @@ The runtime container also used PostgreSQL image
   `c9c43fb35050bc31f8d60e2a9bd600ae960f96d7a7ac1618b41505b2955da322`.
 - Configuration: seed 20261117; chunk 64; 64 sink positions + 64 recent
   positions; float32; CPU.
-- Final execution: 10.7199 stream tokens/s; 9,328.4 seconds prefill;
-  9,636.7 seconds total wall time; 18,748.1 process CPU-seconds; peak runner
-  RSS 3,400.3 MiB.
-- Checkpoint audit: all 56 checkpoints passed SHA-256, pinned metadata,
-  position, shape, and finite-cache checks. Final checkpoint
-  `checkpoints/position-100000.safetensors` SHA-256:
-  `43e7eee27e0287a01f631025f3d11b8311632a58de6c1faaf1943d2097e7a076`.
-- Final cache: 10,518,528 bytes; 64 sink plus 64 recent positions. Final
-  retained absolute positions are 0–63 and 99,936–99,999.
-- Synthetic long-distance fact retrieval: 0/8 exact answers; 8/8 short-prompt
-  controls passed. No matched full 100K native baseline was run.
-- Qualification-only checkpoint smoke: 8 real stream tokens; restore at
-  position 4, resumed logits bit-identical to uninterrupted processing.
-- Live telemetry: 56 checkpoint summaries delivered to MathMesh through
-  token 100,000, 0 failures, 0 drops, empty queue. Stability recommendations
-  were recorded at all 56 checkpoints with `applied_to_zeta=false`.
-- Deterministic RAG released the external checkpoint-6,144 audit reference;
-  its request and response are stored in
-  `qualification/post-resize-20261117/rag-checkpoint-6144.json`.
 
 ## Audit and preservation artifacts
 
 - Run-level integration calls and timings: `integration-state.json`.
 - Resource recommendation, separately from applied configuration:
   `resource-recommendation.json`.
-- Historical pre-resize launch-gate snapshot: 2,794 MiB available at
-  2026-11-17T20:43:55Z, 790 MiB below the required threshold. The initial
-  launch-gate snapshot is preserved in `launch-gate.json`; it is not the final
-  experiment status.
+- Latest launch-gate snapshot: 2,794 MiB available at 2026-11-17T20:43:55Z;
+  790 MiB below the required threshold.
 - MathMesh database export SHA-256:
   `78ef72c2c876af41c9a3f28b03fab6c61e0a738bc2b0109d543e04a6253cc20a`.
   The plain-SQL dump was restored with `psql` into a disposable database; the
@@ -99,8 +72,4 @@ The runtime container also used PostgreSQL image
   [FRESH_RUN_PROTOCOL.md](FRESH_RUN_PROTOCOL.md).
 
 The previous experiment's checkpoint, progress, and log artifacts were not
-used to initialize this run. Fresh-run checkpoints are confined to this run ID.
-Retrieval/factual recall is assessed separately and failed on the eight
-synthetic long-range queries in this run. Complete final checkpoint hashes,
-observer delivery, and exit status are in
-`qualification/monitoring-20261117.jsonl`.
+used to initialize this run. No full-run checkpoint exists for this run ID.

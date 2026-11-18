@@ -1,46 +1,17 @@
 {
   "run_id": "zeta100k-fresh-20261117-5bc2985bbe99",
-  "checked_at_utc": "2026-11-17T22:19:58Z",
-  "status": "running",
-  "starting_commit": "cc2b8dfb45dd887f6f202ca69b8c874410fc4645",
-  "runner_pid": 12915,
-  "codespace_machine": "standardLinux32gb",
-  "logical_cpus": 4,
-  "total_memory_mib": 15993.6,
-  "available_memory_mib_at_check": 9799.7,
-  "cgroup_memory_limit": "max",
-  "workspace_disk_free_gib": 4.7,
+  "status": "blocked_before_full_launch",
+  "checked_at_utc": "2026-11-17T20:43:55.780977Z",
+  "blocking_check": "available_memory_mib",
   "required_available_memory_mib": 3584,
-  "launch_gate_passed": true,
-  "standalone_actual_model_preflight": "passed",
-  "post_resize_integrated_context_preflight": "passed",
-  "preflight_outputs_identical": true,
-  "stream_sha256": "c9c43fb35050bc31f8d60e2a9bd600ae960f96d7a7ac1618b41505b2955da322",
-  "checkpoint_restore_smoke": {
-    "status": "passed",
-    "resume_position": 4,
-    "bit_identical_logits": true
-  },
-  "support_service_isolation": {
-    "status": "passed_for_bounded_telemetry_failure_injection",
-    "physical_service_outage_during_full_run": "not_performed"
-  },
-  "telemetry": {
-    "status": "running",
-    "delivered": 3,
-    "failed_requests": 0,
-    "dropped": 0,
-    "queue_capacity": 128
-  },
-  "stability_advisory_sidecar_pid": 17641,
-  "zeta_configuration_changed": false,
+  "last_available_memory_mib": 2794,
+  "shortfall_mib": 790,
+  "connected_preflight_error": "RuntimeError: insufficient available memory to load the model safely",
+  "standalone_preflight": "passed",
+  "integrated_model_preflight": "not_passed",
+  "full_run_started": false,
+  "processed_tokens": 0,
   "old_run_resumed": false,
-  "full_run_started": true,
-  "processed_tokens": 6144,
-  "last_position": 6143,
-  "tokens_per_second": 10.388621814447365,
-  "runner_peak_rss_mib": 2480.26953125,
-  "latest_checkpoint": "checkpoints/position-006144.safetensors",
-  "latest_checkpoint_sha256": "7d71caa1be6ec4cd881a4472d2c97bdd2c5699fa624aab4678a94ad9a051ccf6",
-  "decision": "Continue monitoring; do not restart automatically on failure."
+  "zeta_numerical_configuration_changed": false,
+  "decision": "Do not launch until memory and integrated qualification gates pass."
 }

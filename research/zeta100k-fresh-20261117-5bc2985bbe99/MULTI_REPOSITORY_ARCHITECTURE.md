@@ -1,8 +1,7 @@
 # Multi-Repository Architecture
 
-The completed run status and measured outcomes are recorded in
-[FINAL_REPORT.md](FINAL_REPORT.md) and
-[100K_PIPELINE_INTEGRITY_REPORT.md](100K_PIPELINE_INTEGRITY_REPORT.md).
+For the later observer implementation and its qualification limits, see
+[QUALIFICATION_RECHECK_20261117.md](QUALIFICATION_RECHECK_20261117.md).
 
 ## Ownership boundary
 
@@ -29,12 +28,6 @@ It is not imported by `run_experiment.py` or `compat_adapter.py`. The static
 Stability Toolkit recommendation is written to a separate JSON file and is
 never applied to Zeta settings.
 
-During the completed run, `telemetry_sidecar.py` tailed append-only progress
-and sent bounded summaries to MathMesh from a separate process.
-`stability_advisory_sidecar.py` read those records and appended per-checkpoint
-resource recommendations to `stability-recommendations.jsonl`. Both were
-separate from the inference process and cannot alter its configuration.
-
 ## Service roles
 
 ### MathMesh Governor
@@ -48,8 +41,8 @@ request; no model key or model endpoint was configured. The DB export is under
 ### System-Stability-Toolkit
 
 Pinned pure-Python advisory helper. It observed CPU and available memory and
-returns buffer, concurrency, and task-size recommendations at each observed
-checkpoint. Each recommendation is appended with `applied_to_zeta: false`.
+returned buffer, concurrency, and task-size recommendations. The complete
+recommendation and timestamp are stored in `resource-recommendation.json`.
 Recommendations are data, not Zeta configuration.
 
 ### Deterministic RAG Governor
@@ -62,12 +55,16 @@ RAG request is made from the Zeta token-processing path.
 
 ## Timing and failure boundary
 
-Coordinator requests are bounded and occurred outside inference. The MathMesh
-sender used its own worker thread and bounded queue; the Stability observer ran
-in a separate process and performed local read-only measurements. Neither
-observer received tensors, logits, cache state, or model state. Focused tests
-and a telemetry sender failure injected during a short model smoke confirmed
-that Zeta inference continues independently. Both observers delivered their
-records through the completed run. Physical support-service outage isolation
-during full-run inference was not tested; see
-[NON_INTERFERENCE_RESULTS.md](NON_INTERFERENCE_RESULTS.md).
+Service requests are only made at run-level admission and completion. Each
+HTTP request has a three-second timeout. Zeta stores progress locally at its
+normal checkpoint intervals. There are no network requests in forward passes.
+
+The coordinator uses synchronous bounded HTTP requests before/after execution.
+A separate asynchronous bounded progress observer has since been implemented;
+its synthetic and component tests and remaining concurrent-model qualification
+are described in the recheck addendum. It is not part of the forward path.
+
+Support services can be stopped independently. However, the required
+model-execution outage test did not pass its Zeta preflight because host memory
+was below the model-load gate. The current evidence therefore does not certify
+failure isolation during an actual run.
