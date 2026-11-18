@@ -81,10 +81,9 @@ research novelty claim, or end-to-end speedup claim.
 - Local full test suite: **681 passed, 6 skipped**, 96.73% package coverage,
   Python 3.14.2. Ruff lint and formatting passed. The supported-runtime CI
   matrix also checks strict mypy.
-- JSON/JSONL syntax, report metric consistency, local Markdown links, and
-  targeted secret checks passed for the previously committed evidence and
-  documentation. The final report is subject to the same local-link check
-  before commit.
+- JSON/JSONL syntax, report metric consistency, and targeted secret checks
+  passed for the committed research evidence. Local Markdown links in this
+  final report and the updated release notes were checked and passed.
 - Existing PR: [#11](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/pull/11),
   open, mergeable, not merged, with no review decision recorded.
 - Branch: `copilot/experiment-infrastructure-phase-2`. The release-candidate
@@ -95,6 +94,10 @@ research novelty claim, or end-to-end speedup claim.
   synchronized at that commit before this final documentation update. Those
   evidence files are not included in the 0.5.1 distributions; the worktree was
   clean after the evidence push.
+- The final release-status documentation update was committed as
+  `404c3e91b369fd38bbb86659f26ce4c82d8a2553`, synchronized to the remote, and
+  passed quality plus all seven Python/PyTorch matrix jobs. The `v0.5.1` tag
+  points to the package source commit listed above.
 
 ### Current CI status
 
