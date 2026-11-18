@@ -104,11 +104,14 @@ warnings are configured as errors. The monitor now hashes in chunks, and the
 three tests ignore only that specific PyTorch warning; their assertions
 remain enabled. The full local suite passes with these changes.
 
-The latest pushed-commit workflow is
+The release-candidate source commit passed quality and all seven Python/PyTorch
+runtime matrix jobs in
 [run 44223265834](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/actions/runs/44223265834).
-Quality and all seven Python/PyTorch runtime matrix jobs passed. Mutation and
-nightly jobs were skipped by workflow conditions. The PR remains open,
-mergeable, and unreviewed; it was not merged.
+The report-only follow-up commit `f73634189f5e9e017df843e5953ac69902cd8f4d`
+also passed quality and all seven matrix jobs in
+[run 44223685764](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/actions/runs/44223685764).
+Mutation and nightly jobs were skipped by workflow conditions. The PR remains
+open, mergeable, and unreviewed; it was not merged.
 
 ## PyPI audit and 0.5.1 candidate
 
