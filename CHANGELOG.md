@@ -16,7 +16,7 @@
   - Protocol versioning for manifest schema evolution
 - Extend public API: exports `TrialCheckpoint`, `load_checkpoint`, `save_checkpoint_atomic`, `ExperimentManifest`, `compute_source_digest`, `compute_toolkit_source_digest`
 - Tests: 39 new tests covering checkpoint capture/restore, RNG state restoration, atomic writes, provenance creation, manifest compatibility, and source digests
-- Validation: 680 passed, 6 skipped; 96.73% coverage, above the 95% gate
+- Validation: 681 passed, 6 skipped; 96.73% coverage, above the 95% gate
 - Quality: ruff lint, ruff format, and strict mypy all passing
 - Set the development version to 0.5.1 for changes after the 0.5.0 release.
 - Add resumable context-use experiments and paired reporting, with a

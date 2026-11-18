@@ -29,8 +29,9 @@ tests import them.
 ## Compatibility and limitations
 
 - Python support remains `>=3.9`; runtime dependency remains `torch>=2.0.0`.
-- Validation on Python 3.14.2 with CPU PyTorch 2.15.0: 680 passed, 6 skipped,
-  96.73% package coverage; Ruff and strict mypy passed.
+- Validation on Python 3.14.2 with PyTorch 2.15.0+cu132 (CPU execution; CUDA
+  unavailable): 681 passed, 6 skipped, 96.73% package coverage; Ruff and
+  strict mypy passed.
 - No general large-model, other-architecture, or end-to-end speedup claim is
   made.
 - The separate 100K run processed 100,000 tokens with verified checkpoints,
