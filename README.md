@@ -158,6 +158,28 @@ failed.
 See the [full short-retrieval report](./ZETA_FINAL_SHORT_RETRIEVAL_DIAGNOSTICS.md)
 and [machine-readable results](./ZETA_FINAL_SHORT_RETRIEVAL_DIAGNOSTICS.json).
 
+## Experiment integrity and reproducibility
+
+The completed 100K experiment is preserved as an original evidence run and
+was not rerun during subsequent retrieval testing. The original 100K results
+were audited against saved experiment evidence; the 8,192-token and
+16,384-token retrieval diagnostics were separate experiments and did not
+modify or replace those results. The original run's checkpoints and
+provenance remain preserved.
+
+| Experiment | Results | Evidence status |
+|---|---|---|
+| 100K contiguous stream processing | 100,000 tokens processed through position 99,999; 56/56 checkpoints verified; 10.7199 tokens/second; 9,636.7 seconds total runtime; 3,400.3 MiB peak process RSS. | Completed original run; not rerun during later retrieval testing. |
+| Original 100K retrieval | 0/8 exact matches; 8/8 positive controls. | Audited from saved evidence; not rerun or independently reproduced. |
+| 8,192-token retrieval diagnostic | 0/3 exact matches; 3/3 positive controls; negative control passed. | Separate diagnostic. |
+| 16,384-token retrieval diagnostic | 0/4 exact matches; 4/4 positive controls; negative control passed. | Separate diagnostic. |
+
+These results measure different aspects of the system: the 100K processing
+results demonstrate stream processing and checkpoint integrity, while the
+retrieval results measure exact-match recall in their respective tests.
+There is no matched full-history 100K speed baseline, and the retrieval
+diagnostics do not replace the original run.
+
 ## What this can and cannot do
 
 - Opt-in log-length temperature scaling compensates for softmax dilution as
