@@ -340,6 +340,7 @@ def test_phase_status_is_incomplete_on_interrupt_and_completed_on_resume(tmp_pat
     assert json.loads(status_path.read_text())["phases"]["sanity"] == "completed"
 
 
+@pytest.mark.filterwarnings("ignore:TypedStorage is deprecated:UserWarning")
 def test_interrupted_trial_resumes_checkpoint_without_training_or_duplicate_record(
     tmp_path, monkeypatch
 ):
@@ -443,6 +444,7 @@ def test_summary_reports_paired_per_seed_results_and_confidence_interval_shape()
     assert "4096:16:by_target_position:late" in summary["comparisons"]["rope-log-full_vs_rope-full"]
 
 
+@pytest.mark.filterwarnings("ignore:TypedStorage is deprecated:UserWarning")
 def test_model_checkpoint_is_portable_cpu_state(tmp_path):
     model = CaptureModel()
     path = tmp_path / "model.pt"

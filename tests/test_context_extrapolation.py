@@ -221,6 +221,7 @@ def test_evaluate_streams_respects_context_and_digit_lengths(monkeypatch):
     assert calls[-1][-1]
 
 
+@pytest.mark.filterwarnings("ignore:TypedStorage is deprecated:UserWarning")
 def test_load_model_restores_requested_evaluation_variant(tmp_path):
     settings = runner.extrapolation_candidate("rope-linear", 0)
     model = runner.train_extrapolation("rope-linear", "context", 100, 1, 1, settings)

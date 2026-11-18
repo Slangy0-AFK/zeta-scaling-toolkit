@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import subprocess
@@ -9,6 +10,14 @@ import pytest
 from safetensors.numpy import save_file
 
 from tools import monitor_context_100k as diagnostics
+
+
+def test_digest_hashes_large_files_in_chunks(tmp_path):
+    content = b"checkpoint-data" * 100_000
+    path = tmp_path / "checkpoint.bin"
+    path.write_bytes(content)
+
+    assert diagnostics.digest(path) == hashlib.sha256(content).hexdigest()
 
 
 @pytest.fixture
