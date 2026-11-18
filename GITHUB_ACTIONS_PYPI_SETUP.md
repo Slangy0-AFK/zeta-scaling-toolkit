@@ -27,22 +27,12 @@ The repository includes a GitHub Actions workflow (`.github/workflows/publish.ym
    | **Owner** | `Slangy0-AFK` (your GitHub username) |
    | **Repository name** | `zeta-scaling-toolkit` |
    | **Workflow name** | `publish.yml` |
-   | **Environment name** | `publish` (optional but recommended) |
+   | **Environment name** | Leave blank; the workflow does not use a GitHub environment |
 
 4. Click "Add publisher"
 5. PyPI will show the pending publisher - it will activate once the first successful workflow run completes
 
-### Step 2: Create GitHub Environment (Optional but Recommended)
-
-For additional security, create a dedicated environment for publishing:
-
-1. Go to: https://github.com/Slangy0-AFK/zeta-scaling-toolkit/settings/environments
-2. Click "New environment"
-3. Name: `publish`
-4. (Optional) Add required reviewers who must approve each publish
-5. Click "Configure environment"
-
-### Step 3: Verify Workflow File
+### Step 2: Verify Workflow File
 
 The workflow file is already in place:
 ```
@@ -51,11 +41,11 @@ The workflow file is already in place:
 
 Key configuration:
 - **Trigger:** Automatically runs when tags matching `v*` are pushed
-- **Environment:** Uses the `publish` environment (if configured)
+- **Environment:** Does not use a GitHub environment
 - **Permissions:** Requests `id-token: write` for OIDC
 - **Action:** Uses `pypa/gh-action-pypi-publish@release/v1`
 
-### Step 4: Test the Setup
+### Step 3: Test the Setup
 
 Trigger a publish by pushing a tag:
 
@@ -65,7 +55,7 @@ git tag v0.5.0
 git push origin v0.5.0
 ```
 
-### Step 5: Monitor the Workflow
+### Step 4: Monitor the Workflow
 
 1. Go to: https://github.com/Slangy0-AFK/zeta-scaling-toolkit/actions
 2. Find the workflow run for your tag
