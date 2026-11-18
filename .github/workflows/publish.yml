@@ -45,11 +45,15 @@ jobs:
     name: Publish to PyPI
     needs: build
     runs-on: ubuntu-latest
+    environment: publish
     permissions:
       contents: read
       id-token: write
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
