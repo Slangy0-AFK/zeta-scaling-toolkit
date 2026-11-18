@@ -19,6 +19,16 @@ on large-scale tasks.
   while empty query sequences and batches are supported. See [attention property tests](./tests/test_properties.py),
   [edge-case tests](./tests/test_edge_cases.py), and
   [regression tests](./tests/test_hardening_regressions.py).
+- **`GroupedQueryAttention`** is a separate scaled-dot-product API for Q/K/V
+  tensors laid out as `[batch, heads, sequence, head_dim]`. Its defaults match
+  SmolLM2-360M's 15 query heads, 5 KV heads, and 64-dimensional heads. It uses
+  contiguous 3:1 query-to-KV grouping, raw QK scores scaled by
+  `1 / sqrt(head_dim)`, and causal masking by default; output heads are merged
+  to `[batch, query_length, 960]`. For cached suffixes, query positions are
+  aligned to the end of the key sequence. The grouped contractions avoid
+  explicit KV expansion but are not a specialized fused kernel. This API does
+  not project Q/K/V, apply RoPE, handle a KV cache, or apply an output
+  projection.
 - **`AsymptoticLRScheduler`** is the retained public class name for a schedule
   that linearly warms up, follows cosine decay to `floor_ratio * base_lr`, then
   stays at that floor. `floor_ratio` must be in `[0, 1]`, `total_steps >= 1`,
@@ -67,6 +77,7 @@ currently provides 0.5.0. See the [0.5.1 release notes](./RELEASE_NOTES_v0.5.1.m
 import torch
 from zeta_scaling_toolkit import (
     AsymptoticLRScheduler,
+    GroupedQueryAttention,
     NonCollapsingAttention,
     get_isotropic_coords,
     make_corrected_linear,
@@ -76,6 +87,12 @@ attention = NonCollapsingAttention(d_k=64)
 q, k, v = (torch.randn(2, 128, 64) for _ in range(3))
 # On another device, move the module too: attention = attention.to(q.device)
 output = attention(q, k, v)
+
+gqa = GroupedQueryAttention()
+q = torch.randn(2, 15, 128, 64)
+k = torch.randn(2, 5, 128, 64)
+v = torch.randn(2, 5, 128, 64)
+gqa_output = gqa(q, k, v)  # [2, 128, 960]
 
 linear = make_corrected_linear(1024, 4096, nonlinearity="relu")
 optimizer = torch.optim.Adam(linear.parameters(), lr=1e-3)

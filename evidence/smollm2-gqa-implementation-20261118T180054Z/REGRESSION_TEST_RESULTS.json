@@ -1,0 +1,65 @@
+{
+  "status": "pass",
+  "repository": "Slangy0-AFK/zeta-scaling-toolkit",
+  "branch": "copilot/experiment-infrastructure-phase-2",
+  "source_base_commit": "45da1c25d93e55655940b891436bc1e268daac73",
+  "package_version": "0.5.1",
+  "runtime": {
+    "python": "3.14.2",
+    "pytorch": "2.15.0+cu132",
+    "device": "cpu"
+  },
+  "commands": [
+    {
+      "command": "pytest -q tests/test_grouped_query_attention.py",
+      "result": "17 passed"
+    },
+    {
+      "command": "pytest -q tests/test_zeta_toolkit.py tests/test_properties.py tests/test_edge_cases.py tests/test_audit_fixes.py tests/test_hardening_regressions.py tests/test_followup_gaps.py tests/test_hypothesis_properties.py",
+      "result": "488 passed, 1 skipped"
+    },
+    {
+      "command": "pytest --cov=zeta_scaling_toolkit --cov-report=term-missing --cov-fail-under=95 --hypothesis-seed=20261115",
+      "result": "698 passed, 6 skipped; total coverage 96.62%; required 95% threshold passed"
+    },
+    {
+      "command": "ruff check zeta_scaling_toolkit tests benchmarks smoke_test.py",
+      "result": "passed"
+    },
+    {
+      "command": "ruff format --check .",
+      "result": "passed; 139 files already formatted"
+    },
+    {
+      "command": "mypy --strict zeta_scaling_toolkit",
+      "result": "passed; no issues found in 6 source files"
+    },
+    {
+      "command": "git diff --check",
+      "result": "passed"
+    }
+  ],
+  "existing_attention_behavior": {
+    "NonCollapsingAttention_source_modified": false,
+    "existing_attention_tests_modified": false,
+    "focused_existing_regressions": "488 passed, 1 skipped",
+    "full_suite": "passed"
+  },
+  "public_api": {
+    "import": "from zeta_scaling_toolkit import GroupedQueryAttention",
+    "included_in_all": true,
+    "constructor_signature": "(num_query_heads: int = 15, num_key_value_heads: int = 5, head_dim: int = 64) -> None",
+    "forward_signature": "(self, query: torch.Tensor, key: torch.Tensor, value: torch.Tensor, *, is_causal: bool = True) -> torch.Tensor",
+    "Pylance_diagnostics_for_new_source_and_tests": 0
+  },
+  "historical_acceptance_evidence": {
+    "requested_path": "evidence/zeta-gqa-acceptance-20261118T175054Z",
+    "available_in_checkout": false,
+    "effect": "The documented exact historical failure could not be rerun; an independent numerical acceptance suite was implemented from the request and pinned architecture evidence."
+  },
+  "git_changes": {
+    "committed": false,
+    "pushed": false,
+    "unrelated_changes_observed_at_start": false
+  }
+}

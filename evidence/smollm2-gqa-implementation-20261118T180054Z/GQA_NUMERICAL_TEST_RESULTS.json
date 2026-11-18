@@ -1,0 +1,110 @@
+{
+  "status": "pass",
+  "reference": "Independent explicit KV repeat_interleave followed by ordinary scaled-dot-product attention; reference does not call GroupedQueryAttention.",
+  "fp32_acceptance_tolerances": {
+    "atol": 1e-5,
+    "rtol": 1e-4
+  },
+  "relative_error_definition": "Maximum abs(actual-reference)/abs(reference) over entries where abs(reference) > 1e-3.",
+  "fp32_acceptance_cases": [
+    {
+      "batch_size": 1,
+      "query_length": 1,
+      "key_length": 1,
+      "query_shape": [1, 15, 1, 64],
+      "key_shape": [1, 5, 1, 64],
+      "value_shape": [1, 5, 1, 64],
+      "output_shape": [1, 1, 960],
+      "max_absolute_error": 0.0,
+      "max_relative_error": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "batch_size": 2,
+      "query_length": 4,
+      "key_length": 4,
+      "query_shape": [2, 15, 4, 64],
+      "key_shape": [2, 5, 4, 64],
+      "value_shape": [2, 5, 4, 64],
+      "output_shape": [2, 4, 960],
+      "max_absolute_error": 0.0,
+      "max_relative_error": 0.0,
+      "within_tolerance": true
+    },
+    {
+      "batch_size": 2,
+      "query_length": 2,
+      "key_length": 5,
+      "query_shape": [2, 15, 2, 64],
+      "key_shape": [2, 5, 5, 64],
+      "value_shape": [2, 5, 5, 64],
+      "output_shape": [2, 2, 960],
+      "max_absolute_error": 2.384185791015625e-07,
+      "max_relative_error": 8.829423677525483e-06,
+      "within_tolerance": true
+    },
+    {
+      "batch_size": 1,
+      "query_length": 7,
+      "key_length": 7,
+      "query_shape": [1, 15, 7, 64],
+      "key_shape": [1, 5, 7, 64],
+      "value_shape": [1, 5, 7, 64],
+      "output_shape": [1, 7, 960],
+      "max_absolute_error": 0.0,
+      "max_relative_error": 0.0,
+      "within_tolerance": true
+    }
+  ],
+  "per_dtype_gradient_case": {
+    "query_shape": [2, 15, 3, 64],
+    "key_shape": [2, 5, 5, 64],
+    "value_shape": [2, 5, 5, 64],
+    "output_shape": [2, 3, 960],
+    "dtypes": [
+      {
+        "dtype": "torch.float32",
+        "atol": 1e-5,
+        "rtol": 1e-4,
+        "max_absolute_error": 2.384185791015625e-07,
+        "max_relative_error": 1.665404488448985e-05,
+        "outputs_finite": true,
+        "qkv_gradients_finite": true
+      },
+      {
+        "dtype": "torch.float16",
+        "atol": 1e-3,
+        "rtol": 1e-3,
+        "max_absolute_error": 7.62939453125e-06,
+        "max_relative_error": 0.0008368492126464844,
+        "outputs_finite": true,
+        "qkv_gradients_finite": true
+      },
+      {
+        "dtype": "torch.bfloat16",
+        "atol": 1e-2,
+        "rtol": 1e-2,
+        "max_absolute_error": 0.0,
+        "max_relative_error": 0.0,
+        "outputs_finite": true,
+        "qkv_gradients_finite": true
+      },
+      {
+        "dtype": "torch.float64",
+        "atol": 1e-12,
+        "rtol": 1e-12,
+        "max_absolute_error": 3.3306690738754696e-16,
+        "max_relative_error": 2.7849298822472078e-14,
+        "outputs_finite": true,
+        "qkv_gradients_finite": true
+      }
+    ]
+  },
+  "additional_checks": {
+    "contiguous_3_to_1_head_mapping": "pass",
+    "future_key_and_value_do_not_change_earlier_causal_outputs": "pass",
+    "noncausal_mode_against_independent_reference": "pass",
+    "focused_test_command": "pytest -q tests/test_grouped_query_attention.py",
+    "focused_test_result": "17 passed"
+  }
+}

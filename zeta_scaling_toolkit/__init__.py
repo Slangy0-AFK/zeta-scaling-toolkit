@@ -9,12 +9,14 @@ from .core import (
     get_scale_invariant_vit_coords,
     make_corrected_linear,
 )
+from .gqa import GroupedQueryAttention
 from .positions import StreamingKVCache, alibi_bias, rotary_embedding, streaming_mask
 from .provenance import ExperimentManifest, compute_source_digest, compute_toolkit_source_digest
 
 __version__ = "0.5.1"
 __all__ = [
     "NonCollapsingAttention",
+    "GroupedQueryAttention",
     "AsymptoticLRScheduler",
     "calibrate_gain",
     "get_isotropic_coords",

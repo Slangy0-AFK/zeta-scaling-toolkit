@@ -1,0 +1,44 @@
+{
+  "attention_compatibility": {
+    "status": "numerically verified for isolated attention operation",
+    "details": "Raw scaled-dot-product GQA with 15 query heads, 5 KV heads, head_dim 64, 3:1 mapping, and merged 960-feature output passed an independent expanded-KV reference."
+  },
+  "rope_compatibility": {
+    "status": "not directly compatible; not integrated or weight-tested",
+    "target": "Repository integration evidence describes SmolLM2/Llama split-half RoPE with rope_theta=100000 and no RoPE scaling.",
+    "zeta_existing": "rotary_embedding uses interleaved even/odd rotation and defaults to base=10000.",
+    "required_work": "Preserve native split-half convention and exact target base/position handling in a separate adapter; do not apply the current Zeta RoPE to pretrained projections."
+  },
+  "kv_cache_compatibility": {
+    "status": "partial structural compatibility; no direct integration validation",
+    "compatible_contiguous_case": "The attention API accepts [batch, 5, key_length, 64]; StreamingKVCache can structurally store [batch, 5, 1, 64] one-token appends. Full contiguous cached keys with end-aligned queries are shape-compatible.",
+    "incompatible_unverified_cases": [
+      "No absolute key/query positions are accepted by GroupedQueryAttention.",
+      "A sink/recent cache with discontiguous retained positions cannot use the API's inferred end-aligned causal mask correctly without an explicit absolute-position mask or adapter.",
+      "StreamingKVCache is detached/inference-only, appends one position at a time, and has no per-row position or beam-reordering interface.",
+      "The new attention API and cache have not been integration-tested together."
+    ]
+  },
+  "tensor_layout_and_checkpoint_mapping": {
+    "required_q_layout": "[batch, 15, sequence, 64]",
+    "required_kv_layout": "[batch, 5, sequence, 64]",
+    "output_layout": "[batch, sequence, 960]",
+    "mapping_status": "Expected projected-channel reshape/flatten contract documented; actual checkpoint weights and keys were not loaded or validated."
+  },
+  "remaining_model_integration": [
+    "Q/K/V projections and checkpoint mapping",
+    "native target RoPE",
+    "position-aware causal/padding masks",
+    "per-layer cache integration and lifecycle",
+    "output projection",
+    "model loader and inference path",
+    "full pinned-model parity testing"
+  ],
+  "prohibitions_observed": {
+    "model_weights_loaded": false,
+    "tokenizer_loaded": false,
+    "model_inference_run": false,
+    "360m_smoke_test_run": false,
+    "other_repository_modified": false
+  }
+}
