@@ -1,6 +1,6 @@
 # Release notes: zeta-scaling-toolkit 0.5.1
 
-**Status:** Prepared candidate; not published
+**Status:** GitHub release published; PyPI publication is blocked by HTTP 403
 
 ## Summary
 
@@ -38,5 +38,6 @@ tests import them.
   but its saved long-distance retrieval score was 0/8. The 8,192- and
   16,384-token diagnostics scored 0/3 and 0/4, respectively. These results do
   not establish a general retrieval capability or the cause of the misses.
-- The candidate has not been published to PyPI. The current published release
-  remains 0.5.0 pending explicit approval of the built artifacts.
+- The GitHub release is available as `v0.5.1`. PyPI still publishes 0.5.0:
+  the approved upload attempt returned HTTP 403 and published no 0.5.1 files.
+  Retry PyPI publication only after its upload authorization has been checked.

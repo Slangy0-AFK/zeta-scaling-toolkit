@@ -1,8 +1,8 @@
 # Final Research Completion and Release Audit
 
-**Status:** Research evidence documented; candidate 0.5.1 prepared but not
-published. No experiment or long benchmark was started during this
-finalization.
+**Status:** Research evidence documented; GitHub release v0.5.1 published;
+PyPI publication is blocked by HTTP 403. No experiment or long benchmark was
+started during this finalization.
 
 ## Research results
 
@@ -88,12 +88,13 @@ research novelty claim, or end-to-end speedup claim.
 - Existing PR: [#11](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/pull/11),
   open, mergeable, not merged, with no review decision recorded.
 - Branch: `copilot/experiment-infrastructure-phase-2`. The release-candidate
-  source commit is `a866493b40d1d0275ab8857bc2439433d1a332de`; the remote branch
-  matched this SHA when checked. This report is a documentation-only follow-up
-  to that package source commit.
-- Pre-existing unrelated working-tree changes and local experiment payloads
-  remain unstaged and uncommitted; they were not included in the release
-  candidate or the commits described here.
+  source commit is `a866493b40d1d0275ab8857bc2439433d1a332de`. Supplemental
+  retrieval records, checkpoint manifests, token streams, and support audit
+  snapshots were committed separately in evidence-only commit
+  `ac9cfef5aa499c7b1930863f72b7fef4193165d9`. The branch and remote were
+  synchronized at that commit before this final documentation update. Those
+  evidence files are not included in the 0.5.1 distributions; the worktree was
+  clean after the evidence push.
 
 ### Current CI status
 
@@ -110,19 +111,24 @@ runtime matrix jobs in
 The report-only follow-up commit `f73634189f5e9e017df843e5953ac69902cd8f4d`
 also passed quality and all seven matrix jobs in
 [run 44223685764](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/actions/runs/44223685764).
+The supplemental evidence commit `ac9cfef5aa499c7b1930863f72b7fef4193165d9`
+passed quality and all seven Python/PyTorch matrix jobs in
+[run 44225318674](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/actions/runs/44225318674).
 Mutation and nightly jobs were skipped by workflow conditions. The PR remains
 open, mergeable, and unreviewed; it was not merged.
 
-## PyPI audit and 0.5.1 candidate
+## PyPI audit and v0.5.1 release
 
-PyPI currently publishes **0.5.0** (wheel SHA-256
+PyPI still publishes **0.5.0** (wheel SHA-256
 `9db3a62d20e447fe894ce0ffc51ce005035a499850e5c01b467f01250d14bb65`;
 sdist SHA-256
 `fa50983829d74497a8d2d981ac7ea82f2e48c699a2bfe818aaa8f6cfa63393e3`).
 The published distributions lack the current `checkpoint.py` and
 `provenance.py` modules. Repository metadata is 0.5.1, so a 0.5.1 update is
-needed. The latest GitHub Release is `v0.1.0`; there is no GitHub release
-corresponding to this candidate.
+needed. An upload of the approved 0.5.1 distributions was attempted, but
+PyPI returned HTTP 403; the post-attempt PyPI JSON still reports 0.5.0 and
+contains no 0.5.1 files. The configured upload credentials therefore need
+their PyPI authorization checked before another upload attempt.
 
 Candidate **0.5.1**, built from source commit
 `a866493b40d1d0275ab8857bc2439433d1a332de`:
@@ -144,14 +150,17 @@ fully empty environment and dependency download was not performed.
 The candidate retains the runtime dependency `torch>=2.0.0`; NumPy and
 Safetensors are test/development extras. The build succeeded with non-blocking
 Setuptools deprecation warnings for the existing TOML-table license field
-and MIT license classifier. PyPI publication has **not** occurred.
+and MIT license classifier.
+
+GitHub Release [v0.5.1](https://github.com/Slangy0-AFK/zeta-scaling-toolkit/releases/tag/v0.5.1)
+was created at the exact package source commit above. Its attached wheel and
+sdist sizes and SHA-256 digests match the verified local artifacts. PyPI
+publication has **not** succeeded.
 
 ## Remaining approvals and blockers
 
-1. Wait for the pending CI runtime matrix jobs and record their final result.
-2. PyPI publication requires explicit approval of **version 0.5.1**, source
-   commit `a866493b40d1d0275ab8857bc2439433d1a332de`, and the two artifact
-   hashes above. Nothing has been uploaded.
-3. If publication is approved, publish these exact artifacts, verify their
-   PyPI hashes, and create/update a matching GitHub Release. Do not merge PR
-   #11 without separate authorization.
+1. PyPI publication is blocked by the HTTP 403 response. Check or replace the
+   configured PyPI upload authorization, then upload the exact approved
+   artifacts and verify their PyPI hashes.
+2. PR #11 remains open and unmerged. Do not merge it without separate
+   authorization.
