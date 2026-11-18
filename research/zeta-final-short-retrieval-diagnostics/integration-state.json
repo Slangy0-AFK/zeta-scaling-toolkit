@@ -1,0 +1,26 @@
+{
+  "completion": {
+    "audit_seconds": 0.01205417699929967,
+    "audit_sequence": 1,
+    "health_seconds": 0.05708607199994731,
+    "login_seconds": 0.06366301799971552,
+    "metadata_status": "complete",
+    "update_seconds": 0.010506585998882656
+  },
+  "phase": "complete",
+  "run_id": "zeta-short-retrieval-diagnostics-20261118-0119-936e6861",
+  "services": {
+    "mathmesh": {
+      "admission_seconds": 0.013853975000529317,
+      "agent_id": "cab121aa-ebf7-4533-98e2-3e09ea2e5ab2",
+      "audit_seconds": 0.004814661999262171,
+      "audit_sequence": 1,
+      "create_agent_seconds": 0.004608514000210562,
+      "health_seconds": 0.027502536999236327,
+      "issue_key_seconds": 0.047565222999764956,
+      "login_seconds": 0.06197386399981042,
+      "metadata_id": "2d8a6253-c4f0-47df-9335-35a06d7fd11b",
+      "metadata_seconds": 0.0022690559999318793
+    }
+  }
+}

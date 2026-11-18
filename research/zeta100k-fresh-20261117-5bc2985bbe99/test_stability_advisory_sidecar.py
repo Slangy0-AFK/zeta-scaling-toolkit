@@ -94,9 +94,7 @@ class StabilityAdvisoryObserverTests(unittest.TestCase):
                 json.loads(line)
                 for line in (root / "stability-recommendations.jsonl").read_text().splitlines()
             ]
-            self.assertEqual(
-                [record["processed_tokens"] for record in records], [4096, 6144]
-            )
+            self.assertEqual([record["processed_tokens"] for record in records], [4096, 6144])
 
     def test_rejects_inconsistent_checkpoint_positions(self):
         with tempfile.TemporaryDirectory() as directory:

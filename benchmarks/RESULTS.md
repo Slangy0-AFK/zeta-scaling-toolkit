@@ -8,11 +8,29 @@ any component improves other tasks or large-scale training.
 
 The fresh SmolLM2 streaming experiment is a different workload and is not
 included in the results below. It completed 100,000 contiguous tokens with a
-bounded 128-position cache, but its synthetic long-distance retrieval test
-scored 0/8 exact matches and it had no matched full-length baseline. These
-results do not change the Stage 1 decisions below and do not establish an
-end-to-end speedup. See the [run report](../research/zeta100k-fresh-20261117-5bc2985bbe99/FINAL_REPORT.md)
-and [evidence checklist](../ZETA_BREAKTHROUGH_CHECKLIST.md).
+bounded 128-position cache and validated all 56 checkpoints. Throughput was
+10.7199 tokens/second; total runtime was 9,636.7 seconds and peak process RSS
+was 3,400.3 MiB. MathMesh delivered 56 telemetry records without recorded
+failures or drops, and the Stability observer recorded 56 advisory
+recommendations. No matched full-length end-to-end baseline exists, so no
+speedup is established. This result is separate from the evaluations below.
+
+| Retrieval evaluation | Long-range exact matches | Direct positive controls | Negative control | Evidence status |
+|---|---:|---:|---|---|
+| Original 100K test | 0/8 | 8/8 | Not in original protocol | Audited from saved evidence; not rerun |
+| 8,192-token diagnostic | 0/3 | 3/3 | Passed | Fresh isolated diagnostic |
+| 16,384-token diagnostic | 0/4 | 4/4 | Passed | Fresh isolated diagnostic |
+
+All queried facts in the two short diagnostics were absent from the bounded
+cache after question prefill. This correlates with the misses but does not
+establish cause. The retrieval measurements do not negate the separately
+verified stream continuity, checkpoint/numerical integrity, or observer
+delivery, and they are not a MathMesh failure.
+
+See the [run report](../research/zeta100k-fresh-20261117-5bc2985bbe99/FINAL_REPORT.md),
+[research evidence checklist](../ZETA_RESEARCH_EVIDENCE_CHECKLIST.md), and
+[short-retrieval report](../ZETA_FINAL_SHORT_RETRIEVAL_DIAGNOSTICS.md) for the
+underlying records and limitations.
 
 ## Stage 1 context-ability gate
 

@@ -58,6 +58,9 @@ For development and tests:
 pip install -e ".[dev]"
 ```
 
+The repository's 0.5.1 package version is an unpublished candidate; PyPI
+currently provides 0.5.0. See the [0.5.1 release notes](./RELEASE_NOTES_v0.5.1.md).
+
 ## Quick start
 
 ```python
@@ -123,17 +126,37 @@ included zero. These results apply to the measured model and dataset only.
 
 A separate CPU FP32 experiment processed 100,000 contiguous tokens with
 SmolLM2-360M-Instruct, using a bounded 64-sink plus 64-recent KV cache. The
-runner exited successfully at position 99,999; 56 checkpoints and their
-provenance/cache state were verified. This demonstrates operation for that
-configuration, not improved model quality or unbounded information retention.
-The synthetic long-distance fact task returned 0/8 exact answers, while all
-eight short-prompt controls passed. No matched 100K full-history baseline was
-run, so no end-to-end speedup is established.
+runner exited successfully at position 99,999; 56/56 checkpoints and their
+provenance/cache state were verified. Throughput was 10.7199 tokens/second,
+total runtime was 9,636.7 seconds, and peak process RSS was 3,400.3 MiB.
+MathMesh delivered 56/56 telemetry records with no recorded failures or drops;
+the Stability observer recorded 56 advisory recommendations. These results
+demonstrate operation for this configuration, not improved model quality or
+unbounded information retention. There is no matched 100K end-to-end speed
+baseline or evidence for larger-model scalability. A physical service outage
+during the full run and restoration of the final checkpoint were not tested.
 
 See the [completed run report](./research/zeta100k-fresh-20261117-5bc2985bbe99/FINAL_REPORT.md),
 [provenance](./research/zeta100k-fresh-20261117-5bc2985bbe99/PROVENANCE.md), and
-[evidence checklist](./ZETA_BREAKTHROUGH_CHECKLIST.md) for measurements and
-limitations. This is separate from the char-level training benchmark above.
+[research evidence checklist](./ZETA_RESEARCH_EVIDENCE_CHECKLIST.md) for
+measurements and limitations. This is separate from the char-level training
+benchmark above.
+
+## Retrieval diagnostics
+
+The original 100K retrieval result was 0/8 and has been audited from saved
+evidence; it was not rerun. Two separate short diagnostics returned 0/3 at
+8,192 tokens and 0/4 at 16,384 tokens. Their direct positive controls passed
+(3/3 and 4/4), as did both negative controls. Each queried fact was absent
+from the bounded cache after its question was prefetched. Eviction correlates
+with the misses, but these tests do not establish causation or rule out model
+and prompt limitations. These retrieval results are distinct from contiguous
+stream processing, checkpoint/numerical integrity, and observer delivery;
+they are not failures of MathMesh or evidence that the processing pipeline
+failed.
+
+See the [full short-retrieval report](./ZETA_FINAL_SHORT_RETRIEVAL_DIAGNOSTICS.md)
+and [machine-readable results](./ZETA_FINAL_SHORT_RETRIEVAL_DIAGNOSTICS.json).
 
 ## What this can and cannot do
 

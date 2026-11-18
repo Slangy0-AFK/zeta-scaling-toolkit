@@ -27,9 +27,7 @@ def load_toolkit(path: Path) -> Any:
 class StabilityAdvisoryObserver:
     """Read checkpoint summaries and append advisory-only resource recommendations."""
 
-    def __init__(
-        self, run_dir: Path, toolkit: Any, *, poll_seconds: float = 1.0
-    ) -> None:
+    def __init__(self, run_dir: Path, toolkit: Any, *, poll_seconds: float = 1.0) -> None:
         if not 0 < poll_seconds <= 60:
             raise ValueError("poll interval must be greater than 0 and at most 60 seconds")
         self.run_dir = run_dir
@@ -75,10 +73,7 @@ class StabilityAdvisoryObserver:
                 ):
                     raise ValueError("invalid checkpoint token progression")
                 checkpoint = entry.get("checkpoint")
-                if (
-                    not isinstance(checkpoint, str)
-                    or len(checkpoint) > MAX_CHECKPOINT_CHARS
-                ):
+                if not isinstance(checkpoint, str) or len(checkpoint) > MAX_CHECKPOINT_CHARS:
                     raise ValueError("invalid checkpoint reference")
                 stream_hash = entry.get("stream_sha256")
                 if not isinstance(stream_hash, str) or len(stream_hash) != 64:

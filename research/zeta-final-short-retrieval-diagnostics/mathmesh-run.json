@@ -1,0 +1,43 @@
+{
+  "configuration": {
+    "chunk_size": 64,
+    "device": "cpu",
+    "diagnostic_prefix_tokens": [
+      8192,
+      16384
+    ],
+    "model": "HuggingFaceTB/SmolLM2-360M-Instruct",
+    "original_0_of_8": "existing-evidence-audit-only; no 100K rerun or checkpoint restore",
+    "precision": "float32",
+    "recent_cache_positions": 64,
+    "revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+    "seed": 20261117,
+    "sink_cache_positions": 64,
+    "stream_sha256": "c9c43fb35050bc31f8d60e2a9bd600ae960f96d7a7ac1618b41505b2955da322"
+  },
+  "configuration_sha256": "9175e84ab5019dd4e693aa2536d62ddf443a7b62bf13b0a010f2459f84a63386",
+  "mathmesh": {
+    "admission": {
+      "admission_seconds": 0.013853975000529317,
+      "agent_id": "cab121aa-ebf7-4533-98e2-3e09ea2e5ab2",
+      "audit_seconds": 0.004814661999262171,
+      "audit_sequence": 1,
+      "create_agent_seconds": 0.004608514000210562,
+      "health_seconds": 0.027502536999236327,
+      "issue_key_seconds": 0.047565222999764956,
+      "login_seconds": 0.06197386399981042,
+      "metadata_id": "2d8a6253-c4f0-47df-9335-35a06d7fd11b",
+      "metadata_seconds": 0.0022690559999318793
+    },
+    "completion": {
+      "audit_seconds": 0.01205417699929967,
+      "audit_sequence": 1,
+      "health_seconds": 0.05708607199994731,
+      "login_seconds": 0.06366301799971552,
+      "metadata_status": "complete",
+      "update_seconds": 0.010506585998882656
+    },
+    "phase": "complete"
+  },
+  "run_id": "zeta-short-retrieval-diagnostics-20261118-0119-936e6861"
+}

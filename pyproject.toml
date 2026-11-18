@@ -44,13 +44,19 @@ dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "hypothesis>=6.100.0",
+    "numpy>=1.23.0,<2.0; python_version < '3.13'",
+    "numpy>=2.0.0; python_version >= '3.13'",
+    "safetensors>=0.4.0",
     "ruff>=0.1.0",
     "mypy>=1.0.0"
 ]
 test = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
-    "hypothesis>=6.100.0"
+    "hypothesis>=6.100.0",
+    "numpy>=1.23.0,<2.0; python_version < '3.13'",
+    "numpy>=2.0.0; python_version >= '3.13'",
+    "safetensors>=0.4.0"
 ]
 
 [project.urls]
